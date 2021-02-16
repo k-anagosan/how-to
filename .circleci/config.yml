@@ -1,0 +1,54 @@
+version: 2.1
+jobs:
+  build:
+    docker:
+      - image: circleci/php:7.4-node-browsers
+    steps:
+      - checkout
+      - run: sudo apt update
+      - run: sudo apt install zlib1g-dev libsqlite3-dev
+      - run: sudo docker-php-ext-install zip
+
+      - restore_cache:
+          keys:
+            # "composer.lock" can be used if it is committed to the repo
+            - v1-dependencies-{{ checksum "./laravel/composer.lock" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      - run:
+          command: composer install -n --prefer-dist
+          working_directory: laravel
+      - run:
+          command: cp .env.example .env
+          working_directory: laravel
+      - run:
+          command: php artisan key:generate
+          working_directory: laravel
+
+      - save_cache:
+          key: v1-dependencies-{{ checksum "./laravel/composer.lock" }}
+          paths:
+            - ./laravel/vendor
+      - restore_cache:
+          keys:
+            - node-v1-{{ checksum "./laravel/package-lock.json" }}
+            - node-v1-
+      - run:
+          command: npm install
+          working_directory: laravel
+      - save_cache:
+          key: node-v1-{{ checksum "./laravel/package-lock.json" }}
+          paths:
+            - ./laravel/node_modules
+
+      - run:
+          command: touch storage/testing.sqlite
+          working_directory: laravel
+      - run:
+          command: php artisan migrate --env=testing --database=sqlite_testing --force
+          working_directory: laravel
+
+      - run:
+          command: ./vendor/bin/phpunit
+          working_directory: laravel
