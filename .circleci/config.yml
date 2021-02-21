@@ -52,3 +52,7 @@ jobs:
       - run:
           command: ./vendor/bin/phpunit
           working_directory: laravel
+
+      - run:
+          command: npm run test
+          working_directory: laravel
