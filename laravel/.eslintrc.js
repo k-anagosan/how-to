@@ -12,6 +12,9 @@ module.exports = {
     globals: {
         document: true,
         window: true,
+        describe: true,
+        it: true,
+        expect: true,
     },
     parser: "vue-eslint-parser",
     parserOptions: {
