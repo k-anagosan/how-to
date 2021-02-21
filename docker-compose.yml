@@ -2,16 +2,12 @@ version: "3.8"
 volumes:
   php-fpm-socket:
   db-store:
-  node_modules:
-  vendor:
 services:
   app:
     build: ./infra/php
     volumes:
       - php-fpm-socket:/var/run/php-fpm
       - ./laravel:/work/laravel
-      - node_modules:/work/laravel/node_modules
-      - vendor:/work/laravel/vendor
 
   web:
     build: ./infra/nginx
@@ -21,8 +17,6 @@ services:
     volumes:
       - php-fpm-socket:/var/run/php-fpm
       - ./laravel:/work/laravel
-      - node_modules:/work/laravel/node_modules
-      - vendor:/work/laravel/vendor
 
   db:
     build: ./infra/mysql
