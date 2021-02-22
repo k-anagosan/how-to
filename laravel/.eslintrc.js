@@ -12,6 +12,12 @@ module.exports = {
     globals: {
         document: true,
         window: true,
+        describe: true,
+        it: true,
+        expect: true,
+        beforeEach: true,
+        afterEach: true,
+        mount: true,
     },
     parser: "vue-eslint-parser",
     parserOptions: {
@@ -29,5 +35,6 @@ module.exports = {
         "one-var": "off",
         "sort-imports": "off",
         "sort-keys": "off",
+        "capitalized-comments": "off",
     },
 };
