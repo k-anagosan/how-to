@@ -9,7 +9,6 @@ class RoutingTest extends TestCase
     /**
      * @test
      */
-    // phpcs:ignore
     public function should_ホーム画面にアクセスできる(): void
     {
         $response = $this->get('/');
@@ -19,7 +18,6 @@ class RoutingTest extends TestCase
     /**
      * @test
      */
-    // phpcs:ignore
     public function should_想定したURI以外にアクセスしてもホーム画面にアクセスする(): void
     {
         $response = $this->get('/' . $this->ramdomUri());
@@ -29,7 +27,6 @@ class RoutingTest extends TestCase
     /**
      * @test
      */
-    // phpcs:ignore
     public function should_想定したURIでアクセスすると、indexビューが返ってくる(): void
     {
         $response = $this->get('/');
@@ -39,7 +36,6 @@ class RoutingTest extends TestCase
     /**
      * @test
      */
-    // phpcs:ignore
     public function should_想定したURI以外にアクセスしても、indexビューが返ってくる(): void
     {
         $response = $this->get('/' . $this->ramdomUri());
