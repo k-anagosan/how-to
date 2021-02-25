@@ -1,0 +1,9 @@
+{
+    "phpcs.executablePath": "./laravel/vendor/bin/phpcs",
+    "phpcs.composerJsonPath": "./laravel/composer.json",
+    "phpcs.ignorePatterns": [
+        "./laravel/node_modulles/**/*",
+        "./laravel/vendor/**/*"
+    ],
+    "php-cs-fixer.onsave": true
+}

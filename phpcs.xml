@@ -13,6 +13,14 @@
     <!-- オプション p:進捗表示  s:エラー表示時にルールを表示 -->
     <arg value="ps" />
 
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/bootstrap/cache/*</exclude-pattern>
+    <exclude-pattern>*/database/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+    <exclude-pattern>*/public/*</exclude-pattern>
+    <exclude-pattern>*/resources/*</exclude-pattern>
+    <exclude-pattern>*/storage/*</exclude-pattern>
+
     <rule ref="PSR1.Methods.CamelCapsMethodName.NotCamelCaps">
         <exclude-pattern>*/tests/*</exclude-pattern>
     </rule>
