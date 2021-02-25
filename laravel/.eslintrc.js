@@ -36,5 +36,6 @@ module.exports = {
         "sort-imports": "off",
         "sort-keys": "off",
         "capitalized-comments": "off",
+        "no-magic-numbers": "off",
     },
 };

@@ -24,17 +24,26 @@ describe("App.vue", () => {
     });
 
     it("/にアクセスしたらCardListを表示する", async () => {
-        await wrapper.vm.$router.push("/").catch(() => {});
+        await wrapper.vm.$router.push("/").catch(err => {
+            console.log(err);
+        });
         expect(wrapper.findComponent(CardList).exists()).toBe(true);
     });
     it("/loginにアクセスしたらLoginを表示する", async () => {
-        await wrapper.vm.$router.push("/login").catch(() => {});
+        await wrapper.vm.$router.push("/login").catch(err => {
+            console.log(err);
+        });
         expect(wrapper.findComponent(Login).exists()).toBe(true);
     });
 
     it("正規のuriでなければ何も表示しない", async () => {
-        const uri = Math.random().toString(36).slice(-12);
-        await wrapper.vm.$router.push(`/${uri}`).catch(() => {});
+        const [MaxLength, radix] = [-12, 36];
+        const length = Math.floor(Math.random() * MaxLength);
+        const uri = Math.random().toString(radix).slice(length);
+
+        await wrapper.vm.$router.push(`/${uri}`).catch(err => {
+            console.log(err);
+        });
         expect(wrapper.findComponent(Login).exists()).toBe(false);
         expect(wrapper.findComponent(CardList).exists()).toBe(false);
     });
