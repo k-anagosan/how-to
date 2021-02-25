@@ -3,6 +3,9 @@ jobs:
   build:
     docker:
       - image: circleci/php:7.4-node-browsers
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
     steps:
       - checkout
       - run: sudo apt update
@@ -17,12 +20,17 @@ jobs:
             - v1-dependencies-
 
       - run:
+          name: install composer package
           command: composer install -n --prefer-dist
           working_directory: laravel
+
       - run:
+          name: generate .env
           command: cp .env.example .env
           working_directory: laravel
+
       - run:
+          name: genarate key
           command: php artisan key:generate
           working_directory: laravel
 
@@ -30,29 +38,39 @@ jobs:
           key: v1-dependencies-{{ checksum "./laravel/composer.lock" }}
           paths:
             - ./laravel/vendor
+
       - restore_cache:
           keys:
             - node-v1-{{ checksum "./laravel/package-lock.json" }}
             - node-v1-
+
       - run:
-          command: npm install
+          name: install npm package
+          command: |
+            if [ ! -d node_modules ]; then
+              npm ci
+            fi
           working_directory: laravel
+
       - save_cache:
           key: node-v1-{{ checksum "./laravel/package-lock.json" }}
           paths:
             - ./laravel/node_modules
 
       - run:
-          command: touch storage/testing.sqlite
-          working_directory: laravel
-      - run:
-          command: php artisan migrate --env=testing --database=sqlite_testing --force
-          working_directory: laravel
-
-      - run:
+          name: test php files
           command: ./vendor/bin/phpunit
           working_directory: laravel
 
       - run:
+          name: test vue and js files
           command: npm run test
           working_directory: laravel
+
+      - run:
+          name: lint php files
+          command: ./laravel/vendor/bin/phpcs .
+
+      - run:
+          name: lint vue and js files
+          command: ./laravel/node_modules/.bin/eslint ./laravel/resources/js/
