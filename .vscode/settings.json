@@ -4,6 +4,5 @@
     "phpcs.ignorePatterns": [
         "./laravel/node_modulles/**/*",
         "./laravel/vendor/**/*"
-    ],
-    "php-cs-fixer.onsave": true
+    ]
 }
