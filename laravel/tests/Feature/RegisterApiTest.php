@@ -3,15 +3,14 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use Faker\Factory as Faker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class RegisterApiTest extends TestCase
 {
-    use RefreshDatabase;
-
-    private $faker;
+    use RefreshDatabase,
+        WithFaker;
 
     private $data;
 
@@ -20,8 +19,6 @@ class RegisterApiTest extends TestCase
         parent::setUp();
 
         // テストごとにダミーデータを作成
-        $this->faker = Faker::create('ja_JP');
-
         $password = $this->faker->password(8);
         $this->data = [
             'name' => $this->faker->userName(),
