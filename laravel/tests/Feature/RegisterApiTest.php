@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -19,13 +20,7 @@ class RegisterApiTest extends TestCase
         parent::setUp();
 
         // テストごとにダミーデータを作成
-        $password = $this->faker->password(8);
-        $this->data = [
-            'name' => $this->faker->userName(),
-            'email' => $this->faker->unique()->email(),
-            'password' => $password,
-            'password_confirmation' => $password,
-        ];
+        $this->data = $this->createData();
     }
 
     /**
@@ -165,5 +160,63 @@ class RegisterApiTest extends TestCase
 
         // バリデーションエラーを示すステータスコードと正しいバリデーションメッセージが返ってくるか
         $response->assertStatus(422)->assertExactJson($expected);
+    }
+
+    /**
+     * @test
+     */
+    public function should_既に登録済みのユーザー名を使おうとした場合は登録に失敗する(): void
+    {
+        $user = $this->createRegisteredUser();
+
+        $this->data['email'] = $user->email;
+
+        $response = $this->postJson(route('register'), $this->data);
+
+        $expected = [
+            'message' => 'The given data was invalid.',
+            'errors' => [
+                'email' => ['email は既に存在します'],
+            ],
+        ];
+
+        $response->assertStatus(422)->assertExactJson($expected);
+    }
+
+    /**
+     * @test
+     */
+    public function should_登録が完了したユーザーが再度登録を行おうとすると302リダイレクトされる(): void
+    {
+        $user = $this->createRegisteredUser();
+        $response = $this->actingAs($user)->postJson(route('register'), $this->data);
+
+        $response->assertStatus(302)->assertRedirect(RouteServiceProvider::HOME);
+    }
+
+    /**
+     * 登録用データを作成.
+     * @param void
+     * @return array
+     */
+    private function createData()
+    {
+        $password = $this->faker->password(8);
+        return [
+            'name' => $this->faker->userName(),
+            'email' => $this->faker->unique()->email(),
+            'password' => $password,
+            'password_confirmation' => $password,
+        ];
+    }
+
+    /**
+     * 登録済みユーザー情報を作成.
+     * @param void
+     * @return mix
+     */
+    private function createRegisteredUser()
+    {
+        return factory(User::class)->create();
     }
 }
