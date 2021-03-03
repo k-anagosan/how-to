@@ -83,8 +83,6 @@ class LoginApiTest extends TestCase
     {
         $this->data['password'] = $this->faker->password(8);
 
-        \Log::info($this->data);
-
         $response = $this->postJson(route('login'), $this->data);
 
         $expected = [
