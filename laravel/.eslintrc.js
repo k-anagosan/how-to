@@ -37,5 +37,8 @@ module.exports = {
         "sort-keys": "off",
         "capitalized-comments": "off",
         "no-magic-numbers": "off",
+        "no-inline-comments": "off",
+        "line-comment-position": "off",
+        "require-unicode-regexp": "off",
     },
 };
