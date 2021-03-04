@@ -1,24 +1,31 @@
 const mix = require("laravel-mix");
+const tailwind = require("tailwindcss");
+const fs = require("fs");
 
-/*
- |--------------------------------------------------------------------------
- | Mix Asset Management
- |--------------------------------------------------------------------------
- |
- | Mix provides a clean, fluent API for defining some Webpack build steps
- | for your Laravel application. By default, we are compiling the Sass
- | file for the application as well as bundling up all the JS files.
- |
- */
 mix.webpackConfig({
     watchOptions: {
-        ignored: /node_modules|vendor/
-    }
+        ignored: /node_modules|vendor/,
+    },
 })
     .js("resources/js/app.js", "public/js")
-    .sass("resources/sass/app.scss", "public/css")
+    .styles(["public/css/app.css"], "public/css/app.css")
     .browserSync({
         proxy: "http://web", // webサーバとして使用するコンテナ名をhttp://のあとに指定
-        files: ["./resources/**/*.*", "./public/**/*.*"], // 監視対象のファイル、ディレクトリをwebpack.mix.jsからの相対パスとして指定する。
-        open: false
-    });
+        files: ["./resources/js/**/*.*", "./resources/views/**/*.blade.php"], // 監視対象のファイル、ディレクトリをwebpack.mix.jsからの相対パスとして指定する。
+        open: false,
+    })
+    .version();
+
+// コンパイルに時間がかかるので/public/css/app.cssが無いときだけコンパイル
+if (!fs.existsSync("./public/css/app.css")) {
+    mix.postCss("./resources/css/app.css", "./public/css/", [
+        tailwind,
+    ]).version();
+}
+
+// production環境の場合はapp.prod.cssとして出力
+if (mix.inProduction()) {
+    mix.postCss("./resources/css/app.css", "./public/css/app.prod.css", [
+        tailwind,
+    ]).version();
+}
