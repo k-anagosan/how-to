@@ -13,6 +13,7 @@
   - `Vue Router 3.5.1`
   - `jest 26.6.3`
   - `vue-testing-utils 1.1.3`
+  - `tailwindcss 2.0.3`
 
 - バックエンド
 
@@ -29,10 +30,10 @@
 
 - リンター、フォーマッター
 
-  - `ESLint`
-  - `Prettier`
-  - `phpcs`
-  - `php-cs-fixer`
+  - `ESLint 7.20.0`
+  - `Prettier 2.2.1`
+  - `php_codesniffer 3.5.8`
+  - `php-cs-fixer 2.18.2`
 
 - その他
 
