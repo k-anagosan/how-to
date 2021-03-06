@@ -213,7 +213,7 @@ class RegisterApiTest extends TestCase
     /**
      * 登録済みユーザー情報を作成.
      * @param void
-     * @return mix
+     * @return mixed
      */
     private function createRegisteredUser()
     {
