@@ -8,24 +8,21 @@ mix.webpackConfig({
     },
 })
     .js("resources/js/app.js", "public/js")
-    .styles(["public/css/app.css"], "public/css/app.css")
     .browserSync({
         proxy: "http://web", // webサーバとして使用するコンテナ名をhttp://のあとに指定
         files: ["./resources/js/**/*.*", "./resources/views/**/*.blade.php"], // 監視対象のファイル、ディレクトリをwebpack.mix.jsからの相対パスとして指定する。
         open: false,
-    })
-    .version();
+    });
 
 // コンパイルに時間がかかるので/public/css/app.cssが無いときだけコンパイル
 if (!fs.existsSync("./public/css/app.css")) {
-    mix.postCss("./resources/css/app.css", "./public/css/", [
-        tailwind,
-    ]).version();
+    mix.postCss("./resources/css/app.css", "./public/css/", [tailwind]);
 }
 
 // production環境の場合はapp.prod.cssとして出力
 if (mix.inProduction()) {
     mix.postCss("./resources/css/app.css", "./public/css/app.prod.css", [
         tailwind,
-    ]).version();
+    ]);
+    mix.version();
 }
