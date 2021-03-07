@@ -6,6 +6,8 @@ import App from "@/App.vue";
 import CardList from "@/pages/CardList.vue";
 import Login from "@/pages/Login.vue";
 
+import { randomStr } from "./utils.js";
+
 describe("App.vue", () => {
     let wrapper = null;
 
@@ -24,6 +26,10 @@ describe("App.vue", () => {
     });
 
     it("/にアクセスしたらCardListを表示する", async () => {
+        const uri = randomStr();
+        await wrapper.vm.$router.push(`/${uri}`).catch(err => {
+            console.log(err);
+        });
         await wrapper.vm.$router.push("/").catch(err => {
             console.log(err);
         });
@@ -37,9 +43,7 @@ describe("App.vue", () => {
     });
 
     it("正規のuriでなければ何も表示しない", async () => {
-        const [MaxLength, radix] = [-12, 36];
-        const length = Math.floor(Math.random() * MaxLength);
-        const uri = Math.random().toString(radix).slice(length);
+        const uri = randomStr();
 
         await wrapper.vm.$router.push(`/${uri}`).catch(err => {
             console.log(err);

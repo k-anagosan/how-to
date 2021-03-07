@@ -40,5 +40,6 @@ module.exports = {
         "no-inline-comments": "off",
         "line-comment-position": "off",
         "require-unicode-regexp": "off",
+        "max-lines-per-function": "off",
     },
 };
