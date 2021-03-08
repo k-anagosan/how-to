@@ -43,5 +43,6 @@ module.exports = {
         "require-unicode-regexp": "off",
         "max-lines-per-function": "off",
         "no-shadow": "off",
+        camelcase: "off",
     },
 };
