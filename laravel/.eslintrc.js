@@ -19,6 +19,7 @@ module.exports = {
         afterEach: true,
         mount: true,
         axios: true,
+        jest: true,
     },
     parser: "vue-eslint-parser",
     parserOptions: {
