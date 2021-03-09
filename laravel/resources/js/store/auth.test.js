@@ -1,6 +1,7 @@
 import Vuex from "vuex";
 import { createLocalVue } from "@vue/test-utils";
 import "@/bootstrap";
+import { randomStr } from "@/utils";
 
 import auth from "@/store/auth";
 
@@ -11,14 +12,24 @@ let action = null;
 const testedAction = (context = {}, payload = {}) =>
     auth.actions[action](context, payload);
 
-describe("store/auth.js", () => {
+describe("store/auth.js actions", () => {
     let store = null;
+    let commit = null;
+    let state = null;
     let windowSpy = null;
+    let originalWindow = null;
+
     beforeEach(() => {
         store = new Vuex.Store(auth);
-
-        const originalWindow = { ...window };
+        [commit, state] = [store.commit, store.state];
+        originalWindow = { ...window };
         windowSpy = jest.spyOn(global, "window", "get");
+    });
+    afterEach(() => {
+        windowSpy.mockRestore();
+    });
+
+    it("registerアクションによりstate.userに正しく値が保存されるか", async done => {
         windowSpy.mockImplementation(() => ({
             ...originalWindow,
             axios: {
@@ -31,37 +42,52 @@ describe("store/auth.js", () => {
                 }),
             },
         }));
+
+        action = "register";
+        const data = {
+            name: randomStr(),
+            email: `${randomStr()}@${randomStr()}.com`,
+            password: "password",
+            password_confirmation: "password",
+        };
+
+        await testedAction({ commit, state }, data);
+
+        expect(store.state.user).toEqual({
+            email: data.email,
+            id: expect.anything(),
+            name: data.name,
+        });
+        done();
     });
 
-    afterEach(() => {
-        windowSpy.mockRestore();
-    });
+    it("loginアクションによりstate.userに正しく値が保存されるか", async done => {
+        windowSpy.mockImplementation(() => ({
+            ...originalWindow,
+            axios: {
+                post: (url, data) => ({
+                    data: {
+                        name: "testuser",
+                        email: data.email,
+                        id: 1,
+                    },
+                }),
+            },
+        }));
 
-    describe("actions", () => {
-        let commit = null;
-        let state = null;
+        action = "login";
+        const data = {
+            email: `${randomStr()}@${randomStr()}.com`,
+            password: "password",
+        };
 
-        beforeEach(() => {
-            [commit, state] = [store.commit, store.state];
+        await testedAction({ commit, state }, data);
+
+        expect(store.state.user).toEqual({
+            email: data.email,
+            id: expect.anything(),
+            name: "testuser",
         });
-
-        it("registerアクションによりstate.userに正しく値が保存されるか", async done => {
-            action = "register";
-            await testedAction(
-                { commit, state },
-                {
-                    name: "test",
-                    email: "test@email.com",
-                    password: "password",
-                    password_confirmation: "password",
-                }
-            );
-            expect(store.state.user).toEqual({
-                email: "test@email.com",
-                id: expect.anything(),
-                name: "test",
-            });
-            done();
-        });
+        done();
     });
 });

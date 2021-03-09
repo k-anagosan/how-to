@@ -15,6 +15,10 @@ const actions = {
         const response = await window.axios.post("/api/register", data);
         context.commit("setUser", response.data);
     },
+    async login(context, data) {
+        const response = await window.axios.post("/api/login", data);
+        context.commit("setUser", response.data);
+    },
 };
 
 export default {
