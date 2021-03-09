@@ -12,76 +12,82 @@ let action = null;
 const testedAction = (context = {}, payload = {}) =>
     auth.actions[action](context, payload);
 
-describe("store/auth.js", () => {
+describe("store/auth.js actions", () => {
     let store = null;
+    let commit = null;
+    let state = null;
     let windowSpy = null;
+    let originalWindow = null;
+
     beforeEach(() => {
         store = new Vuex.Store(auth);
-
-        const originalWindow = { ...window };
+        [commit, state] = [store.commit, store.state];
+        originalWindow = { ...window };
         windowSpy = jest.spyOn(global, "window", "get");
-        windowSpy.mockImplementation(() => ({
-            ...originalWindow,
-            axios: {
-                post: (url, data) => {
-                    const name = data.name ?? "testuser";
-                    return {
-                        data: {
-                            name,
-                            email: data.email,
-                            id: 1,
-                        },
-                    };
-                },
-            },
-        }));
     });
-
     afterEach(() => {
         windowSpy.mockRestore();
     });
 
-    describe("actions", () => {
-        let commit = null;
-        let state = null;
+    it("registerアクションによりstate.userに正しく値が保存されるか", async done => {
+        windowSpy.mockImplementation(() => ({
+            ...originalWindow,
+            axios: {
+                post: (url, data) => ({
+                    data: {
+                        name: data.name,
+                        email: data.email,
+                        id: 1,
+                    },
+                }),
+            },
+        }));
 
-        beforeEach(() => {
-            [commit, state] = [store.commit, store.state];
+        action = "register";
+        const data = {
+            name: randomStr(),
+            email: `${randomStr()}@${randomStr()}.com`,
+            password: "password",
+            password_confirmation: "password",
+        };
+
+        await testedAction({ commit, state }, data);
+
+        expect(store.state.user).toEqual({
+            email: data.email,
+            id: expect.anything(),
+            name: data.name,
         });
+        done();
+    });
 
-        it("registerアクションによりstate.userに正しく値が保存されるか", async done => {
-            action = "register";
-            const data = {
-                name: randomStr(),
-                email: `${randomStr()}@${randomStr()}.com`,
-                password: "password",
-                password_confirmation: "password",
-            };
+    it("loginアクションによりstate.userに正しく値が保存されるか", async done => {
+        windowSpy.mockImplementation(() => ({
+            ...originalWindow,
+            axios: {
+                post: (url, data) => ({
+                    data: {
+                        name: "testuser",
+                        email: data.email,
+                        id: 1,
+                    },
+                }),
+            },
+        }));
 
-            await testedAction({ commit, state }, data);
-            expect(store.state.user).toEqual({
-                email: data.email,
-                id: expect.anything(),
-                name: data.name,
-            });
-            done();
+        action = "login";
+        const data = {
+            email: `${randomStr()}@${randomStr()}.com`,
+            password: "password",
+        };
+
+        await testedAction({ commit, state }, data);
+
+        expect(store.state.user).toEqual({
+            email: data.email,
+            id: expect.anything(),
+            name: "testuser",
         });
-
-        it("loginアクションによりstate.userに正しく値が保存されるか", async done => {
-            action = "login";
-            const data = {
-                email: `${randomStr()}@${randomStr()}.com`,
-                password: "password",
-            };
-
-            await testedAction({ commit, state }, data);
-
-            expect(store.state.user).toEqual({
-                email: data.email,
-                id: expect.anything(),
-                name: "testuser",
-            });
-            done();
-        });
+        done();
     });
 });
