@@ -84,7 +84,7 @@
 </template>
 <script>
 import Input from "../components/Input.vue";
-import Button from "../components/Button.vue";
+import Button from "../components/SubmitButton.vue";
 
 export default {
   components: {
