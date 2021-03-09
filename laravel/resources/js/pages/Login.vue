@@ -53,7 +53,7 @@
       <form id="register-form" @submit.prevent="register">
         <Input
           id="username"
-          v-model="registerForm.username"
+          v-model="registerForm.name"
           type="text"
           label="Username"
         />
@@ -71,7 +71,7 @@
         />
         <Input
           id="password-confirmation"
-          v-model="registerForm.passwordConfirmation"
+          v-model="registerForm.password_confirmation"
           type="password"
           label="Password (Confirm)"
         />
@@ -99,10 +99,10 @@ export default {
         password: "",
       },
       registerForm: {
-        username: "",
+        name: "",
         email: "",
         password: "",
-        passwordConfirmation: "",
+        password_confirmation: "",
       },
     };
   },
@@ -110,8 +110,10 @@ export default {
     login() {
       console.log(this.loginForm);
     },
-    register() {
-      console.log(this.registerForm);
+    async register() {
+      await this.$store.dispatch("auth/register", this.registerForm);
+
+      this.$router.push("/");
     },
   },
 };

@@ -18,6 +18,8 @@ module.exports = {
         beforeEach: true,
         afterEach: true,
         mount: true,
+        axios: true,
+        jest: true,
     },
     parser: "vue-eslint-parser",
     parserOptions: {
@@ -41,5 +43,7 @@ module.exports = {
         "line-comment-position": "off",
         "require-unicode-regexp": "off",
         "max-lines-per-function": "off",
+        "no-shadow": "off",
+        camelcase: "off",
     },
 };

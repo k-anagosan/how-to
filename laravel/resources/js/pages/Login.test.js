@@ -1,4 +1,7 @@
-import { mount } from "@vue/test-utils";
+import Vuex from "vuex";
+import VueRouter from "vue-router";
+
+import { mount, shallowMount, createLocalVue } from "@vue/test-utils";
 import Login from "@/pages/Login.vue";
 
 import { randomStr } from "../utils.js";
@@ -23,7 +26,6 @@ describe("Login.vue", () => {
         wrapper.find("#login-email").setValue(data.email);
         wrapper.find("#login-password").setValue(data.password);
 
-        console.log(data, wrapper.vm.$data.loginForm);
         expect(wrapper.vm.$data.loginForm).toEqual({
             email: data.email,
             password: data.password,
@@ -32,25 +34,64 @@ describe("Login.vue", () => {
 
     it("#register-formに入力した値がdataに保存される", () => {
         const data = {
-            username: randomStr(),
+            name: randomStr(),
             email: randomStr(),
             password: randomStr(),
             passwordConfirmation: randomStr(),
         };
 
-        wrapper.find("#username").setValue(data.username);
+        wrapper.find("#username").setValue(data.name);
         wrapper.find("#email").setValue(data.email);
         wrapper.find("#password").setValue(data.password);
         wrapper
             .find("#password-confirmation")
             .setValue(data.passwordConfirmation);
 
-        console.log(data, wrapper.vm.$data.registerForm);
         expect(wrapper.vm.$data.registerForm).toEqual({
-            username: data.username,
+            name: data.name,
             email: data.email,
             password: data.password,
-            passwordConfirmation: data.passwordConfirmation,
+            password_confirmation: data.passwordConfirmation,
+        });
+    });
+
+    describe("Vuex", () => {
+        const localVue = createLocalVue();
+
+        localVue.use(Vuex);
+        localVue.use(VueRouter);
+
+        let authStoreMock = null;
+        let store = null;
+        let router = null;
+
+        beforeEach(() => {
+            authStoreMock = {
+                namespaced: true,
+                actions: {
+                    register: jest.fn(),
+                },
+            };
+            router = new VueRouter({
+                mode: "history",
+                routes: [{ path: "/" }],
+            });
+
+            store = new Vuex.Store({
+                modules: {
+                    auth: authStoreMock,
+                },
+            });
+        });
+
+        it("#register-formを送信したらauth/registerアクションが実行される", async () => {
+            const wrapper = shallowMount(Login, { store, router, localVue });
+
+            await wrapper.vm.$router.push("/login");
+
+            wrapper.find("#register-form").trigger("submit");
+
+            expect(authStoreMock.actions.register).toHaveBeenCalled();
         });
     });
 });
