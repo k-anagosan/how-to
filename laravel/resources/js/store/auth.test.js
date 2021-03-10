@@ -8,20 +8,24 @@ import auth from "@/store/auth";
 const localVue = createLocalVue();
 localVue.use(Vuex);
 
-let action = null;
-const testedAction = (context = {}, payload = {}) =>
-    auth.actions[action](context, payload);
+let store = null;
+let commit = null;
+let state = null;
 
-describe("store/auth.js actions", () => {
-    let store = null;
-    let commit = null;
-    let state = null;
+beforeEach(() => {
+    store = new Vuex.Store(auth);
+    [commit, state] = [store.commit, store.state];
+});
+
+describe("auth.js actions", () => {
     let windowSpy = null;
     let originalWindow = null;
 
+    let action = null;
+    const testedAction = (context = {}, payload = {}) =>
+        auth.actions[action](context, payload);
+
     beforeEach(() => {
-        store = new Vuex.Store(auth);
-        [commit, state] = [store.commit, store.state];
         originalWindow = { ...window };
         windowSpy = jest.spyOn(global, "window", "get");
     });
@@ -105,5 +109,58 @@ describe("store/auth.js actions", () => {
 
         expect(store.state.user).toBe(null);
         done();
+    });
+});
+
+describe("auth.js getters", () => {
+    let getter = null;
+    const testedGetter = state => auth.getters[getter](state);
+
+    describe("authenticated", () => {
+        beforeEach(() => {
+            state.user = {
+                id: 1,
+                name: "testuser",
+                email: "test@example.com",
+            };
+        });
+
+        it("ログイン済のとき、isAuthenticatedゲッターにより正しい値を取得できるか", async done => {
+            getter = "isAuthenticated";
+            const isLogin = await testedGetter(state);
+
+            expect(isLogin).toBe(true);
+            done();
+        });
+
+        it("ログイン済のとき、usernameゲッターにより正しい値を取得できるか", async done => {
+            getter = "username";
+            const username = await testedGetter(state);
+
+            expect(username).toBe("testuser");
+            done();
+        });
+    });
+
+    describe("not authenticated", () => {
+        beforeEach(() => {
+            state.user = null;
+        });
+
+        it("未ログインのとき、isAuthenticatedゲッターにより正しい値を取得できるか", async done => {
+            getter = "isAuthenticated";
+            const isLogin = await testedGetter(state);
+
+            expect(isLogin).toBe(false);
+            done();
+        });
+
+        it("ログイン済のとき、usernameゲッターにより正しい値を取得できるか", async done => {
+            getter = "username";
+            const username = await testedGetter(state);
+
+            expect(username).toBe("");
+            done();
+        });
     });
 });
