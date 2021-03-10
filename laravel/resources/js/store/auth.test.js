@@ -90,4 +90,20 @@ describe("store/auth.js actions", () => {
         });
         done();
     });
+
+    it("logoutアクションによりstate.userに正しく値が保存されるか", async done => {
+        windowSpy.mockImplementation(() => ({
+            ...originalWindow,
+            axios: {
+                post: () => ({}),
+            },
+        }));
+
+        action = "logout";
+
+        await testedAction({ commit, state });
+
+        expect(store.state.user).toBe(null);
+        done();
+    });
 });
