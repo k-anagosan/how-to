@@ -45,5 +45,6 @@ module.exports = {
         "max-lines-per-function": "off",
         "no-shadow": "off",
         camelcase: "off",
+        "no-ternary": "off",
     },
 };

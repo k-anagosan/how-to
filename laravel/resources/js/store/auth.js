@@ -2,7 +2,10 @@ const state = {
     user: null,
 };
 
-const getters = {};
+const getters = {
+    isAuthenticated: state => Boolean(state.user),
+    username: state => (state.user ? state.user.name : ""),
+};
 
 const mutations = {
     setUser(state, user) {
