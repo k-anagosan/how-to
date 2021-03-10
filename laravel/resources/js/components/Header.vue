@@ -7,11 +7,13 @@
         How-to
       </RouterLink>
       <div class="hidden sm:flex justify-between items-center h-full">
-        <div class="px-4 h-full flex items-center">
+        <div v-if="isLogin" class="px-4 h-full flex items-center">
           <button>Submit</button>
         </div>
-        <span class="px-4 h-full flex items-center">username</span>
-        <div class="px-4 h-full flex items-center">
+        <span v-if="isLogin" class="px-4 h-full flex items-center">{{
+          username
+        }}</span>
+        <div v-else class="px-4 h-full flex items-center">
           <RouterLink to="/login" class="w-full"> Login / Register </RouterLink>
         </div>
       </div>
@@ -20,5 +22,14 @@
 </template>
 
 <script>
-export default {};
+export default {
+  computed: {
+    isLogin() {
+      return this.$store.getters["auth/isAuthenticated"];
+    },
+    username() {
+      return this.$store.getters["auth/username"];
+    },
+  },
+};
 </script>

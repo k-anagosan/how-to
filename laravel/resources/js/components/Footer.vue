@@ -2,13 +2,18 @@
   <footer
     class="flex absolute bottom-0 items-center justify-center h-20 sm:h-24 w-full bg-blue-400"
   >
-    <button class="px-4" @click="logout">Logout</button>
-    <RouterLink to="/login" class="px-4"> Login / Register </RouterLink>
+    <button v-if="isLogin" class="px-4" @click="logout">Logout</button>
+    <RouterLink v-else to="/login" class="px-4"> Login / Register </RouterLink>
   </footer>
 </template>
 
 <script>
 export default {
+  computed: {
+    isLogin() {
+      return this.$store.getters["auth/isAuthenticated"];
+    },
+  },
   methods: {
     async logout() {
       await this.$store.dispatch("auth/logout");
