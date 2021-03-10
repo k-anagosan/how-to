@@ -1,12 +1,15 @@
 import { mount, createLocalVue } from "@vue/test-utils";
 import VueRouter from "vue-router";
+import router from "@/router";
 
-import router from "@/router.js";
+import Vuex from "vuex";
+import store from "@/store/index";
+
 import App from "@/App.vue";
 import CardList from "@/pages/CardList.vue";
 import Login from "@/pages/Login.vue";
 
-import { randomStr } from "./utils.js";
+import { randomStr } from "./utils";
 
 describe("App.vue", () => {
     let wrapper = null;
@@ -14,10 +17,12 @@ describe("App.vue", () => {
     beforeEach(() => {
         const localVue = createLocalVue();
         localVue.use(VueRouter);
+        localVue.use(Vuex);
 
         wrapper = mount(App, {
             localVue,
             router,
+            store,
         });
     });
 

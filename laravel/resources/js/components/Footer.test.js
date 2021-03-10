@@ -10,7 +10,7 @@ import {
 
 import Footer from "@/components/Footer.vue";
 
-describe("VueRouter", () => {
+describe("Footer.vue のRouterLink", () => {
     const localVue = createLocalVue();
     localVue.use(VueRouter);
     let wrapper = null;
@@ -21,9 +21,16 @@ describe("VueRouter", () => {
             routes: [{ path: "/login" }],
         });
 
+        const $store = {
+            getters: {},
+        };
+
         wrapper = mount(Footer, {
             router,
             localVue,
+            mocks: {
+                $store,
+            },
         });
     });
 
@@ -38,7 +45,7 @@ describe("VueRouter", () => {
     });
 });
 
-describe("Vuex", () => {
+describe("Footer.vueのauthストア", () => {
     const localVue = createLocalVue();
     let authStoreMock = null;
     let wrapper = null;
@@ -49,6 +56,9 @@ describe("Vuex", () => {
             namespaced: true,
             actions: {
                 logout: jest.fn(),
+            },
+            getters: {
+                isAuthenticated: jest.fn().mockImplementation(() => true),
             },
         };
         const store = new Vuex.Store({
