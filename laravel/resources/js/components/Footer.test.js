@@ -61,9 +61,9 @@ describe("Vuex", () => {
             path: "/login",
         };
         const $router = {
-            push(url) {
+            push: jest.fn().mockImplementation(url => {
                 $route.path = url;
-            },
+            }),
         };
 
         wrapper = shallowMount(Footer, {
@@ -93,5 +93,15 @@ describe("Vuex", () => {
         expect(wrapper.vm.$route.path).toBe("/login");
         await wrapper.find("button").trigger("click");
         expect(wrapper.vm.$route.path).toBe("/");
+    });
+
+    it("'auth/logout'アクションが実行された場所が'/'であれば$router.push('/')が実行されない", async () => {
+        await wrapper.vm.$router.push("/");
+        expect(wrapper.vm.$route.path).toBe("/");
+        expect(wrapper.vm.$router.push).toHaveBeenCalledTimes(2);
+
+        await wrapper.find("button").trigger("click");
+        expect(wrapper.vm.$route.path).toBe("/");
+        expect(wrapper.vm.$router.push).toHaveBeenCalledTimes(2);
     });
 });
