@@ -8,36 +8,46 @@
 
 - フロントエンド
 
-  - `Vue.js 2.6.12`
-  - `Vuex 3.6.2`
-  - `Vue Router 3.5.1`
-  - `jest 26.6.3`
-  - `vue-testing-utils 1.1.3`
-  - `tailwindcss 2.0.3`
+| 使用ツール         | バージョン  
+| ----------------: | ---------- |
+| Vue.js            | v2.6       |
+| Vuex              | v3.6       |
+| Vue Router        | v3.5       |
+| jest              | v26.6      |
+| vue-testing-utils | v1.1       |
+| tailwindcss       | v2.0       |
 
 - バックエンド
 
-  - `PHP 7.4.15`
-  - `Laravel 6.20.16`
-  - `PHPUnit 9.5.2`
+| 使用ツール | バージョン |
+| ---------: | ---------- |
+| PHP        | v7.4       |
+| Laravel    | v6.20      |
+| PHPUnit    | v9.5       |
 
 - インフラ
 
-  - `Docker 20.10.2`
-  - `docekr-compose 1.27.4`
-  - `Nginx 1.18.0`
-  - `mysql 8.0.23`
+| 使用ツール     | バージョン |
+| -------------: | ---------- |
+| Docker         | v20.10     |
+| docekr-compose | v1.26      |
+| Nginx          | v1.18      |
+| mysql          | v8.0       |
 
 - リンター、フォーマッター
 
-  - `ESLint 7.20.0`
-  - `Prettier 2.2.1`
-  - `php_codesniffer 3.5.8`
-  - `php-cs-fixer 2.18.2`
+| 使用ツール      | バージョン |
+| --------------: | ---------- |
+| ESLint          | v7.20      |
+| Prettier        | v2.2       |
+| php_codesniffer | v3.5       |
+| php-cs-fixer    | v2.18      |
 
 - その他
 
-  - `Composer 2.0.9`
-  - `Node.js 14.15.5`
-  - `npm 6.14.11`
-  - `git 2.25.1`
+| 使用ツール | バージョン |
+| ---------: | ---------- |
+| Composer   | v2.0       |
+| Node.js    | v14.15     |
+| npm        | v6.14      |
+| git        | v2.25      |
