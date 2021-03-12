@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -99,10 +98,10 @@ class LoginApiTest extends TestCase
     /**
      * @test
      */
-    public function should_既にログイン済みの時に更にログイン処理にアクセスしたら302リダイレクト(): void
+    public function should_既にログイン済みの時に更にログイン処理にアクセスしたらuserエンドポイントへリダイレクトされる(): void
     {
         $response = $this->actingAs($this->user)->postJson(route('login'), $this->data);
 
-        $response->assertStatus(302)->assertRedirect(RouteServiceProvider::HOME);
+        $response->assertStatus(302)->assertRedirect(route("user"));
     }
 }
