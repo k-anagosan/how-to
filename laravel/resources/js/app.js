@@ -10,5 +10,8 @@ new Vue({
     router,
     store,
     components: { App },
+    async beforeCreate() {
+        await store.dispatch("auth/getCurrentUser");
+    },
     template: "<App />",
 });
