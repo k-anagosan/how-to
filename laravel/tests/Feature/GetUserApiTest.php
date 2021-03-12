@@ -4,13 +4,11 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class GetUserApiTest extends TestCase
 {
-    use RefreshDatabase,
-        WithFaker;
+    use RefreshDatabase;
 
     public function setUp(): void
     {
@@ -26,7 +24,12 @@ class GetUserApiTest extends TestCase
     {
         $response = $this->actingAs($this->user)->getJson(route('user'));
 
-        $response->assertStatus(200)->assertJson(['name' => $this->user['name']]);
+        $expected = [
+            'name' => $this->user['name'],
+            'email' => $this->user['email'],
+        ];
+
+        $response->assertStatus(200)->assertJson($expected);
     }
 
     /**
