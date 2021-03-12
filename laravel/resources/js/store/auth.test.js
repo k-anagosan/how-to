@@ -31,6 +31,7 @@ describe("auth.js actions", () => {
     });
     afterEach(() => {
         windowSpy.mockRestore();
+        action = null;
     });
 
     it("registerアクションによりstate.userに正しく値が保存されるか", async done => {
@@ -104,6 +105,50 @@ describe("auth.js actions", () => {
         }));
 
         action = "logout";
+
+        await testedAction({ commit, state });
+
+        expect(store.state.user).toBe(null);
+        done();
+    });
+
+    it("getUserアクションによりセッションがログイン済みのものであればstate.userにユーザー情報が保存されるか", async done => {
+        windowSpy.mockImplementation(() => ({
+            ...originalWindow,
+            axios: {
+                get: () => ({
+                    data: {
+                        name: "test",
+                        email: "test@example.com",
+                        id: 1,
+                    },
+                }),
+            },
+        }));
+
+        action = "getCurrentUser";
+
+        await testedAction({ commit, state });
+
+        expect(store.state.user).toEqual({
+            name: "test",
+            email: "test@example.com",
+            id: expect.anything(),
+        });
+        done();
+    });
+
+    it("getUserアクションによりセッションが未ログインのものであればstate.userにnullが保存されるか", async done => {
+        windowSpy.mockImplementation(() => ({
+            ...originalWindow,
+            axios: {
+                get: () => ({
+                    data: null,
+                }),
+            },
+        }));
+
+        action = "getCurrentUser";
 
         await testedAction({ commit, state });
 
