@@ -8,6 +8,8 @@ services:
     volumes:
       - php-fpm-socket:/var/run/php-fpm
       - ./laravel:/work/laravel
+    depends_on:
+      - db
 
   web:
     build: ./infra/nginx
@@ -17,6 +19,8 @@ services:
     volumes:
       - php-fpm-socket:/var/run/php-fpm
       - ./laravel:/work/laravel
+    depends_on:
+      - db
 
   db:
     build: ./infra/mysql
