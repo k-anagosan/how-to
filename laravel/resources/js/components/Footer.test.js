@@ -115,3 +115,58 @@ describe("Footer.vueのauthストア", () => {
         expect(wrapper.vm.$router.push).toHaveBeenCalledTimes(2);
     });
 });
+
+describe("Footer.vue v-if", () => {
+    const localVue = createLocalVue();
+    let authStoreMock = null;
+    let wrapper = null;
+    const isAuthenticated = jest
+        .fn()
+        .mockReturnValueOnce(false)
+        .mockReturnValueOnce(true);
+
+    beforeEach(() => {
+        localVue.use(Vuex);
+
+        authStoreMock = {
+            namespaced: true,
+            getters: {
+                isAuthenticated,
+            },
+        };
+        const store = new Vuex.Store({
+            modules: {
+                auth: authStoreMock,
+            },
+        });
+
+        const $route = {
+            path: "",
+        };
+        const $router = {
+            push: jest.fn(),
+        };
+
+        wrapper = shallowMount(Footer, {
+            store,
+            localVue,
+            mocks: {
+                $router,
+                $route,
+            },
+            stubs: {
+                RouterLink: RouterLinkStub,
+            },
+        });
+    });
+
+    it("ログインしてないときはログイン/登録リンクのみが表示", () => {
+        expect(wrapper.find("button").exists()).toBe(false);
+        expect(wrapper.findComponent(RouterLinkStub).exists()).toBe(true);
+    });
+
+    it("ログイン中はログアウトボタンのみが表示", () => {
+        expect(wrapper.find("button").exists()).toBe(true);
+        expect(wrapper.findComponent(RouterLinkStub).exists()).toBe(false);
+    });
+});

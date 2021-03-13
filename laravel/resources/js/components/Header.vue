@@ -7,14 +7,18 @@
         How-to
       </RouterLink>
       <div class="hidden sm:flex justify-between items-center h-full">
-        <div v-if="isLogin" class="px-4 h-full flex items-center">
-          <button>Submit</button>
+        <div v-if="isLogin" class="submit-button px-4 h-full flex items-center">
+          <button class="submit-button">Submit</button>
         </div>
-        <span v-if="isLogin" class="px-4 h-full flex items-center">{{
-          username
-        }}</span>
+        <span
+          v-if="isLogin"
+          class="header-username px-4 h-full flex items-center"
+          >{{ username }}</span
+        >
         <div v-else class="px-4 h-full flex items-center">
-          <RouterLink to="/login" class="w-full"> Login / Register </RouterLink>
+          <RouterLink to="/login" class="login-link w-full">
+            Login / Register
+          </RouterLink>
         </div>
       </div>
     </nav>
