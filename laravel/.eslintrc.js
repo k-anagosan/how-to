@@ -47,5 +47,6 @@ module.exports = {
         camelcase: "off",
         "no-ternary": "off",
         "max-statements": "off",
+        "no-empty-function": "off",
     },
 };
