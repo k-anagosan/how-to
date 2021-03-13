@@ -1,4 +1,4 @@
-import { mount, createLocalVue } from "@vue/test-utils";
+import { shallowMount, mount, createLocalVue } from "@vue/test-utils";
 import VueRouter from "vue-router";
 import router from "@/router";
 
@@ -13,12 +13,11 @@ import { randomStr } from "./utils";
 
 describe("App.vue", () => {
     let wrapper = null;
+    const localVue = createLocalVue();
+    localVue.use(VueRouter);
+    localVue.use(Vuex);
 
     beforeEach(() => {
-        const localVue = createLocalVue();
-        localVue.use(VueRouter);
-        localVue.use(Vuex);
-
         wrapper = mount(App, {
             localVue,
             router,
@@ -40,11 +39,52 @@ describe("App.vue", () => {
         });
         expect(wrapper.findComponent(CardList).exists()).toBe(true);
     });
+
     it("/loginにアクセスしたらLoginを表示する", async () => {
         await wrapper.vm.$router.push("/login").catch(err => {
             console.log(err);
         });
         expect(wrapper.findComponent(Login).exists()).toBe(true);
+    });
+
+    it("ログイン中に/loginにアクセスしたら/にリダイレクトされる", async () => {
+        const store = {
+            getters: {
+                "auth/isAuthenticated": true,
+            },
+        };
+
+        const routes = [
+            {
+                path: "/login",
+                beforeEnter(to, from, next) {
+                    if (store.getters["auth/isAuthenticated"]) {
+                        next("/");
+                    } else {
+                        next();
+                    }
+                },
+            },
+        ];
+
+        const router = new VueRouter({
+            mode: "history",
+            routes,
+        });
+
+        wrapper = shallowMount(App, {
+            localVue,
+            router,
+            mocks: {
+                store,
+            },
+        });
+
+        expect(wrapper.vm.$route.path).toBe("/");
+
+        await wrapper.vm.$router.push("/login").catch(() => {});
+
+        expect(wrapper.vm.$route.path).toBe("/");
     });
 
     it("正規のuriでなければ何も表示しない", async () => {
