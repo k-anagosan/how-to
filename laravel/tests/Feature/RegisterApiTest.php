@@ -186,12 +186,12 @@ class RegisterApiTest extends TestCase
     /**
      * @test
      */
-    public function should_登録が完了したユーザーが再度登録を行おうとすると302リダイレクトされる(): void
+    public function should_登録が完了したユーザーが再度登録を行おうとするとuserエンドポイントへリダイレクトされる(): void
     {
         $user = $this->createRegisteredUser();
         $response = $this->actingAs($user)->postJson(route('register'), $this->data);
 
-        $response->assertStatus(302)->assertRedirect(RouteServiceProvider::HOME);
+        $response->assertStatus(302)->assertRedirect(route("user"));
     }
 
     /**

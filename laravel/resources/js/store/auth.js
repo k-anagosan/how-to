@@ -27,6 +27,13 @@ const actions = {
         await window.axios.post("/api/logout");
         context.commit("setUser", null);
     },
+
+    async getCurrentUser(context) {
+        const response = await window.axios.get("/api/user");
+        const user = response.data || null;
+
+        context.commit("setUser", user);
+    },
 };
 
 export default {
