@@ -1,29 +1,25 @@
 import Vuex from "vuex";
 import { createLocalVue } from "@vue/test-utils";
 import "@/bootstrap";
-import { randomStr } from "@/utils";
+import { randomStr, OK, CREATED } from "@/utils";
 
 import auth from "@/store/auth";
+import error from "@/store/error";
 
 const localVue = createLocalVue();
 localVue.use(Vuex);
 
 let store = null;
-let commit = null;
-let state = null;
 
 beforeEach(() => {
-    store = new Vuex.Store(auth);
-    [commit, state] = [store.commit, store.state];
+    store = new Vuex.Store({ modules: { auth, error } });
 });
+const testedAction = (action, payload = {}) =>
+    store.dispatch(`auth/${action}`, payload);
 
 describe("auth.js actions", () => {
     let windowSpy = null;
     let originalWindow = null;
-
-    let action = null;
-    const testedAction = (context = {}, payload = {}) =>
-        auth.actions[action](context, payload);
 
     beforeEach(() => {
         originalWindow = { ...window };
@@ -31,7 +27,7 @@ describe("auth.js actions", () => {
     });
     afterEach(() => {
         windowSpy.mockRestore();
-        action = null;
+        store.commit("auth/setUser", null, { root: true });
     });
 
     it("registerアクションによりstate.userに正しく値が保存されるか", async done => {
@@ -44,11 +40,11 @@ describe("auth.js actions", () => {
                         email: data.email,
                         id: 1,
                     },
+                    status: CREATED,
                 }),
             },
         }));
 
-        action = "register";
         const data = {
             name: randomStr(),
             email: `${randomStr()}@${randomStr()}.com`,
@@ -56,9 +52,9 @@ describe("auth.js actions", () => {
             password_confirmation: "password",
         };
 
-        await testedAction({ commit, state }, data);
+        await testedAction("register", data);
 
-        expect(store.state.user).toEqual({
+        expect(store.state.auth.user).toEqual({
             email: data.email,
             id: expect.anything(),
             name: data.name,
@@ -76,19 +72,19 @@ describe("auth.js actions", () => {
                         email: data.email,
                         id: 1,
                     },
+                    status: OK,
                 }),
             },
         }));
 
-        action = "login";
         const data = {
             email: `${randomStr()}@${randomStr()}.com`,
             password: "password",
         };
 
-        await testedAction({ commit, state }, data);
+        await testedAction("login", data);
 
-        expect(store.state.user).toEqual({
+        expect(store.state.auth.user).toEqual({
             email: data.email,
             id: expect.anything(),
             name: "testuser",
@@ -100,15 +96,13 @@ describe("auth.js actions", () => {
         windowSpy.mockImplementation(() => ({
             ...originalWindow,
             axios: {
-                post: () => ({}),
+                post: () => ({ status: OK }),
             },
         }));
 
-        action = "logout";
+        await testedAction("logout");
 
-        await testedAction({ commit, state });
-
-        expect(store.state.user).toBe(null);
+        expect(store.state.auth.user).toBe(null);
         done();
     });
 
@@ -122,15 +116,14 @@ describe("auth.js actions", () => {
                         email: "test@example.com",
                         id: 1,
                     },
+                    status: OK,
                 }),
             },
         }));
 
-        action = "getCurrentUser";
+        await testedAction("getCurrentUser");
 
-        await testedAction({ commit, state });
-
-        expect(store.state.user).toEqual({
+        expect(store.state.auth.user).toEqual({
             name: "test",
             email: "test@example.com",
             id: expect.anything(),
@@ -143,69 +136,60 @@ describe("auth.js actions", () => {
             ...originalWindow,
             axios: {
                 get: () => ({
-                    data: null,
+                    data: "",
+                    status: OK,
                 }),
             },
         }));
 
-        action = "getCurrentUser";
+        await testedAction("getCurrentUser");
 
-        await testedAction({ commit, state });
-
-        expect(store.state.user).toBe(null);
+        expect(store.state.auth.user).toBe(null);
         done();
     });
 });
 
 describe("auth.js getters", () => {
-    let getter = null;
-    const testedGetter = state => auth.getters[getter](state);
+    const testedGetter = getter => store.getters[`auth/${getter}`];
+    const state = { store };
 
     describe("authenticated", () => {
         beforeEach(() => {
-            state.user = {
+            store.commit("auth/setUser", {
                 id: 1,
                 name: "testuser",
                 email: "test@example.com",
-            };
+            });
         });
 
-        it("ログイン済のとき、isAuthenticatedゲッターにより正しい値を取得できるか", async done => {
-            getter = "isAuthenticated";
-            const isLogin = await testedGetter(state);
+        it("ログイン済のとき、isAuthenticatedゲッターにより正しい値を取得できるか", () => {
+            const isLogin = testedGetter("isAuthenticated", state);
 
             expect(isLogin).toBe(true);
-            done();
         });
 
-        it("ログイン済のとき、usernameゲッターにより正しい値を取得できるか", async done => {
-            getter = "username";
-            const username = await testedGetter(state);
+        it("ログイン済のとき、usernameゲッターにより正しい値を取得できるか", () => {
+            const username = testedGetter("username", state);
 
             expect(username).toBe("testuser");
-            done();
         });
     });
 
     describe("not authenticated", () => {
         beforeEach(() => {
-            state.user = null;
+            store.commit("auth/setUser", null);
         });
 
-        it("未ログインのとき、isAuthenticatedゲッターにより正しい値を取得できるか", async done => {
-            getter = "isAuthenticated";
-            const isLogin = await testedGetter(state);
+        it("未ログインのとき、isAuthenticatedゲッターにより正しい値を取得できるか", () => {
+            const isLogin = testedGetter("isAuthenticated", state);
 
             expect(isLogin).toBe(false);
-            done();
         });
 
-        it("ログイン済のとき、usernameゲッターにより正しい値を取得できるか", async done => {
-            getter = "username";
-            const username = await testedGetter(state);
+        it("ログイン済のとき、usernameゲッターにより正しい値を取得できるか", () => {
+            const username = testedGetter("username", state);
 
             expect(username).toBe("");
-            done();
         });
     });
 });
