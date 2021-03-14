@@ -48,5 +48,6 @@ module.exports = {
         "no-ternary": "off",
         "max-statements": "off",
         "no-empty-function": "off",
+        "max-lines": "off",
     },
 };
