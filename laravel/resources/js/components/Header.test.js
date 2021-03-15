@@ -49,7 +49,6 @@ describe("Header.vue のRouterLink", () => {
 
     it("'Login / Register'をクリックしたら'/login'にアクセスされる", async () => {
         expect(wrapper.vm.$route.path).not.toBe("/login");
-        console.log(wrapper.find(".hidden").html());
         await wrapper.find("a.login-link").trigger("click");
         expect(wrapper.vm.$route.path).toBe("/login");
     });
