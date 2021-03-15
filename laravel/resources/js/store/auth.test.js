@@ -1,7 +1,13 @@
 import Vuex from "vuex";
 import { createLocalVue } from "@vue/test-utils";
 import "@/bootstrap";
-import { randomStr, OK, CREATED, INTERNAL_SERVER_ERROR } from "@/utils";
+import {
+    randomStr,
+    OK,
+    CREATED,
+    INTERNAL_SERVER_ERROR,
+    UNPROCESSABLE_ENTITY,
+} from "@/utils";
 
 import auth from "@/store/auth";
 
@@ -169,7 +175,7 @@ describe("auth.js actions", () => {
         });
     });
 
-    describe("API request failed", () => {
+    describe("API request failed with status code 500", () => {
         let data = null;
         beforeEach(() => {
             setErrorCode.mock.calls = [];
@@ -282,6 +288,81 @@ describe("auth.js actions", () => {
                 );
                 done();
             });
+        });
+    });
+
+    describe("API request failed with status code 422", () => {
+        let data = null;
+        let validationErrorMessage = null;
+        beforeEach(() => {
+            validationErrorMessage = {
+                name: [randomStr(), randomStr()],
+                email: [randomStr(), randomStr()],
+                password: [randomStr(), randomStr()],
+            };
+        });
+
+        it("register アクションに422エラーで失敗した時registerErorrMessageに正しく値が保存されるか", async done => {
+            windowSpy.mockImplementation(() => ({
+                ...originalWindow,
+                axios: {
+                    post: () => ({
+                        status: UNPROCESSABLE_ENTITY,
+                        data: {
+                            errors: validationErrorMessage,
+                        },
+                    }),
+                },
+            }));
+
+            data = {
+                name: randomStr(),
+                email: `${randomStr()}@${randomStr()}.com`,
+                password: "password",
+                password_confirmation: "password",
+            };
+            expect(store.state.auth.user).toBe(null);
+            expect(store.state.auth.apiIsSuccess).toBe(null);
+            expect(store.state.auth.registerValidationMessage).toBe(null);
+            await testedAction("register", data);
+
+            expect(store.state.auth.user).toBe(null);
+            expect(store.state.auth.apiIsSuccess).toBe(false);
+            expect(store.state.auth.registerValidationMessage).toEqual(
+                validationErrorMessage
+            );
+            done();
+        });
+
+        it("login アクションに422エラーで失敗した時loginErrorMessageに正しく値が保存されるか", async done => {
+            delete validationErrorMessage.name;
+            windowSpy.mockImplementation(() => ({
+                ...originalWindow,
+                axios: {
+                    post: () => ({
+                        status: UNPROCESSABLE_ENTITY,
+                        data: {
+                            errors: validationErrorMessage,
+                        },
+                    }),
+                },
+            }));
+
+            data = {
+                email: `${randomStr()}@${randomStr()}.com`,
+                password: "password",
+            };
+            expect(store.state.auth.user).toBe(null);
+            expect(store.state.auth.apiIsSuccess).toBe(null);
+            expect(store.state.auth.loginValidationMessage).toBe(null);
+            await testedAction("login", data);
+
+            expect(store.state.auth.user).toBe(null);
+            expect(store.state.auth.apiIsSuccess).toBe(false);
+            expect(store.state.auth.loginValidationMessage).toBe(
+                validationErrorMessage
+            );
+            done();
         });
     });
 });
