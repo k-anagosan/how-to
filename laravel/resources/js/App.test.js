@@ -1,4 +1,4 @@
-import { shallowMount, mount, createLocalVue } from "@vue/test-utils";
+import { mount, createLocalVue } from "@vue/test-utils";
 import VueRouter from "vue-router";
 import router from "@/router";
 
@@ -9,7 +9,7 @@ import App from "@/App.vue";
 import CardList from "@/pages/CardList.vue";
 import Login from "@/pages/Login.vue";
 
-import { randomStr } from "./utils";
+import { randomStr, INTERNAL_SERVER_ERROR } from "./utils";
 
 describe("App.vue", () => {
     let wrapper = null;
@@ -27,6 +27,7 @@ describe("App.vue", () => {
 
     afterEach(() => {
         wrapper.destroy();
+        wrapper.vm.$router.push("/").catch(() => {});
     });
 
     it("/にアクセスしたらCardListを表示する", async () => {
@@ -48,37 +49,7 @@ describe("App.vue", () => {
     });
 
     it("ログイン中に/loginにアクセスしたら/にリダイレクトされる", async () => {
-        const store = {
-            getters: {
-                "auth/isAuthenticated": true,
-            },
-        };
-
-        const routes = [
-            {
-                path: "/login",
-                beforeEnter(to, from, next) {
-                    if (store.getters["auth/isAuthenticated"]) {
-                        next("/");
-                    } else {
-                        next();
-                    }
-                },
-            },
-        ];
-
-        const router = new VueRouter({
-            mode: "history",
-            routes,
-        });
-
-        wrapper = shallowMount(App, {
-            localVue,
-            router,
-            mocks: {
-                store,
-            },
-        });
+        wrapper.vm.$store.commit("auth/setUser", true);
 
         expect(wrapper.vm.$route.path).toBe("/");
 
@@ -95,5 +66,16 @@ describe("App.vue", () => {
         });
         expect(wrapper.findComponent(Login).exists()).toBe(false);
         expect(wrapper.findComponent(CardList).exists()).toBe(false);
+    });
+
+    it("ステータスコード500が確認されたら/500にリダイレクト", async () => {
+        expect(wrapper.vm.$route.path).toBe("/");
+
+        await wrapper.vm.$store.commit(
+            "error/setErrorCode",
+            INTERNAL_SERVER_ERROR
+        );
+
+        expect(wrapper.vm.$route.path).toBe("/500");
     });
 });

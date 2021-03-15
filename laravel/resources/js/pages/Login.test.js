@@ -61,43 +61,87 @@ describe("Login.vue", () => {
         localVue.use(Vuex);
         localVue.use(VueRouter);
 
-        let authStoreMock = null;
         let wrapper = null;
+        let authStoreMock = null;
 
-        beforeEach(() => {
-            authStoreMock = {
-                namespaced: true,
-                actions: {
-                    register: jest.fn(),
-                    login: jest.fn(),
-                },
-            };
-            const store = new Vuex.Store({
-                modules: {
-                    auth: authStoreMock,
-                },
-            });
-            const router = new VueRouter({
-                mode: "history",
-                routes: [{ path: "/" }],
-            });
-            wrapper = shallowMount(Login, { store, router, localVue });
+        const router = new VueRouter({
+            mode: "history",
+            routes: [{ path: "/" }],
         });
 
-        it("#register-formを送信したらauth/registerアクションが実行される", async () => {
-            await wrapper.vm.$router.push("/login");
+        describe("正常終了", () => {
+            beforeEach(async () => {
+                authStoreMock = {
+                    namespaced: true,
+                    actions: {
+                        register: jest.fn(),
+                        login: jest.fn(),
+                    },
+                    state: { apiIsSuccess: true },
+                };
+                const store = new Vuex.Store({
+                    modules: {
+                        auth: authStoreMock,
+                    },
+                });
 
-            wrapper.find("#register-form").trigger("submit");
+                wrapper = shallowMount(Login, { store, router, localVue });
+                await wrapper.vm.$router.push("/login").catch(() => {});
+            });
 
-            expect(authStoreMock.actions.register).toHaveBeenCalled();
+            it("#register-formを送信したらauth/registerアクションが実行される", async () => {
+                expect(wrapper.vm.$route.path).toBe("/login");
+                await wrapper.find("#register-form").trigger("submit");
+
+                expect(authStoreMock.actions.register).toHaveBeenCalled();
+
+                expect(wrapper.vm.$route.path).toBe("/");
+            });
+
+            it("#login-formを送信したらauth/registerアクションが実行される", async () => {
+                expect(wrapper.vm.$route.path).toBe("/login");
+                await wrapper.find("#login-form").trigger("submit");
+
+                expect(authStoreMock.actions.login).toHaveBeenCalled();
+                expect(wrapper.vm.$route.path).toBe("/");
+            });
         });
 
-        it("#login-formを送信したらauth/registerアクションが実行される", async () => {
-            await wrapper.vm.$router.push("/login");
+        describe("異常終了", () => {
+            beforeEach(async () => {
+                authStoreMock = {
+                    namespaced: true,
+                    actions: {
+                        register: jest.fn(),
+                        login: jest.fn(),
+                    },
+                    state: { apiIsSuccess: false },
+                };
+                const store = new Vuex.Store({
+                    modules: {
+                        auth: authStoreMock,
+                    },
+                });
 
-            wrapper.find("#login-form").trigger("submit");
+                wrapper = shallowMount(Login, { store, router, localVue });
+                await wrapper.vm.$router.push("/login").catch(() => {});
+            });
+            it("registerの結果422エラーの時はリダイレクトしない", async () => {
+                expect(wrapper.vm.$route.path).toBe("/login");
 
-            expect(authStoreMock.actions.login).toHaveBeenCalled();
+                await wrapper.find("#register-form").trigger("submit");
+
+                expect(authStoreMock.actions.register).toHaveBeenCalled();
+                expect(wrapper.vm.$route.path).toBe("/login");
+            });
+            it("loginの結果422エラーの時はリダイレクトしない", async () => {
+                expect(wrapper.vm.$route.path).toBe("/login");
+
+                await wrapper.find("#login-form").trigger("submit");
+
+                expect(authStoreMock.actions.login).toHaveBeenCalled();
+                expect(wrapper.vm.$route.path).toBe("/login");
+            });
         });
     });
 });
