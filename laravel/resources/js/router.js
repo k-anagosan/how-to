@@ -5,6 +5,9 @@ import store from "./store/index";
 
 import CardList from "./pages/CardList.vue";
 import Login from "./pages/Login.vue";
+import InternalServerError from "./pages/errors/InternalServerError.vue";
+
+import { INTERNAL_SERVER_ERROR } from "./utils";
 
 Vue.use(VueRouter);
 
@@ -21,6 +24,17 @@ const routes = [
                 next("/");
             } else {
                 next();
+            }
+        },
+    },
+    {
+        path: "/500",
+        component: InternalServerError,
+        beforeEnter(to, from, next) {
+            if (store.state.error.errorCode === INTERNAL_SERVER_ERROR) {
+                next();
+            } else {
+                next("/");
             }
         },
     },
