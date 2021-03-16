@@ -10,35 +10,58 @@ import {
 
 import Footer from "@/components/Footer.vue";
 
+const localVue = createLocalVue();
+localVue.use(Vuex);
+localVue.use(VueRouter);
+
+const authStoreMock = {
+    namespaced: true,
+    actions: {
+        logout: jest.fn(),
+    },
+    getters: {
+        isAuthenticated: jest.fn().mockImplementation(() => true),
+    },
+    state: {
+        apiIsSuccess: true,
+    },
+    mutations: {
+        setApiIsSuccess: (state, apiIsSuccess) => {
+            state.apiIsSuccess = apiIsSuccess;
+        },
+    },
+};
+
+const router = new VueRouter({
+    mode: "history",
+    routes: [{ path: "/login" }],
+});
+
 describe("Footer.vue のRouterLink", () => {
-    const localVue = createLocalVue();
-    localVue.use(VueRouter);
     let wrapper = null;
 
     beforeEach(() => {
-        const router = new VueRouter({
-            mode: "history",
-            routes: [{ path: "/login" }],
+        authStoreMock.getters.isAuthenticated = jest.fn(() => false);
+        const store = new Vuex.Store({
+            modules: {
+                auth: authStoreMock,
+            },
         });
-
-        const $store = {
-            getters: {},
-        };
 
         wrapper = mount(Footer, {
             router,
             localVue,
-            mocks: {
-                $store,
-            },
+            store,
         });
     });
 
     afterEach(() => {
+        authStoreMock.getters.isAuthenticated = jest.fn(() => true);
         wrapper.destroy();
     });
 
     it("'Login / Register'をクリックしたら'/login'にアクセスされる", async () => {
+        console.log(wrapper.html());
         expect(wrapper.vm.$route.path).not.toBe("/login");
         await wrapper.find("a").trigger("click");
         expect(wrapper.vm.$route.path).toBe("/login");
@@ -46,52 +69,34 @@ describe("Footer.vue のRouterLink", () => {
 });
 
 describe("Footer.vueのauthストア", () => {
-    const localVue = createLocalVue();
-    let authStoreMock = null;
     let wrapper = null;
+    let spyPush = null;
 
     beforeEach(async () => {
-        localVue.use(Vuex);
-        authStoreMock = {
-            namespaced: true,
-            actions: {
-                logout: jest.fn(),
-            },
-            getters: {
-                isAuthenticated: jest.fn().mockImplementation(() => true),
-            },
-        };
         const store = new Vuex.Store({
             modules: {
                 auth: authStoreMock,
             },
         });
 
-        const $route = {
-            path: "/login",
-        };
-        const $router = {
-            push: jest.fn().mockImplementation(url => {
-                $route.path = url;
-            }),
-        };
-
         wrapper = shallowMount(Footer, {
             store,
             localVue,
-            mocks: {
-                $router,
-                $route,
-            },
+            router,
             stubs: {
                 RouterLink: RouterLinkStub,
             },
         });
-        await wrapper.vm.$router.push("/login");
+
+        spyPush = jest.spyOn(wrapper.vm.$router, "push");
+
+        await wrapper.vm.$router.push("/login").catch(() => {});
+        spyPush.mock.calls = [];
     });
 
     afterEach(() => {
         wrapper.destroy();
+        authStoreMock.actions.logout.mock.calls = [];
     });
 
     it("'logout'がクリックされたら'auth/logout'アクションが実行される", async () => {
@@ -101,71 +106,80 @@ describe("Footer.vueのauthストア", () => {
 
     it("'auth/logout'アクションが実行された後、'/'へリダイレクト", async () => {
         expect(wrapper.vm.$route.path).toBe("/login");
+        expect(authStoreMock.actions.logout).not.toHaveBeenCalled();
+
         await wrapper.find("button").trigger("click");
+        expect(authStoreMock.actions.logout).toHaveBeenCalled();
         expect(wrapper.vm.$route.path).toBe("/");
     });
 
     it("'auth/logout'アクションが実行された場所が'/'であれば$router.push('/')が実行されない", async () => {
         await wrapper.vm.$router.push("/");
         expect(wrapper.vm.$route.path).toBe("/");
-        expect(wrapper.vm.$router.push).toHaveBeenCalledTimes(2);
+        expect(spyPush).toHaveBeenCalledTimes(1);
+        expect(authStoreMock.actions.logout).not.toHaveBeenCalled();
 
         await wrapper.find("button").trigger("click");
         expect(wrapper.vm.$route.path).toBe("/");
-        expect(wrapper.vm.$router.push).toHaveBeenCalledTimes(2);
+        expect(spyPush).toHaveBeenCalledTimes(1);
+        expect(authStoreMock.actions.logout).toHaveBeenCalled();
+    });
+
+    it("'auth/logout'アクションが失敗したら$router.push('/')が実行されない", async () => {
+        wrapper.vm.$store.commit("auth/setApiIsSuccess", false);
+        expect(wrapper.vm.$store.state.auth.apiIsSuccess).toBe(false);
+
+        expect(wrapper.vm.$route.path).toBe("/login");
+        expect(authStoreMock.actions.logout).not.toHaveBeenCalled();
+
+        await wrapper.find("button").trigger("click");
+        expect(authStoreMock.actions.logout).toHaveBeenCalled();
+        expect(wrapper.vm.$route.path).toBe("/login");
     });
 });
 
 describe("Footer.vue v-if", () => {
-    const localVue = createLocalVue();
-    let authStoreMock = null;
     let wrapper = null;
-    const isAuthenticated = jest
-        .fn()
-        .mockReturnValueOnce(false)
-        .mockReturnValueOnce(true);
 
-    beforeEach(() => {
-        localVue.use(Vuex);
+    afterEach(() => {
+        authStoreMock.getters.isAuthenticated = jest.fn(() => true);
+    });
 
-        authStoreMock = {
-            namespaced: true,
-            getters: {
-                isAuthenticated,
-            },
-        };
+    it("ログインしてないときはログイン/登録リンクのみが表示", () => {
+        authStoreMock.getters.isAuthenticated = jest.fn(() => false);
         const store = new Vuex.Store({
             modules: {
                 auth: authStoreMock,
             },
         });
 
-        const $route = {
-            path: "",
-        };
-        const $router = {
-            push: jest.fn(),
-        };
-
         wrapper = shallowMount(Footer, {
             store,
             localVue,
-            mocks: {
-                $router,
-                $route,
-            },
+            router,
             stubs: {
                 RouterLink: RouterLinkStub,
             },
         });
-    });
-
-    it("ログインしてないときはログイン/登録リンクのみが表示", () => {
         expect(wrapper.find("button").exists()).toBe(false);
         expect(wrapper.findComponent(RouterLinkStub).exists()).toBe(true);
     });
 
     it("ログイン中はログアウトボタンのみが表示", () => {
+        const store = new Vuex.Store({
+            modules: {
+                auth: authStoreMock,
+            },
+        });
+
+        wrapper = shallowMount(Footer, {
+            store,
+            localVue,
+            router,
+            stubs: {
+                RouterLink: RouterLinkStub,
+            },
+        });
         expect(wrapper.find("button").exists()).toBe(true);
         expect(wrapper.findComponent(RouterLinkStub).exists()).toBe(false);
     });
