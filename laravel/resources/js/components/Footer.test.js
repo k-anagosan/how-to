@@ -25,6 +25,11 @@ const authStoreMock = {
     state: {
         apiIsSuccess: true,
     },
+    mutations: {
+        setApiIsSuccess: (state, apiIsSuccess) => {
+            state.apiIsSuccess = apiIsSuccess;
+        },
+    },
 };
 
 const router = new VueRouter({
@@ -91,6 +96,7 @@ describe("Footer.vueのauthストア", () => {
 
     afterEach(() => {
         wrapper.destroy();
+        authStoreMock.actions.logout.mock.calls = [];
     });
 
     it("'logout'がクリックされたら'auth/logout'アクションが実行される", async () => {
@@ -100,7 +106,10 @@ describe("Footer.vueのauthストア", () => {
 
     it("'auth/logout'アクションが実行された後、'/'へリダイレクト", async () => {
         expect(wrapper.vm.$route.path).toBe("/login");
+        expect(authStoreMock.actions.logout).not.toHaveBeenCalled();
+
         await wrapper.find("button").trigger("click");
+        expect(authStoreMock.actions.logout).toHaveBeenCalled();
         expect(wrapper.vm.$route.path).toBe("/");
     });
 
@@ -108,10 +117,24 @@ describe("Footer.vueのauthストア", () => {
         await wrapper.vm.$router.push("/");
         expect(wrapper.vm.$route.path).toBe("/");
         expect(spyPush).toHaveBeenCalledTimes(1);
+        expect(authStoreMock.actions.logout).not.toHaveBeenCalled();
 
         await wrapper.find("button").trigger("click");
         expect(wrapper.vm.$route.path).toBe("/");
         expect(spyPush).toHaveBeenCalledTimes(1);
+        expect(authStoreMock.actions.logout).toHaveBeenCalled();
+    });
+
+    it("'auth/logout'アクションが失敗したら$router.push('/')が実行されない", async () => {
+        wrapper.vm.$store.commit("auth/setApiIsSuccess", false);
+        expect(wrapper.vm.$store.state.auth.apiIsSuccess).toBe(false);
+
+        expect(wrapper.vm.$route.path).toBe("/login");
+        expect(authStoreMock.actions.logout).not.toHaveBeenCalled();
+
+        await wrapper.find("button").trigger("click");
+        expect(authStoreMock.actions.logout).toHaveBeenCalled();
+        expect(wrapper.vm.$route.path).toBe("/login");
     });
 });
 
