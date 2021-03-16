@@ -32,12 +32,14 @@
     </ul>
     <div v-show="tab === 1" class="pt-4">
       <form id="login-form" @submit.prevent="login">
+        <ValidationMessage :errors="loginErrors" element="email" />
         <Input
           id="login-email"
           v-model="loginForm.email"
           type="text"
           label="Email"
         />
+        <ValidationMessage :errors="loginErrors" element="password" />
         <Input
           id="login-password"
           v-model="loginForm.password"
@@ -51,18 +53,21 @@
     </div>
     <div v-show="tab === 2" class="pt-4">
       <form id="register-form" @submit.prevent="register">
+        <ValidationMessage :errors="registerErrors" element="name" />
         <Input
           id="username"
           v-model="registerForm.name"
           type="text"
           label="Username"
         />
+        <ValidationMessage :errors="registerErrors" element="email" />
         <Input
           id="email"
           v-model="registerForm.email"
           type="text"
           label="Email"
         />
+        <ValidationMessage :errors="registerErrors" element="password" />
         <Input
           id="password"
           v-model="registerForm.password"
@@ -85,11 +90,14 @@
 <script>
 import Input from "../components/Input.vue";
 import Button from "../components/SubmitButton.vue";
+import ValidationMessage from "../components/ValidationMessage.vue";
+import { mapState } from "vuex";
 
 export default {
   components: {
     Input,
     Button,
+    ValidationMessage,
   },
   data() {
     return {
@@ -108,9 +116,19 @@ export default {
   },
 
   computed: {
-    apiIsSuccess() {
-      return this.$store.state.auth.apiIsSuccess;
+    ...mapState({
+      apiIsSuccess: state => state.auth.apiIsSuccess,
+      loginErrors: state => state.auth.loginValidationMessage,
+      registerErrors: state => state.auth.registerValidationMessage,
+    }),
+  },
+  watch: {
+    tab() {
+      this.clearMessage();
     },
+  },
+  created() {
+    this.clearMessage();
   },
   methods: {
     async login() {
@@ -124,6 +142,10 @@ export default {
       if (this.apiIsSuccess) {
         this.$router.push("/");
       }
+    },
+    clearMessage() {
+      this.$store.commit("auth/setLoginValidationMessage", null);
+      this.$store.commit("auth/setRegisterValidationMessage", null);
     },
   },
 };

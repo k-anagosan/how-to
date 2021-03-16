@@ -49,5 +49,6 @@ module.exports = {
         "max-statements": "off",
         "no-empty-function": "off",
         "max-lines": "off",
+        "prefer-destructuring": "off",
     },
 };

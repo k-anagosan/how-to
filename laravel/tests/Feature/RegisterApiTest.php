@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -62,7 +61,7 @@ class RegisterApiTest extends TestCase
             'message' => 'The given data was invalid.',
             'errors' => [
                 'name' => [
-                    'name は必須です',
+                    'ユーザー名 は必須です',
                 ],
             ],
         ];
@@ -91,7 +90,7 @@ class RegisterApiTest extends TestCase
             'message' => 'The given data was invalid.',
             'errors' => [
                 'email' => [
-                    'email は必須です',
+                    'メールアドレス は必須です',
                 ],
             ],
         ];
@@ -121,7 +120,7 @@ class RegisterApiTest extends TestCase
             'message' => 'The given data was invalid.',
             'errors' => [
                 'password' => [
-                    'password を確認用と一致させてください',
+                    'パスワード を確認用と一致させてください',
                 ],
             ],
         ];
@@ -153,7 +152,7 @@ class RegisterApiTest extends TestCase
             'message' => 'The given data was invalid.',
             'errors' => [
                 'password' => [
-                    'password は 8 文字以上のみ有効です',
+                    'パスワード は 8 文字以上のみ有効です',
                 ],
             ],
         ];
@@ -176,7 +175,7 @@ class RegisterApiTest extends TestCase
         $expected = [
             'message' => 'The given data was invalid.',
             'errors' => [
-                'email' => ['email は既に存在します'],
+                'email' => ['そのメールアドレスは既に使われています'],
             ],
         ];
 
@@ -191,7 +190,7 @@ class RegisterApiTest extends TestCase
         $user = $this->createRegisteredUser();
         $response = $this->actingAs($user)->postJson(route('register'), $this->data);
 
-        $response->assertStatus(302)->assertRedirect(route("user"));
+        $response->assertStatus(302)->assertRedirect(route('user'));
     }
 
     /**
