@@ -31,10 +31,10 @@ class LoginApiTest extends TestCase
             'message' => 'The given data was invalid.',
             'errors' => [
                 'email' => [
-                    'email は必須です',
+                    'メールアドレス は必須です',
                 ],
                 'password' => [
-                    'password は必須です',
+                    'パスワード は必須です',
                 ],
             ],
         ];
@@ -102,6 +102,6 @@ class LoginApiTest extends TestCase
     {
         $response = $this->actingAs($this->user)->postJson(route('login'), $this->data);
 
-        $response->assertStatus(302)->assertRedirect(route("user"));
+        $response->assertStatus(302)->assertRedirect(route('user'));
     }
 }
