@@ -59,7 +59,7 @@ jobs:
 
       - run:
           name: test php files
-          command: ./vendor/bin/phpunit
+          command: composer test
           working_directory: laravel
 
       - run:
@@ -69,7 +69,8 @@ jobs:
 
       - run:
           name: lint php files
-          command: ./laravel/vendor/bin/phpcs .
+          command: composer lint
+          working_directory: laravel
 
       - run:
           name: lint vue and js files
