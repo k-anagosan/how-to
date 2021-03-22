@@ -30,6 +30,8 @@ class AuthorEntity
     }
 
     /**
+     * PostItemEntityインスタンスを生成する.
+     *
      * @param PostTitle   $title
      * @param PostContent $content
      * @return PostItemEntity
