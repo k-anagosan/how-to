@@ -2,6 +2,8 @@
 
 namespace App\Http\Actions;
 
+use App\Domain\ValueObject\PostContent;
+use App\Domain\ValueObject\PostTitle;
 use App\Http\Controllers\Controller;
 use App\Http\Responders\PostResponder;
 use App\UseCase\PostItemUseCase;
@@ -23,7 +25,10 @@ class PostAction extends Controller
     public function __invoke(Request $request): JsonResponse
     {
         return $this->responder->response(
-            $this->useCase->execute($request)
+            $this->useCase->execute(
+                PostTitle::create($request->title),
+                PostContent::create($request->content),
+            )
         );
     }
 }
