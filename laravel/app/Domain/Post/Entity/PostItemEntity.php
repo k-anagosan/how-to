@@ -21,13 +21,6 @@ class PostItemEntity
     {
     }
 
-    /**
-     * @param UserAccountId $userId
-     * @param PostTitle     $title
-     * @param PostContent   $content
-     *
-     * @return self
-     */
     public static function createByAuthor(
         UserAccountId $userId,
         PostTitle $title,
@@ -39,5 +32,37 @@ class PostItemEntity
         $postItem->title = $title;
         $postItem->content = $content;
         return $postItem;
+    }
+
+    /**
+     * @return PostId
+     */
+    public function getId(): PostId
+    {
+        return $this->postId;
+    }
+
+    /**
+     * @return UserAccountId
+     */
+    public function getUserId(): UserAccountId
+    {
+        return $this->userId;
+    }
+
+    /**
+     * @return PostTitle
+     */
+    public function getTitle(): PostTitle
+    {
+        return $this->title;
+    }
+
+    /**
+     * @return PostContent
+     */
+    public function getContent(): PostContent
+    {
+        return $this->content;
     }
 }
