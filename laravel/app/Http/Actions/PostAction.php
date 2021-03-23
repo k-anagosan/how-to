@@ -3,6 +3,7 @@
 namespace App\Http\Actions;
 
 use App\Domain\ValueObject\PostContent;
+use App\Domain\ValueObject\PostPhotos;
 use App\Domain\ValueObject\PostTitle;
 use App\Http\Controllers\Controller;
 use App\Http\Responders\PostResponder;
@@ -28,6 +29,7 @@ class PostAction extends Controller
             $this->useCase->execute(
                 PostTitle::create($request->title),
                 PostContent::create($request->content),
+                PostPhotos::create($request->photos)
             )
         );
     }

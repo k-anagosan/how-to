@@ -14,7 +14,7 @@ class CreatePhotosTable extends Migration
         Schema::create('photos', function (Blueprint $table): void {
             $table->string('id', 20)->primary();
             $table->string('post_id', 20);
-            $table->string('filename', 20);
+            $table->string('filename');
             $table->timestamps();
 
             $table->foreign('post_id')->references('id')->on('posts');
