@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Domain\Photo\Repository\CloudPhotoRepositoryInterface;
 use App\Domain\Photo\Repository\EloquentPhotoRepository;
 use App\Domain\Photo\Repository\PhotoRepositoryInterface;
+use App\Domain\Photo\Repository\S3PhotoRepository;
 use App\Domain\Post\Repository\CloudContentRepositoryInterface;
 use App\Domain\Post\Repository\EloquentPostRepository;
 use App\Domain\Post\Repository\PostRepositoryInterface;
@@ -56,6 +58,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             PhotoRepositoryInterface::class,
             EloquentPhotoRepository::class
+        );
+        $this->app->bind(
+            CloudPhotoRepositoryInterface::class,
+            S3PhotoRepository::class
         );
     }
 }
