@@ -3,9 +3,11 @@
 namespace App\Domain\Post\Entity;
 
 use App\Domain\Photo\Entity\PhotoEntity;
+use App\Domain\Tag\Entity\TagEntity;
 use App\Domain\ValueObject\PostContent;
 use App\Domain\ValueObject\PostId;
 use App\Domain\ValueObject\PostPhotos;
+use App\Domain\ValueObject\PostTags;
 use App\Domain\ValueObject\PostTitle;
 use App\Domain\ValueObject\UserAccountId;
 
@@ -23,6 +25,12 @@ class PostItemEntity
     {
     }
 
+    /**
+     * AuthorEntityによってのみこのインスタンスは生成される.
+     * @param UserAccountId $userId
+     * @param PostTitle     $title
+     * @param PostContent   $content
+     */
     public static function createByAuthor(
         UserAccountId $userId,
         PostTitle $title,
@@ -34,6 +42,24 @@ class PostItemEntity
         $postItem->title = $title;
         $postItem->content = $content;
         return $postItem;
+    }
+
+    /**
+     * 永続化の対象となるPhotoTagの配列を生成する.
+     *
+     * @param PostTags $tags
+     * @return array
+     */
+    public function postTags(PostTags $tags): array
+    {
+        $tagEntities = [];
+
+        if ($tags->toArray() !== null) {
+            foreach ($tags->toArray() as $tag) {
+                $tagEntities[] = TagEntity::createByPostItem($this->postId, $tag);
+            }
+        }
+        return $tagEntities;
     }
 
     /**
