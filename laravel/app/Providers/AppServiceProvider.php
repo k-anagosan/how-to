@@ -11,7 +11,9 @@ use App\Domain\Post\Repository\EloquentPostRepository;
 use App\Domain\Post\Repository\PostRepositoryInterface;
 use App\Domain\Post\Repository\S3ContentRepository;
 use App\Domain\Tag\Repository\EloquentTagNameRepository;
+use App\Domain\Tag\Repository\EloquentTagRepository;
 use App\Domain\Tag\Repository\TagNameRepositoryInterface;
+use App\Domain\Tag\Repository\TagRepositoryInterface;
 use App\Domain\User\Repository\EloquentUserRepository;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use Illuminate\Support\ServiceProvider;
@@ -73,6 +75,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             TagNameRepositoryInterface::class,
             EloquentTagNameRepository::class
+        );
+
+        $this->app->bind(
+            TagRepositoryInterface::class,
+            EloquentTagRepository::class
         );
     }
 }
