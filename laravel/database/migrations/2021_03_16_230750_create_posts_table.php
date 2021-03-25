@@ -12,7 +12,7 @@ class CreatePostsTable extends Migration
     public function up(): void
     {
         Schema::create('posts', function (Blueprint $table): void {
-            $table->string('id')->primary();
+            $table->string('id', 20)->primary();
             $table->unsignedBigInteger('user_id');
             $table->string('title', 255);
             $table->string('content');

@@ -16,3 +16,5 @@ Route::post('/login', 'App\Http\Controllers\Auth\LoginController@login')->name('
 Route::post('/logout', 'App\Http\Controllers\Auth\LoginController@logout')->name('logout');
 
 Route::get('/user', fn () => Auth::user())->name('user');
+
+Route::post('/post', App\Http\Actions\PostAction::class)->name('post.create');
