@@ -96,7 +96,7 @@ class PostSubmitApiTest extends TestCase
         Storage::cloud()->assertExists($post->content);
         $this->assertEquals(Storage::cloud()->get($post->content), $this->data['content']);
 
-        // Photoモデルの配列（？）を取得
+        // Photoモデルのコレクションを取得
         $photos = $post->photos;
 
         foreach ($photos->all() as $photo) {
@@ -108,6 +108,53 @@ class PostSubmitApiTest extends TestCase
 
             // 画像ファイルがS3に保存されたか
             Storage::cloud()->assertExists($post->filename);
+        }
+    }
+
+    /**
+     * @test
+     */
+    public function should_タグ付きの記事をアップロードできる(): void
+    {
+        $this->data['photos'] = null;
+
+        // アップロードを行う
+        $response = $this->actingAs($this->user)->postJson(route('post.create'), $this->data);
+
+        $response->assertStatus(201);
+
+        // レスポンスJSONが期待した構造であるか
+        $this->assertMatchesRegularExpression('/^[0-9a-zA-Z]{20}$/', $response->json('post_id'));
+
+        // アップロードによりPostsテーブルにレコードが保存されたか
+        $post = $this->user->posts->first();
+        $this->assertMatchesRegularExpression('/^[0-9a-zA-Z]{20}$/', $post->id);
+        $this->assertDatabaseHas($post->getTable(), [
+            'title' => $this->data['title'],
+            'content' => $post->content,
+            'user_id' => $this->user->id,
+        ]);
+
+        // S3に本文がファイルとして保存されているか
+        Storage::cloud()->assertExists($post->content);
+        $this->assertEquals(Storage::cloud()->get($post->content), $this->data['content']);
+
+        // Tagモデルのコレクションを取得
+        $tags = $post->tags;
+
+        foreach ($tags->all() as $tag) {
+            // 記事に添付されたタグ名がTagテーブルに保存されたか
+            $this->assertDatabaseHas($tag->getTable(), [
+                'post_id' => $tag->post_id,
+                'tag_name_id' => $tag->tag_name_id,
+            ]);
+
+            // タグ名がTagNameテーブルに新規登録されたか
+            $tagName = $tag->tagName;
+            $this->assertDatabaseHas($tagName->getTable(), [
+                'id' => $tagName->id,
+                'name' => $tagName->name,
+            ]);
         }
     }
 }
