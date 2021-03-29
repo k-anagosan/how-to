@@ -8,7 +8,7 @@ import router from "./router";
 import App from "./App.vue";
 
 Vue.prototype.$marked = marked;
-Vue.prototype.$dompurity = DOMPurify;
+Vue.prototype.$dompurify = DOMPurify;
 
 const createApp = async () => {
     await store.dispatch("auth/getCurrentUser");
