@@ -3,7 +3,9 @@
 namespace App\Domain\User\Entity;
 
 use App\Domain\Post\Entity\PostItemEntity;
+use App\Domain\Photo\Entity\PhotoEntity;
 use App\Domain\ValueObject\PostContent;
+use App\Domain\ValueObject\PostPhoto;
 use App\Domain\ValueObject\PostTitle;
 use App\Domain\ValueObject\UserAccountId;
 
@@ -41,5 +43,16 @@ class AuthorEntity
         PostContent $content
     ): PostItemEntity {
         return PostItemEntity::createByAuthor($this->userId, $title, $content);
+    }
+
+    /**
+     * 永続化の対象となるPhotoEntityを生成する.
+     *
+     * @param PostPhoto $photo
+     * @return array
+     */
+    public function postPhoto(PostPhoto $photo): PhotoEntity
+    {
+        return PhotoEntity::createByAuthor($this->userId, $photo);
     }
 }
