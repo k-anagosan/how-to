@@ -2,6 +2,7 @@
 
 namespace App\Domain\Photo\Entity;
 
+use App\Domain\ValueObject\PhotoFilename;
 use App\Domain\ValueObject\PhotoId;
 use App\Domain\ValueObject\PostPhoto;
 use App\Domain\ValueObject\UserAccountId;
@@ -9,6 +10,8 @@ use App\Domain\ValueObject\UserAccountId;
 class PhotoEntity
 {
     private $photoId;
+
+    private $filename;
 
     private $userId;
 
@@ -31,7 +34,10 @@ class PhotoEntity
         PostPhoto $photo
     ): self {
         $photoItem = new self();
-        $photoItem->photoId = PhotoId::create();
+        $photoId = PhotoId::create();
+        $photoItem->photoId = $photoId;
+        $photoItem->filename = PhotoFilename::create($photoId->toString() . '.' . $photo->getExtension());
+
         $photoItem->userId = $userId;
         $photoItem->photo = $photo;
         return $photoItem;
@@ -55,6 +61,16 @@ class PhotoEntity
     public function getPhotoId(): PhotoId
     {
         return $this->photoId;
+    }
+
+    /**
+     * 保持しているPhotoFilanameを取得する.
+     *
+     * @return PhotoFilename
+     */
+    public function getFilename(): PhotoFilename
+    {
+        return $this->filename;
     }
 
     /**
