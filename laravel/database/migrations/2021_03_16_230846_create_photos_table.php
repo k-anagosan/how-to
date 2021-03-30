@@ -13,11 +13,11 @@ class CreatePhotosTable extends Migration
     {
         Schema::create('photos', function (Blueprint $table): void {
             $table->string('id', 20)->primary();
-            $table->string('post_id', 20);
+            $table->unsignedBigInteger('user_id');
             $table->string('filename');
             $table->timestamps();
 
-            $table->foreign('post_id')->references('id')->on('posts');
+            $table->foreign('user_id')->references('id')->on('users');
         });
     }
 
