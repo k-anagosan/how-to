@@ -29,7 +29,7 @@ RUN apt-get update && \
   zlib1g-dev \
   libpng-dev \
   libjpeg62-turbo-dev \
-  libfreetype6-dev \
+  libfreetype6-dev &&\
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* && \
   locale-gen en_US.UTF-8 && \
