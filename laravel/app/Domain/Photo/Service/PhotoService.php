@@ -2,8 +2,10 @@
 
 namespace App\Domain\Photo\Service;
 
+use App\Domain\Photo\Entity\PhotoEntity;
 use App\Domain\Photo\Repository\CloudPhotoRepositoryInterface as CloudPhotoRepository;
 use App\Domain\Photo\Repository\PhotoRepositoryInterface as PhotoRepository;
+use App\Domain\ValueObject\PhotoFilename;
 
 class PhotoService
 {
@@ -20,20 +22,18 @@ class PhotoService
     }
 
     /**
-     * 与えられたPhotoEntityの配列をそれぞれ永続化していく.
+     * 与えられたPhotoEntityを永続化する.
      *
-     * @param array $photoEntities
+     * @param PhotoEntity $photoEntity
      */
-    public function savePhotos(array $photoEntities): void
+    public function savePhoto(PhotoEntity $photoEntity): PhotoFilename
     {
-        foreach ($photoEntities as $photoEntity) {
-            $this->cloudPhotoRepository->save($photoEntity->getPhotoId(), $photoEntity->getPhoto());
+        $this->cloudPhotoRepository->save($photoEntity->getFilename(), $photoEntity->getPhoto());
 
-            $this->photoRepository->save(
-                $photoEntity->getPhotoId(),
-                $photoEntity->getPostId(),
-                $photoEntity->getPhoto()
-            );
-        }
+        return $this->photoRepository->save(
+            $photoEntity->getPhotoId(),
+            $photoEntity->getUserId(),
+            $photoEntity->getFilename()
+        );
     }
 }
