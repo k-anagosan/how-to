@@ -11,6 +11,6 @@ class S3PhotoRepository implements CloudPhotoRepository
 {
     public function save(PhotoFilename $filename, PostPhoto $postPhoto): void
     {
-        Storage::cloud()->putFileAs('', $postPhoto->getPhoto(), $filename->toString(), 'public');
+        Storage::cloud()->putFileAs('photos', $postPhoto->getPhoto(), $filename->toString(), 'public');
     }
 }
