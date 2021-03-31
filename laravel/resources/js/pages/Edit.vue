@@ -136,8 +136,10 @@ export default {
 
       this.reset();
 
-      const filename = `![${response.data.filename}](https://how-to.s3-ap-northeast-1.amazonaws.com/photos/${response.data.filename})\n`;
-      this.postForm.content += filename;
+      if (response.data.filename) {
+        const filename = `![${response.data.filename}](https://how-to.s3-ap-northeast-1.amazonaws.com/photos/${response.data.filename})\n`;
+        this.postForm.content += filename;
+      }
 
       return true;
     },
