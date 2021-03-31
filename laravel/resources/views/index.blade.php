@@ -12,6 +12,7 @@
     <link rel='stylesheet' href='{{mix("/css/app.prod.css")}}'>
     <script src="{{mix("/js/app.js")}}" defer></script>
     @endif
+    <script type="module" src="https://unpkg.com/ionicons@5.0.0/dist/ionicons/ionicons.esm.js"></script>
 </head>
 
 <body>
