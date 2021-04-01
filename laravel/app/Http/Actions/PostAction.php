@@ -6,10 +6,10 @@ use App\Domain\ValueObject\PostContent;
 use App\Domain\ValueObject\PostTags;
 use App\Domain\ValueObject\PostTitle;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\PostItemRequest;
 use App\Http\Responders\PostResponder;
 use App\UseCase\PostItemUseCase;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class PostAction extends Controller
 {
@@ -21,9 +21,10 @@ class PostAction extends Controller
     {
         $this->useCase = $useCase;
         $this->responder = $responder;
+        $this->middleware('auth');
     }
 
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(PostItemRequest $request): JsonResponse
     {
         return $this->responder->response(
             $this->useCase->execute(
