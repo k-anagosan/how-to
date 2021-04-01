@@ -45,7 +45,9 @@ final class PostItemUseCase
         $postedItem = $author->postItem($title, $content);
         $postedTags = $postedItem->postTags($tags);
 
+        $postId = $this->postItemService->saveItem($postedItem);
         $this->tagService->saveTags($postedTags);
-        return $this->postItemService->saveItem($postedItem);
+
+        return $postId;
     }
 }
