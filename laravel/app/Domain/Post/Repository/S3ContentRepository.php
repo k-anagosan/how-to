@@ -16,7 +16,7 @@ class S3ContentRepository implements CloudPostRepository
         $filename = $postId->getFilename();
 
         $disk->put($filename, $content->toString());
-        Storage::cloud()->putFileAs('', new File($disk->path($filename)), $filename, 'public');
+        Storage::cloud()->putFileAs('contents', new File($disk->path($filename)), $filename, 'public');
         $disk->delete($filename);
     }
 }

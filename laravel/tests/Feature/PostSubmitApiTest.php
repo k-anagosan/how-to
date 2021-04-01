@@ -57,8 +57,8 @@ class PostSubmitApiTest extends TestCase
         ]);
 
         // S3に本文がファイルとして保存されているか
-        Storage::cloud()->assertExists($post->content);
-        $this->assertEquals(Storage::cloud()->get($post->content), $this->data['content']);
+        Storage::cloud()->assertExists('contents/' . $post->content);
+        $this->assertEquals(Storage::cloud()->get('contents/' . $post->content), $this->data['content']);
     }
 
     /**
@@ -84,8 +84,8 @@ class PostSubmitApiTest extends TestCase
         ]);
 
         // S3に本文がファイルとして保存されているか
-        Storage::cloud()->assertExists($post->content);
-        $this->assertEquals(Storage::cloud()->get($post->content), $this->data['content']);
+        Storage::cloud()->assertExists('contents/' . $post->content);
+        $this->assertEquals(Storage::cloud()->get('contents/' . $post->content), $this->data['content']);
 
         // Tagモデルのコレクションを取得
         $tags = $post->tags;
