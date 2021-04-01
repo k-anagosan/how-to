@@ -47,7 +47,7 @@ class PhotoSubmitApiTest extends TestCase
             'filename' => $photo->filename,
         ]);
 
-        // S3に本文がファイルとして保存されているか
-        Storage::cloud()->assertExists($photo->filename);
+        // S3に画像が保存されているか
+        Storage::cloud()->assertExists('photos/' . $photo->filename);
     }
 }
