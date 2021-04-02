@@ -12,3 +12,8 @@ export const randomStr = () => {
     const length = Math.floor(Math.random() * MaxLength);
     return Math.random().toString(radix).slice(length);
 };
+
+export const hasProperty = (object, target) => {
+    if (object === null) return false;
+    return Object.prototype.hasOwnProperty.call(object, target);
+};

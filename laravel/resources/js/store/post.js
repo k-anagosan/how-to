@@ -1,4 +1,4 @@
-import { CREATED, UNPROCESSABLE_ENTITY } from "../utils";
+import { CREATED, UNPROCESSABLE_ENTITY, hasProperty } from "../utils";
 
 const state = {
     apiIsSuccess: null,
@@ -6,7 +6,24 @@ const state = {
     photoValidationMessage: null,
 };
 
-const getters = null;
+const getters = {
+    allErrors: state => {
+        const titleMessage = hasProperty(state.postValidationMessage, "title")
+            ? state.postValidationMessage.title
+            : [];
+        const contentMessage = hasProperty(
+            state.postValidationMessage,
+            "content"
+        )
+            ? state.postValidationMessage.content
+            : [];
+        const photoMessage = hasProperty(state.photoValidationMessage, "photo")
+            ? state.photoValidationMessage.photo
+            : [];
+
+        return [...titleMessage, ...contentMessage, ...photoMessage];
+    },
+};
 
 const mutations = {
     setApiIsSuccess(state, isSuccess) {
