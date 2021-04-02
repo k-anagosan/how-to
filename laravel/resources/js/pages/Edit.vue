@@ -1,5 +1,5 @@
 <template>
-  <div class="edit sm:-mx-8 h-full">
+  <div class="edit relative sm:-mx-8 h-full">
     <form id="edit" class="flex flex-col h-full" @submit.prevent="post">
       <input
         v-model="postForm.title"
@@ -87,11 +87,24 @@
         <Button id="post-btn" type="submit">Post</Button>
       </div>
     </form>
+    <div
+      v-if="errors.length > 0"
+      class="absolute flex justify-between items-center bottom-8 sm:left-4 rounded p-4 pr-3 bg-red-100"
+    >
+      <ul class="mr-4">
+        <li v-for="msg in errors" :key="msg" class="text-red-400">
+          {{ msg }}
+        </li>
+      </ul>
+      <button type="button" class="flex items-center" @click="clearMessage">
+        <ion-icon name="close-outline"></ion-icon>
+      </button>
+    </div>
   </div>
 </template>
 <script>
 import Button from "../components/SubmitButton.vue";
-import { mapState } from "vuex";
+import { mapState, mapGetters } from "vuex";
 
 export default {
   components: {
@@ -115,6 +128,9 @@ export default {
       postErrors: state => state.post.postValidationMessage,
       photoErrors: state => state.post.photoValidationMessage,
     }),
+    ...mapGetters({
+      errors: "post/allErrors",
+    }),
   },
   watch: {
     "postForm.content"(val) {
@@ -130,6 +146,7 @@ export default {
         this.postForm.tags = tags;
       }
       const postId = await this.$store.dispatch("post/postItem", this.postForm);
+      setTimeout(this.clearMessage, 5000);
       console.log(postId);
     },
     async onFileChange(event) {
@@ -142,7 +159,7 @@ export default {
       formData.append("photo", event.target.files[0]);
 
       const filename = await this.$store.dispatch("post/postPhoto", formData);
-
+      setTimeout(this.clearMessage, 5000);
       this.reset();
 
       if (this.apiIsSuccess) {
@@ -158,6 +175,10 @@ export default {
     format(val) {
       const sanitizedContent = this.$dompurify.sanitize(val);
       return this.$marked(sanitizedContent);
+    },
+    clearMessage() {
+      this.$store.commit("post/setPostValidationMessage", null);
+      this.$store.commit("post/setPhotoValidationMessage", null);
     },
   },
 };
