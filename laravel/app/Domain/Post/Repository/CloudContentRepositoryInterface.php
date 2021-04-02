@@ -14,4 +14,11 @@ interface CloudContentRepositoryInterface
      * @param PostContent $content
      */
     public function save(PostId $postId, PostContent $content);
+
+    /**
+     * クラウドストレージのPostIdのファイルを削除する.
+     *
+     * @param PostId $postId
+     */
+    public function delete(PostId $postId);
 }
