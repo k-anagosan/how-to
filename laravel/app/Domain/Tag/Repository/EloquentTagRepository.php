@@ -6,6 +6,7 @@ use App\Domain\Tag\Repository\TagRepositoryInterface as TagRepository;
 use App\Domain\ValueObject\PostId;
 use App\Domain\ValueObject\TagNameId;
 use App\Models\Tag;
+use Illuminate\Support\Facades\DB;
 
 class EloquentTagRepository implements TagRepository
 {
@@ -22,10 +23,14 @@ class EloquentTagRepository implements TagRepository
         $tagOrm->post_id = $postId->toString();
         $tagOrm->tag_name_id = $tagNameId->toInt();
 
+        DB::beginTransaction();
+
         try {
             $tagOrm->save();
+            DB::commit();
         } catch (\Exception $e) {
-            throw new \Exception($e);
+            DB::rollback();
+            throw $e;
         }
     }
 }
