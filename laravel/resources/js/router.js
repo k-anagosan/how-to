@@ -5,6 +5,7 @@ import store from "./store/index";
 
 import CardList from "./pages/CardList.vue";
 import Login from "./pages/Login.vue";
+import Edit from "./pages/Edit.vue";
 import InternalServerError from "./pages/errors/InternalServerError.vue";
 
 import { INTERNAL_SERVER_ERROR } from "./utils";
@@ -24,6 +25,17 @@ const routes = [
                 next("/");
             } else {
                 next();
+            }
+        },
+    },
+    {
+        path: "/edit",
+        component: Edit,
+        beforeEnter(to, from, next) {
+            if (store.getters["auth/isAuthenticated"]) {
+                next();
+            } else {
+                next("/");
             }
         },
     },

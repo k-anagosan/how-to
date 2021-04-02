@@ -1,5 +1,5 @@
 <template>
-  <header class="fixed top-0 h-16 sm:h-20 w-full bg-blue-200">
+  <header class="absolute top-0 h-16 sm:h-20 w-full bg-blue-200">
     <nav
       class="sm:container flex justify-between items-center h-full px-8 sm:px-16 mx-auto"
     >
@@ -8,7 +8,7 @@
       </RouterLink>
       <div class="hidden sm:flex justify-between items-center h-full">
         <div v-if="isLogin" class="submit-button px-4 h-full flex items-center">
-          <button class="submit-button">Submit</button>
+          <RouterLink to="/edit" class="edit-button">Edit Post</RouterLink>
         </div>
         <span
           v-if="isLogin"

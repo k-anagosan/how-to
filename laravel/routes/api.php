@@ -18,3 +18,4 @@ Route::post('/logout', 'App\Http\Controllers\Auth\LoginController@logout')->name
 Route::get('/user', fn () => Auth::user())->name('user');
 
 Route::post('/post', App\Http\Actions\PostAction::class)->name('post.create');
+Route::post('/photo', App\Http\Actions\PostPhotoAction::class)->name('photo.create');

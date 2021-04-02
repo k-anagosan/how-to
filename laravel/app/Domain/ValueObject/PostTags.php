@@ -19,7 +19,7 @@ class PostTags
     {
         $instance = new self();
 
-        if (is_array($primitiveTags)) {
+        if (is_array($primitiveTags) && count($primitiveTags) > 0) {
             foreach ($primitiveTags as $tag) {
                 $instance->tags[] = PostTag::create($tag);
             }

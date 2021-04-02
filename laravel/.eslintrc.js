@@ -50,5 +50,7 @@ module.exports = {
         "no-empty-function": "off",
         "max-lines": "off",
         "prefer-destructuring": "off",
+        "func-names": "off",
+        "vue/no-v-html": "off",
     },
 };

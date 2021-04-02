@@ -2,15 +2,18 @@
 
 namespace App\Domain\Photo\Entity;
 
+use App\Domain\ValueObject\PhotoFilename;
 use App\Domain\ValueObject\PhotoId;
-use App\Domain\ValueObject\PostId;
 use App\Domain\ValueObject\PostPhoto;
+use App\Domain\ValueObject\UserAccountId;
 
 class PhotoEntity
 {
     private $photoId;
 
-    private $postId;
+    private $filename;
+
+    private $userId;
 
     private $photo;
 
@@ -21,30 +24,33 @@ class PhotoEntity
     /**
      * PostItemEntityによってのみこのインスタンスは生成される.
      *
-     * @param PostId    $postId
-     * @param PostPhoto $photo
+     * @param UserAccountId $userId
+     * @param PostPhoto     $photo
      *
      * @return self
      */
-    public static function createByPostItem(
-        PostId $postId,
+    public static function createByAuthor(
+        UserAccountId $userId,
         PostPhoto $photo
     ): self {
         $photoItem = new self();
-        $photoItem->photoId = PhotoId::create();
-        $photoItem->postId = $postId;
+        $photoId = PhotoId::create();
+        $photoItem->photoId = $photoId;
+        $photoItem->filename = PhotoFilename::create($photoId->toString() . '.' . $photo->getExtension());
+
+        $photoItem->userId = $userId;
         $photoItem->photo = $photo;
         return $photoItem;
     }
 
     /**
-     * 掲載先のPostIdを取得する.
+     * 投稿主のUserAccountIdを取得する.
      *
-     * @return PostId
+     * @return UserAccountId
      */
-    public function getPostId(): PostId
+    public function getUserId(): UserAccountId
     {
-        return $this->postId;
+        return $this->userId;
     }
 
     /**
@@ -55,6 +61,16 @@ class PhotoEntity
     public function getPhotoId(): PhotoId
     {
         return $this->photoId;
+    }
+
+    /**
+     * 保持しているPhotoFilanameを取得する.
+     *
+     * @return PhotoFilename
+     */
+    public function getFilename(): PhotoFilename
+    {
+        return $this->filename;
     }
 
     /**

@@ -9,7 +9,7 @@ class PostPhoto
     /**
      * 1ファイルあたりの最大バイト数.
      */
-    private const MAX_SIZE = 1024 * 1024;
+    private const MAX_SIZE = 2 * 1024 * 1024;
 
     private $photo;
 

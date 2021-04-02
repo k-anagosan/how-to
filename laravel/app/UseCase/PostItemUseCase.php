@@ -2,15 +2,14 @@
 
 namespace App\UseCase;
 
-use App\Domain\Photo\Service\PhotoService;
 use App\Domain\Post\Service\PostItemService;
 use App\Domain\Tag\Service\TagService;
 use App\Domain\User\Service\AuthorService;
 use App\Domain\ValueObject\PostContent;
 use App\Domain\ValueObject\PostId;
-use App\Domain\ValueObject\PostPhotos;
 use App\Domain\ValueObject\PostTags;
 use App\Domain\ValueObject\PostTitle;
+use Illuminate\Support\Facades\DB;
 
 final class PostItemUseCase
 {
@@ -20,42 +19,52 @@ final class PostItemUseCase
 
     private $tagService;
 
-    private $photoService;
-
     public function __construct(
         AuthorService $authorService,
         PostItemService $postItemService,
-        TagService $tagService,
-        PhotoService $photoService
+        TagService $tagService
     ) {
         $this->authorService = $authorService;
         $this->postItemService = $postItemService;
         $this->tagService = $tagService;
-        $this->photoService = $photoService;
     }
 
     /**
      * @param PostTitle   $title
      * @param PostContent $content
      * @param PostTags    $tags
-     * @param PostPhotos  $photos
      *
      * @return PostId
      */
     public function execute(
         PostTitle $title,
         PostContent $content,
-        PostTags $tags,
-        PostPhotos $photos
+        PostTags $tags
     ) {
         $author = $this->authorService->getAuthor();
 
         $postedItem = $author->postItem($title, $content);
         $postedTags = $postedItem->postTags($tags);
-        $postedPhotos = $postedItem->postPhotos($photos);
 
-        $this->tagService->saveTags($postedTags);
-        $this->photoService->savePhotos($postedPhotos);
-        return $this->postItemService->saveItem($postedItem);
+        DB::beginTransaction();
+
+        try {
+            $postId = $this->postItemService->saveItem($postedItem);
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+
+        try {
+            $this->tagService->saveTags($postedTags);
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            $this->postItemService->deleteItem($postId);
+            throw $e;
+        }
+
+        return $postId;
     }
 }

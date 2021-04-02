@@ -31,4 +31,11 @@ class PostItemService
             $postItemEntity->getTitle()
         );
     }
+
+    public function deleteItem(PostId $postId): void
+    {
+        $this->cloudContentRepository->delete($postId);
+
+        $this->postRepository->delete($postId);
+    }
 }

@@ -14,7 +14,7 @@ class PostId
     /**
      * ファイル名生成時の拡張子.
      */
-    private const EXTENSION = '.html';
+    private const EXTENSION = '.md';
 
     private $id;
 
