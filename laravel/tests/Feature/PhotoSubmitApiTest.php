@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -129,6 +130,38 @@ class PhotoSubmitApiTest extends TestCase
         ];
 
         $this->invalidResponesCheck($response, $expected);
+    }
+
+    /**
+     * @test
+     */
+    public function should_DBエラーの場合は画像を保存しない(): void
+    {
+        // 無理やりDBエラーを起こす
+        Schema::drop('photos');
+
+        $response = $this->actingAs($this->user)->postJson(route('photo.create'), $this->data['jpg']);
+
+        $response->assertStatus(500);
+
+        $this->assertCount(0, Storage::cloud()->files('photos/'));
+    }
+
+    /**
+     * @test
+     */
+    public function should_ファイル保存エラーの場合はDBにレコードを挿入しない(): void
+    {
+        // ストレージをモックして保存時にエラーを起こさせる
+        Storage::shouldReceive('cloud')
+            ->once()
+            ->andReturnNull();
+
+        $response = $this->actingAs($this->user)->postJson(route('photo.create'), $this->data['jpg']);
+
+        $response->assertStatus(500);
+
+        $this->assertEquals(0, $this->user->photos()->count());
     }
 
     private function imageUploadTest($extension): void
