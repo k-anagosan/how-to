@@ -9,7 +9,7 @@
         placeholder="タイトル"
       />
       <input
-        v-model="postForm.tags"
+        v-model="tagsString"
         type="text"
         name="tags"
         class="block w-full border px-2"
@@ -91,6 +91,7 @@
 </template>
 <script>
 import Button from "../components/SubmitButton.vue";
+import { mapState } from "vuex";
 
 export default {
   components: {
@@ -100,51 +101,63 @@ export default {
     return {
       postForm: {
         title: "",
-        tags: [],
         content: "",
+        tags: [],
       },
       htmlContent: "",
+      tagsString: "",
       tab: 1,
     };
   },
+  computed: {
+    ...mapState({
+      apiIsSuccess: state => state.post.apiIsSuccess,
+      postErrors: state => state.post.postValidationMessage,
+      photoErrors: state => state.post.photoValidationMessage,
+    }),
+  },
   watch: {
     "postForm.content"(val) {
-      this.htmlContent = this.sanitize(val);
+      this.htmlContent = this.format(val);
     },
   },
   methods: {
-    post() {
-      console.log(this.postForm);
-    },
-    sanitize(val) {
-      const sanitizedContent = this.$dompurify.sanitize(val);
-      return this.$marked(sanitizedContent);
+    async post() {
+      const tags = this.tagsString.split(" ");
+      if (tags.length === 1 && tags[0] === "") {
+        this.postForm.tags = null;
+      } else {
+        this.postForm.tags = tags;
+      }
+      const postId = await this.$store.dispatch("post/postItem", this.postForm);
+      console.log(postId);
     },
     async onFileChange(event) {
       if (event.target.files.length === 0) {
         this.reset();
         return false;
       }
-      if (!event.target.files[0].type.match("image.*")) {
-        this.reset();
-        return false;
-      }
 
       const formData = new FormData();
       formData.append("photo", event.target.files[0]);
-      const response = await axios.post("api/photo", formData);
+
+      const filename = await this.$store.dispatch("post/postPhoto", formData);
 
       this.reset();
 
-      if (response.data.filename) {
-        const filename = `![${response.data.filename}](https://how-to.s3-ap-northeast-1.amazonaws.com/photos/${response.data.filename})\n`;
-        this.postForm.content += filename;
+      if (this.apiIsSuccess) {
+        const image = `![${filename}](https://how-to.s3-ap-northeast-1.amazonaws.com/photos/${filename})\n`;
+        this.postForm.content += image;
       }
 
       return true;
     },
     reset() {
       this.$el.querySelector("input[type='file']").value = null;
+    },
+    format(val) {
+      const sanitizedContent = this.$dompurify.sanitize(val);
+      return this.$marked(sanitizedContent);
     },
   },
 };
