@@ -14,4 +14,11 @@ interface CloudPhotoRepositoryInterface
      * @param PostPhoto     $postPhoto
      */
     public function save(PhotoFilename $filename, PostPhoto $postPhoto): void;
+
+    /**
+     * 画像ファイルをクラウドストレージから削除する.
+     *
+     * @param PhotoFilename $filename
+     */
+    public function delete(PhotoFilename $filename): void;
 }
