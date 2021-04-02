@@ -18,4 +18,11 @@ interface PostRepositoryInterface
      * @return PostId
      */
     public function save(PostId $postId, UserAccountId $userId, PostTitle $title): PostId;
+
+    /**
+     * 引数IDのレコードをPostストアから削除.
+     *
+     * @param PostId $postId
+     */
+    public function delete(PostId $postId);
 }

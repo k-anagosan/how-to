@@ -7,6 +7,7 @@ use App\Domain\ValueObject\PostId;
 use App\Domain\ValueObject\PostTitle;
 use App\Domain\ValueObject\UserAccountId;
 use App\Models\Post;
+use Illuminate\Support\Facades\DB;
 
 class EloquentPostRepository implements PostRepository
 {
@@ -19,12 +20,31 @@ class EloquentPostRepository implements PostRepository
         $postOrm->title = $title->toString();
         $postOrm->content = $postId->getFilename();
 
+        DB::beginTransaction();
+
         try {
             $postOrm->save();
+            DB::commit();
         } catch (\Exception $e) {
-            throw new \Exception($e);
+            DB::rollback();
+            throw new $e;
         }
 
         return $postId;
+    }
+
+    public function delete(PostId $postId): void
+    {
+        $postOrm = Post::find($postId->toString());
+
+        DB::beginTransaction();
+
+        try {
+            $postOrm->delete();
+            DB::commit();
+        } catch (\Exception $e) {
+            throw $e;
+            DB::rollback();
+        }
     }
 }
