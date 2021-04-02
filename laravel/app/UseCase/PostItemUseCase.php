@@ -9,6 +9,7 @@ use App\Domain\ValueObject\PostContent;
 use App\Domain\ValueObject\PostId;
 use App\Domain\ValueObject\PostTags;
 use App\Domain\ValueObject\PostTitle;
+use Illuminate\Support\Facades\DB;
 
 final class PostItemUseCase
 {
@@ -45,8 +46,24 @@ final class PostItemUseCase
         $postedItem = $author->postItem($title, $content);
         $postedTags = $postedItem->postTags($tags);
 
-        $postId = $this->postItemService->saveItem($postedItem);
-        $this->tagService->saveTags($postedTags);
+        DB::beginTransaction();
+
+        try {
+            $postId = $this->postItemService->saveItem($postedItem);
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+
+        try {
+            $this->tagService->saveTags($postedTags);
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            $this->postItemService->deleteItem($postId);
+            throw $e;
+        }
 
         return $postId;
     }
