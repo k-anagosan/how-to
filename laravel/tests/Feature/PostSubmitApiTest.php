@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -243,5 +244,46 @@ class PostSubmitApiTest extends TestCase
 
         // TagNameが今回のアップロードで新規登録されていないか
         $this->assertEquals(3, TagName::all()->count());
+    }
+
+    /**
+     * @test
+     */
+    public function should_DBエラーの場合はファイルを保存しない(): void
+    {
+        // 無理やりDBエラーを起こす
+        Schema::drop('tags');
+
+        // アップロードを行う
+        $response = $this->actingAs($this->user)->postJson(route('post.create'), $this->data);
+
+        $response->assertStatus(500);
+
+        // 今回のアップロードではDBにレコードが保存されなかったか
+        $this->assertEquals(0, $this->user->posts()->count());
+        $this->assertEmpty(TagName::all());
+
+        // 今回のアップロードではS3に本文が保存されなかったか
+        $this->assertCount(0, Storage::cloud()->files('contents/'));
+    }
+
+    /**
+     * @test
+     */
+    public function should_ファイル保存エラーの場合はDBにレコードを挿入しない(): void
+    {
+        // ストレージをモックして保存時にエラーを起こさせる
+        Storage::shouldReceive('disk')
+            ->once()
+            ->andReturnNull();
+
+        // アップロードを行う
+        $response = $this->actingAs($this->user)->postJson(route('post.create'), $this->data);
+
+        $response->assertStatus(500);
+
+        // 今回のアップロードではDBにレコードが保存されなかったか
+        $this->assertEquals(0, $this->user->posts()->count());
+        $this->assertEmpty(TagName::all());
     }
 }
