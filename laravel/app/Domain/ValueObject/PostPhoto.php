@@ -26,6 +26,10 @@ class PostPhoto
      */
     public static function create(UploadedFile $primitivePhoto): self
     {
+        if ($primitivePhoto === null) {
+            throw new \Exception();
+        }
+
         if (!in_array($primitivePhoto->extension(), ['jpg', 'jpeg', 'png', 'gif'], true)) {
             throw new \Exception();
         }
