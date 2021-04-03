@@ -8,6 +8,7 @@ import store from "@/store/index";
 import App from "@/App.vue";
 import CardList from "@/pages/CardList.vue";
 import Login from "@/pages/Login.vue";
+import Edit from "@/pages/Edit.vue";
 
 import { randomStr, INTERNAL_SERVER_ERROR } from "./utils";
 
@@ -22,6 +23,9 @@ describe("App.vue", () => {
             localVue,
             router,
             store,
+            stubs: {
+                "ion-icon": true,
+            },
         });
     });
 
@@ -54,6 +58,26 @@ describe("App.vue", () => {
         expect(wrapper.vm.$route.path).toBe("/");
 
         await wrapper.vm.$router.push("/login").catch(() => {});
+
+        expect(wrapper.vm.$route.path).toBe("/");
+    });
+
+    it("ログイン中に/editにアクセスしたらEditを表示する", async () => {
+        wrapper.vm.$store.commit("auth/setUser", true);
+
+        expect(wrapper.vm.$route.path).toBe("/");
+
+        await wrapper.vm.$router.push("/edit").catch(() => {});
+
+        expect(wrapper.findComponent(Edit).exists()).toBe(true);
+    });
+
+    it("未認証中に/editにアクセスしたら/にリダイレクトされる", async () => {
+        wrapper.vm.$store.commit("auth/setUser", null);
+
+        expect(wrapper.vm.$route.path).toBe("/");
+
+        await wrapper.vm.$router.push("/edit").catch(() => {});
 
         expect(wrapper.vm.$route.path).toBe("/");
     });

@@ -11,18 +11,18 @@ import {
 import Header from "@/components/Header.vue";
 
 describe("Header.vue のRouterLink", () => {
-    const localVue = createLocalVue();
-    let wrapper = null;
-
-    beforeEach(() => {
+    const mountWrapper = isLogin => {
+        const localVue = createLocalVue();
         localVue.use(Vuex);
         localVue.use(VueRouter);
-        const isAuthenticated = jest.fn().mockImplementation(() => false);
+        const isAuthenticated = jest.fn().mockImplementation(() => isLogin);
+        const username = jest.fn().mockImplementation(() => "testuser");
 
         const authStoreMock = {
             namespaced: true,
             getters: {
                 isAuthenticated,
+                username,
             },
         };
         const store = new Vuex.Store({
@@ -33,24 +33,28 @@ describe("Header.vue のRouterLink", () => {
 
         const router = new VueRouter({
             mode: "history",
-            routes: [{ path: "/login" }],
+            routes: [{ path: "/login" }, { path: "/edit" }],
         });
 
-        wrapper = mount(Header, {
+        return mount(Header, {
             store,
             router,
             localVue,
         });
-    });
-
-    afterEach(() => {
-        wrapper.destroy();
-    });
+    };
 
     it("'Login / Register'をクリックしたら'/login'にアクセスされる", async () => {
+        const wrapper = mountWrapper(false);
         expect(wrapper.vm.$route.path).not.toBe("/login");
         await wrapper.find("a.login-link").trigger("click");
         expect(wrapper.vm.$route.path).toBe("/login");
+    });
+
+    it("'Edit Button'をクリックしたら'/edit'にアクセスされる", async () => {
+        const wrapper = mountWrapper(true);
+        expect(wrapper.vm.$route.path).not.toBe("/edit");
+        await wrapper.find("a.edit-button").trigger("click");
+        expect(wrapper.vm.$route.path).toBe("/edit");
     });
 });
 
@@ -95,7 +99,7 @@ describe("Header.vueのナビゲーション", () => {
         expect(wrapper.find(".login-link").exists()).toBe(true);
     });
 
-    it("ログイン中はユーザー名とSubmitボタンを表示", () => {
+    it("ログイン中はユーザー名とEditボタンを表示", () => {
         expect(wrapper.find(".submit-button").exists()).toBe(true);
         expect(wrapper.find(".header-username").exists()).toBe(true);
         expect(wrapper.find(".login-link").exists()).toBe(false);

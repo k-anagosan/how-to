@@ -61,7 +61,6 @@ describe("Footer.vue のRouterLink", () => {
     });
 
     it("'Login / Register'をクリックしたら'/login'にアクセスされる", async () => {
-        console.log(wrapper.html());
         expect(wrapper.vm.$route.path).not.toBe("/login");
         await wrapper.find("a").trigger("click");
         expect(wrapper.vm.$route.path).toBe("/login");
