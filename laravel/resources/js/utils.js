@@ -7,10 +7,12 @@ export const UNPROCESSABLE_ENTITY = 422;
 
 export const INTERNAL_SERVER_ERROR = 500;
 
-export const randomStr = () => {
-    const [MaxLength, radix] = [-12, 36];
-    const length = Math.floor(Math.random() * MaxLength);
-    return Math.random().toString(radix).slice(length);
+export const randomStr = (len = 12) => {
+    const Str =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    return [...Array(len)]
+        .map(() => Str[Math.floor(Math.random() * Str.length)])
+        .join("");
 };
 
 export const hasProperty = (object, target) => {
