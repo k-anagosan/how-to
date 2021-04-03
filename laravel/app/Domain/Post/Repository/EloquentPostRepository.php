@@ -47,4 +47,19 @@ class EloquentPostRepository implements PostRepository
             DB::rollback();
         }
     }
+
+    public function get(PostId $postId)
+    {
+        try {
+            $post = Post::where('id', $postId->toString())->with(['author'])->first();
+        } catch (\Exception $e) {
+            throw $e;
+        }
+
+        if ($post === null) {
+            return [];
+        }
+
+        return $post->toArray();
+    }
 }
