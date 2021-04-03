@@ -23,14 +23,24 @@ class PostId
     }
 
     /**
-     * 自動生成した記事IDをプロパティとして保持する自インスタンスを作成.
+     * 制約に通った記事ID、もしくは自動生成した記事IDをプロパティとして保持する自インスタンスを作成.
      *
+     * @param string $primitiveId
      * @return self
      */
-    public static function create(): self
+    public static function create(string $primitiveId = ''): self
     {
         $instance = new self();
-        $instance->id = Str::random(self::ID_LENGTH);
+
+        if ($primitiveId === null) {
+            throw new \Exception();
+        }
+
+        if (preg_match('/^[a-zA-Z0-9]{20}$/', $primitiveId)) {
+            $instance->id = $primitiveId;
+        } else {
+            $instance->id = Str::random(self::ID_LENGTH);
+        }
         return $instance;
     }
 
