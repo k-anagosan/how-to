@@ -51,7 +51,6 @@ class LoginApiTest extends TestCase
 
         $expected = [
             'name' => $this->user->name,
-            'email' => $this->user->email,
         ];
 
         $response->assertStatus(200)->assertJson($expected);
