@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Post;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class GetArticleDetailApiTest extends TestCase
@@ -28,5 +29,15 @@ class GetArticleDetailApiTest extends TestCase
                     'name' => $post->author->name,
                 ],
             ]);
+    }
+
+    /**
+     * @test
+     */
+    public function should_存在しないIDが渡された場合、404エラーが返される(): void
+    {
+        $response = $this->getJson(route('post.show', ['id' => Str::random(20)]));
+
+        $response->assertStatus(404);
     }
 }
