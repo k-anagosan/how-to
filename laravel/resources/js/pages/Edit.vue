@@ -96,7 +96,7 @@
           {{ msg }}
         </li>
       </ul>
-      <button type="button" class="flex items-center" @click="clearMessage">
+      <button id="close-message" type="button" class="flex items-center" @click="clearMessage">
         <ion-icon name="close-outline"></ion-icon>
       </button>
     </div>
@@ -125,8 +125,6 @@ export default {
   computed: {
     ...mapState({
       apiIsSuccess: state => state.post.apiIsSuccess,
-      postErrors: state => state.post.postValidationMessage,
-      photoErrors: state => state.post.photoValidationMessage,
     }),
     ...mapGetters({
       errors: "post/allErrors",
@@ -136,27 +134,30 @@ export default {
     "postForm.content"(val) {
       this.htmlContent = this.format(val);
     },
-  },
-  methods: {
-    async post() {
-      const tags = this.tagsString.split(" ");
+    tagsString(val) {
+      const tags = val.split(" ");
       if (tags.length === 1 && tags[0] === "") {
         this.postForm.tags = null;
       } else {
         this.postForm.tags = tags;
       }
+    },
+  },
+  methods: {
+    async post() {
       const postId = await this.$store.dispatch("post/postItem", this.postForm);
       setTimeout(this.clearMessage, 5000);
       console.log(postId);
     },
     async onFileChange(event) {
-      if (event.target.files.length === 0) {
+      const file = this.takeFile(event);
+      if (file === null) {
         this.reset();
         return false;
       }
 
       const formData = new FormData();
-      formData.append("photo", event.target.files[0]);
+      formData.append("photo", file);
 
       const filename = await this.$store.dispatch("post/postPhoto", formData);
       setTimeout(this.clearMessage, 5000);
@@ -179,6 +180,9 @@ export default {
     clearMessage() {
       this.$store.commit("post/setPostValidationMessage", null);
       this.$store.commit("post/setPhotoValidationMessage", null);
+    },
+    takeFile(event) {
+      return event.target.files[0];
     },
   },
 };
