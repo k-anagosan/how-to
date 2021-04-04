@@ -18,7 +18,7 @@ class EloquentPostRepository implements PostRepository
         $postOrm->id = $postId->toString();
         $postOrm->user_id = $userId->toInt();
         $postOrm->title = $title->toString();
-        $postOrm->content = $postId->getFilename();
+        $postOrm->filename = $postId->getFilename();
 
         DB::beginTransaction();
 
@@ -46,5 +46,20 @@ class EloquentPostRepository implements PostRepository
             throw $e;
             DB::rollback();
         }
+    }
+
+    public function get(PostId $postId)
+    {
+        try {
+            $post = Post::where('id', $postId->toString())->with(['author'])->first();
+        } catch (\Exception $e) {
+            throw $e;
+        }
+
+        if ($post === null) {
+            return [];
+        }
+
+        return $post->toArray();
     }
 }

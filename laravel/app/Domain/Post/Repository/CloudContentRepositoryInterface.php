@@ -3,6 +3,7 @@
 namespace App\Domain\Post\Repository;
 
 use App\Domain\ValueObject\PostContent;
+use App\Domain\ValueObject\PostFilename;
 use App\Domain\ValueObject\PostId;
 
 interface CloudContentRepositoryInterface
@@ -21,4 +22,13 @@ interface CloudContentRepositoryInterface
      * @param PostId $postId
      */
     public function delete(PostId $postId);
+
+    /**
+     * 引数で指定したクラウドストレージのファイル内容を読み込む。
+     *
+     * @param PostFilename $filename
+     *
+     * @return PostContent
+     */
+    public function read(PostFilename $filename);
 }

@@ -25,4 +25,13 @@ interface PostRepositoryInterface
      * @param PostId $postId
      */
     public function delete(PostId $postId);
+
+    /**
+     * 引数IDからPostストアを検索し記事情報を取得する.
+     *
+     * @param PostId $postId
+     *
+     * @return array
+     */
+    public function get(PostId $postId);
 }

@@ -38,4 +38,9 @@ class PostItemService
 
         $this->postRepository->delete($postId);
     }
+
+    public function getArticle(PostId $postId)
+    {
+        return $this->postRepository->get($postId);
+    }
 }

@@ -31,7 +31,6 @@ class RegisterApiTest extends TestCase
 
         $expected = [
             'name' => $this->data['name'],
-            'email' => $this->data['email'],
         ];
 
         // DBに保存できたか

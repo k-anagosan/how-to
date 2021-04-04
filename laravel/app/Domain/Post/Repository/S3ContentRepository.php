@@ -2,13 +2,14 @@
 
 namespace App\Domain\Post\Repository;
 
-use App\Domain\Post\Repository\CloudContentRepositoryInterface as CloudPostRepository;
+use App\Domain\Post\Repository\CloudContentRepositoryInterface as CloudContentRepository;
 use App\Domain\ValueObject\PostContent;
+use App\Domain\ValueObject\PostFilename;
 use App\Domain\ValueObject\PostId;
 use Illuminate\Http\File;
 use Illuminate\Support\Facades\Storage;
 
-class S3ContentRepository implements CloudPostRepository
+class S3ContentRepository implements CloudContentRepository
 {
     public function save(PostId $postId, PostContent $content): void
     {
@@ -31,6 +32,17 @@ class S3ContentRepository implements CloudPostRepository
 
         try {
             Storage::cloud()->delete('contents/' . $filename);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    public function read(PostFilename $filename): PostContent
+    {
+        try {
+            $disk = Storage::cloud();
+            $path = 'contents/' . $filename->toString();
+            return  PostContent::create($disk->exists($path) ? $disk->get($path) : '');
         } catch (\Exception $e) {
             throw $e;
         }
