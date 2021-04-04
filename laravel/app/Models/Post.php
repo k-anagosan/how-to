@@ -12,11 +12,11 @@ class Post extends Model
     protected $keyType = 'string';
 
     protected $appends = [
-        'url',
+        'content',
     ];
 
     protected $visible = [
-        'id', 'author', 'url',
+        'id', 'author', 'content',
     ];
 
     public function author()
@@ -29,8 +29,10 @@ class Post extends Model
         return $this->hasMany(Tag::class);
     }
 
-    public function getUrlAttribute()
+    public function getContentAttribute()
     {
-        return Storage::cloud()->url($this->attributes['content']);
+        $disk = Storage::cloud();
+        $path = 'contents/' . $this->attributes['filename'];
+        return  $disk->exists($path) ? $disk->get($path) : '';
     }
 }
