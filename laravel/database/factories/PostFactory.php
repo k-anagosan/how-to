@@ -13,7 +13,7 @@ $factory->define(Post::class, function (Faker $faker) {
         'id' => $id,
         'user_id' => fn () => factory(User::class)->create()->id,
         'title' => $faker->sentence,
-        'content' => $id . '.md',
+        'filename' => $id . '.md',
         'created_at' => $faker->dateTime(),
         'updated_at' => $faker->dateTime(),
     ];

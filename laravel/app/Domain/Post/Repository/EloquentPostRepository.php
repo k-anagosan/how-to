@@ -18,7 +18,7 @@ class EloquentPostRepository implements PostRepository
         $postOrm->id = $postId->toString();
         $postOrm->user_id = $userId->toInt();
         $postOrm->title = $title->toString();
-        $postOrm->content = $postId->getFilename();
+        $postOrm->filename = $postId->getFilename();
 
         DB::beginTransaction();
 
