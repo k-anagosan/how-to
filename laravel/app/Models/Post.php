@@ -32,6 +32,7 @@ class Post extends Model
 
     public function getContentAttribute()
     {
-        return resolve(CloudContentRepository::class)->read(PostFilename::create($this->attributes['filename']))->toString();
+        return resolve(CloudContentRepository::class)
+            ->read(PostFilename::create($this->attributes['filename']))->toString();
     }
 }
