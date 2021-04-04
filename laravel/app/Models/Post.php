@@ -17,7 +17,7 @@ class Post extends Model
     ];
 
     protected $visible = [
-        'id', 'author', 'content',
+        'id', 'title', 'author', 'content',
     ];
 
     public function author()

@@ -38,8 +38,9 @@ class GetArticleDetailApiTest extends TestCase
         $response = $this->getJson(route('post.show', ['id' => $post->id]));
 
         $response->assertStatus(200)
-            ->assertJsonFragment([
+            ->assertExactJson([
                 'id' => $post->id,
+                'title' => $post->title,
                 'content' => $post->content,
                 'author' => [
                     'name' => $post->author->name,
