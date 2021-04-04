@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
+use App\Domain\Post\Repository\CloudContentRepositoryInterface as CloudContentRepository;
+use App\Domain\ValueObject\PostFilename;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
 
 class Post extends Model
 {
@@ -31,8 +32,6 @@ class Post extends Model
 
     public function getContentAttribute()
     {
-        $disk = Storage::cloud();
-        $path = 'contents/' . $this->attributes['filename'];
-        return  $disk->exists($path) ? $disk->get($path) : '';
+        return resolve(CloudContentRepository::class)->read(PostFilename::create($this->attributes['filename']))->toString();
     }
 }
