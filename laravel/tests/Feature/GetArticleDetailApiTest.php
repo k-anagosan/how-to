@@ -24,7 +24,7 @@ class GetArticleDetailApiTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonFragment([
                 'id' => $post->id,
-                'url' => $post->url,
+                'content' => $post->content,
                 'author' => [
                     'name' => $post->author->name,
                 ],

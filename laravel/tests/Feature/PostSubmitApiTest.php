@@ -52,13 +52,13 @@ class PostSubmitApiTest extends TestCase
         $this->assertMatchesRegularExpression('/^[0-9a-zA-Z]{20}$/', $post->id);
         $this->assertDatabaseHas($post->getTable(), [
             'title' => $this->data['title'],
-            'content' => $post->content,
+            'filename' => $post->filename,
             'user_id' => $this->user->id,
         ]);
 
         // S3に本文がファイルとして保存されているか
-        Storage::cloud()->assertExists('contents/' . $post->content);
-        $this->assertEquals(Storage::cloud()->get('contents/' . $post->content), $this->data['content']);
+        Storage::cloud()->assertExists('contents/' . $post->filename);
+        $this->assertEquals(Storage::cloud()->get('contents/' . $post->filename), $this->data['content']);
     }
 
     /**
@@ -79,13 +79,13 @@ class PostSubmitApiTest extends TestCase
         $this->assertMatchesRegularExpression('/^[0-9a-zA-Z]{20}$/', $post->id);
         $this->assertDatabaseHas($post->getTable(), [
             'title' => $this->data['title'],
-            'content' => $post->content,
+            'filename' => $post->filename,
             'user_id' => $this->user->id,
         ]);
 
         // S3に本文がファイルとして保存されているか
-        Storage::cloud()->assertExists('contents/' . $post->content);
-        $this->assertEquals(Storage::cloud()->get('contents/' . $post->content), $this->data['content']);
+        Storage::cloud()->assertExists('contents/' . $post->filename);
+        $this->assertEquals(Storage::cloud()->get('contents/' . $post->filename), $this->data['content']);
 
         // Tagモデルのコレクションを取得
         $tags = $post->tags;
@@ -223,13 +223,13 @@ class PostSubmitApiTest extends TestCase
         $this->assertMatchesRegularExpression('/^[0-9a-zA-Z]{20}$/', $post->id);
         $this->assertDatabaseHas($post->getTable(), [
             'title' => $this->data['title'],
-            'content' => $post->content,
+            'filename' => $post->filename,
             'user_id' => $this->user->id,
         ]);
 
         // S3に本文がファイルとして保存されているか
-        Storage::cloud()->assertExists('contents/' . $post->content);
-        $this->assertEquals(Storage::cloud()->get('contents/' . $post->content), $this->data['content']);
+        Storage::cloud()->assertExists('contents/' . $post->filename);
+        $this->assertEquals(Storage::cloud()->get('contents/' . $post->filename), $this->data['content']);
 
         // Tagモデルのコレクションを取得
         $tags = $post->tags;
