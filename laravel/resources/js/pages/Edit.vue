@@ -1,5 +1,5 @@
 <template>
-  <div class="edit relative sm:-mx-8 h-full">
+  <div class="edit relative sm:-mx-8 -mx-4 h-full">
     <form id="edit" class="flex flex-col h-full" @submit.prevent="post">
       <input
         v-model="postForm.title"
@@ -66,19 +66,22 @@
           ></label>
         </li>
       </ul>
-      <div class="content flex-auto">
-        <div v-show="tab === 1" class="edit-content w-full h-full">
+      <div class="content flex-auto overflow-auto border rounded">
+        <div
+          v-show="tab === 1"
+          class="edit-content flex flex-col w-full h-full"
+        >
           <textarea
             v-model="postForm.content"
             name="content"
-            class="block w-full border resize-none p-2 h-full overflow-scroll"
+            class="block w-full resize-none p-4 flex-auto"
             placeholder="共有したい知識をMarkdown記法で書いて投稿しましょう"
           ></textarea>
         </div>
-        <div v-show="tab === 2" class="preview-content w-full h-full">
+        <div v-show="tab === 2" class="preview-content flex flex-col w-full">
           <div
             id="preview-area"
-            class="p-2 border h-full overflow-scroll break-words"
+            class="md-preview-area sm:p-10 p-4 flex-auto break-words"
             v-html="htmlContent"
           ></div>
         </div>
@@ -96,7 +99,12 @@
           {{ msg }}
         </li>
       </ul>
-      <button id="close-message" type="button" class="flex items-center" @click="clearMessage">
+      <button
+        id="close-message"
+        type="button"
+        class="flex items-center"
+        @click="clearMessage"
+      >
         <ion-icon name="close-outline"></ion-icon>
       </button>
     </div>
@@ -146,8 +154,11 @@ export default {
   methods: {
     async post() {
       const postId = await this.$store.dispatch("post/postItem", this.postForm);
+      if (postId !== null) {
+        this.clearMessage();
+        this.$router.push(`article/${postId}`);
+      }
       setTimeout(this.clearMessage, 5000);
-      console.log(postId);
     },
     async onFileChange(event) {
       const file = this.takeFile(event);
