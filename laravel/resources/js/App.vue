@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-white relative flex flex-col">
     <Header />
-    <main class="h-screen container mx-auto sm:px-16 px-8 sm:pt-32 pt-24">
+    <main class="min-h-screen container mx-auto sm:px-16 px-8 sm:pt-32 py-24">
       <RouterView />
     </main>
     <Footer v-if="$route.path !== '/edit'" />
