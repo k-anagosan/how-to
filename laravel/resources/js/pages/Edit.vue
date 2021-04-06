@@ -1,92 +1,98 @@
 <template>
-  <div class="edit relative sm:-mx-8 -mx-4 h-full">
-    <form id="edit" class="flex flex-col h-full" @submit.prevent="post">
-      <input
-        v-model="postForm.title"
-        type="text"
-        name="title"
-        class="block w-full border px-2 py-1"
-        placeholder="タイトル"
-      />
-      <input
-        v-model="tagsString"
-        type="text"
-        name="tags"
-        class="block w-full border px-2"
-        placeholder="タグ"
-      />
-      <ul class="flex sm:justify-start justify-between items-center h-8 mt-1">
-        <li class="flex justify-start h-full">
-          <ul class="flex justify-start h-full items-center">
-            <li class="h-full mr-2 relative">
-              <button
-                id="write-tab"
-                :class="{ 'text-gray-900 font-bold': tab === 1 }"
-                class="flex justify-center items-center h-full px-4 text-gray-500 outline-none focus:outline-none"
-                type="button"
-                @click="tab = 1"
-              >
-                Write
-              </button>
-              <span
-                class="absolute bottom-0 h-0.5 w-full bg-gray-300"
-                :class="{ 'bg-gray-900': tab === 1 }"
-              ></span>
-            </li>
-            <li class="h-full mr-2 relative">
-              <button
-                id="preview-tab"
-                :class="{ 'text-gray-900 font-bold': tab === 2 }"
-                class="flex justify-center items-center h-full px-4 text-gray-500 outline-none focus:outline-none"
-                type="button"
-                @click="tab = 2"
-              >
-                Preview
-              </button>
-              <span
-                class="absolute bottom-0 h-0.5 w-full bg-gray-300"
-                :class="{ 'bg-gray-900': tab === 2 }"
-              ></span>
-            </li>
-          </ul>
-        </li>
-        <li class="h-full flex items-center">
-          <input
-            id="post-photo"
-            type="file"
-            name="photo"
-            class="hidden"
-            value="Add Photo"
-            @change="onFileChange"
-          />
-          <label
-            for="post-photo"
-            class="h-full flex items-center px-4 rounded-sm focus:bg-white focus:text-gray-700 transition-colors cursor-pointer"
-            ><ion-icon name="image-outline"></ion-icon
-          ></label>
-        </li>
-      </ul>
-      <div class="content flex-auto overflow-auto border rounded">
-        <div
-          v-show="tab === 1"
-          class="edit-content flex flex-col w-full h-full"
+  <div class="edit">
+    <form id="edit" @submit.prevent="post">
+      <div class="flex flex-col h-screen header-offset">
+        <input
+          v-model="postForm.title"
+          type="text"
+          name="title"
+          class="block w-full border px-2 py-1"
+          placeholder="タイトル"
+        />
+        <input
+          v-model="tagsString"
+          type="text"
+          name="tags"
+          class="block w-full border px-2"
+          placeholder="タグ"
+        />
+        <ul
+          class="flex sm:justify-start justify-between items-center ml-2 h-8 mt-1"
         >
-          <textarea
-            v-model="postForm.content"
-            name="content"
-            class="block w-full resize-none p-4 flex-auto"
-            placeholder="共有したい知識をMarkdown記法で書いて投稿しましょう"
-          ></textarea>
-        </div>
-        <div v-show="tab === 2" class="preview-content flex flex-col w-full">
+          <li class="flex justify-start h-full">
+            <ul class="flex justify-start h-full items-center">
+              <li class="h-full mr-2 relative">
+                <button
+                  id="write-tab"
+                  :class="{ 'text-gray-900 font-bold': tab === 1 }"
+                  class="flex justify-center items-center h-full px-4 text-gray-500 outline-none focus:outline-none"
+                  type="button"
+                  @click="tab = 1"
+                >
+                  Write
+                </button>
+                <span
+                  class="absolute bottom-0 h-0.5 w-full bg-gray-300"
+                  :class="{ 'bg-gray-900': tab === 1 }"
+                ></span>
+              </li>
+              <li class="h-full mr-2 relative">
+                <button
+                  id="preview-tab"
+                  :class="{ 'text-gray-900 font-bold': tab === 2 }"
+                  class="flex justify-center items-center h-full px-4 text-gray-500 outline-none focus:outline-none"
+                  type="button"
+                  @click="tab = 2"
+                >
+                  Preview
+                </button>
+                <span
+                  class="absolute bottom-0 h-0.5 w-full bg-gray-300"
+                  :class="{ 'bg-gray-900': tab === 2 }"
+                ></span>
+              </li>
+            </ul>
+          </li>
+          <li class="h-full flex items-center">
+            <input
+              id="post-photo"
+              type="file"
+              name="photo"
+              class="hidden"
+              value="Add Photo"
+              @change="onFileChange"
+            />
+            <label
+              for="post-photo"
+              class="h-full flex items-center px-4 rounded-sm focus:bg-white focus:text-gray-700 transition-colors cursor-pointer"
+              ><ion-icon name="image-outline"></ion-icon
+            ></label>
+          </li>
+        </ul>
+        <div
+          class="content flex-auto overflow-auto border shadow sm:rounded bg-white"
+        >
           <div
-            id="preview-area"
-            class="md-preview-area sm:p-10 p-4 flex-auto break-words"
-            v-html="htmlContent"
-          ></div>
+            v-show="tab === 1"
+            class="edit-content flex flex-col w-full h-full"
+          >
+            <textarea
+              v-model="postForm.content"
+              name="content"
+              class="block w-full resize-none p-4 flex-auto"
+              placeholder="共有したい知識をMarkdown記法で書いて投稿しましょう"
+            ></textarea>
+          </div>
+          <div v-show="tab === 2" class="preview-content w-full">
+            <div
+              id="preview-area"
+              class="md-preview-area sm:p-10 p-4 break-words"
+              v-html="htmlContent"
+            ></div>
+          </div>
         </div>
       </div>
-      <div class="flex justify-end my-2">
+      <div class="flex justify-end my-2 sm:mr-0 mr-2">
         <Button id="post-btn" type="submit">Post</Button>
       </div>
     </form>
