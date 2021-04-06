@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="header-offset">
     <h1 v-if="article">{{ article.title }}</h1>
     <div v-if="article" class="md-preview-area" v-html="formattedContent"></div>
   </div>

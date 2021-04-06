@@ -1,10 +1,10 @@
 <template>
-  <div class="min-h-screen bg-white relative flex flex-col">
-    <Header />
-    <main class="min-h-screen container mx-auto sm:px-16 px-8 sm:pt-32 py-24">
+  <div class="min-h-screen relative flex flex-col bg-blue-50">
+    <Header class="sm:h-20 h-16 z-50" />
+    <main class="min-h-screen flex-auto container mx-auto sm:px-8 z-0">
       <RouterView />
     </main>
-    <Footer v-if="$route.path !== '/edit'" />
+    <Footer v-if="$route.path !== '/edit' && $route.path !== '/login'" />
   </div>
 </template>
 

@@ -4,3 +4,13 @@
 
 @import "./markdown.css";
 @import "~highlightjs/styles/github.css";
+
+.header-offset {
+    @apply pt-24;
+}
+
+@screen sm {
+    .header-offset {
+        @apply pt-32;
+    }
+}
