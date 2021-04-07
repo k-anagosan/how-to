@@ -5,28 +5,38 @@
 @import "./markdown.css";
 @import "~highlightjs/styles/github.css";
 
-.header-exact-offset {
-    @apply pt-16;
-}
-
-.header-offset {
-    @apply pt-24;
+.pagetop-offset {
+    @apply pt-8;
 }
 
 .header-height {
     @apply h-16;
 }
 
+.main-height {
+    height: calc(100vh - 4rem);
+}
+
+.min-main-height {
+    min-height: calc(100vh - 4rem);
+}
+
+
 @screen sm {
-    .header-exact-offset {
-        @apply pt-20;
-    }
     
-    .header-offset {
-        @apply pt-32;
+    .pagetop-offset {
+        @apply pt-12;
     }
 
     .header-height {
         @apply h-20;
+    }
+
+    .main-height {
+        height: calc(100vh - 5rem);
+    }
+    
+    .min-main-height {
+        min-height: calc(100vh - 5rem);
     }
 }
