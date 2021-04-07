@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen relative flex flex-col bg-blue-50">
-    <Header class="sm:h-20 h-16 z-50" />
+    <Header class="header-height z-50" />
     <main
       class="min-main-height flex-auto z-0"
       :class="{
