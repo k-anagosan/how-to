@@ -1,5 +1,5 @@
 import marked from "marked";
-import hljs from "highlightjs";
+import hljs from "highlight.js";
 
 marked.setOptions({
     breaks: true,
