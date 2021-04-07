@@ -31,8 +31,14 @@
           <li>tag1</li>
           <li>tag1</li>
         </ul>
-        <div class="author shadow-md bg-white w-full p-4 rounded-lg">
-          {{ article.author.name }}
+        <div class="w-full sticky top-8">
+          <div
+            class="author shadow-md bg-white p-4 flex justify-start items-center mb-8 rounded-lg"
+          >
+            <div class="rounded-full bg-black h-8 w-8 mr-2"></div>
+            <span v-if="article"> {{ article.author.name }}</span>
+          </div>
+          <div class="index shadow-md bg-white p-4 rounded-lg h-20"></div>
         </div>
       </aside>
     </div>
