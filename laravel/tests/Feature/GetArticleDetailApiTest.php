@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Post;
+use App\Models\Tag;
+use App\Models\TagName;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\UploadedFile;
@@ -25,9 +27,19 @@ class GetArticleDetailApiTest extends TestCase
     /**
      * @test
      */
-    public function should_正しい構造のJSONが返される(): void
+    public function should_タグがある場合の正しい構造のJSONが返される(): void
     {
-        $post = factory(Post::class)->create();
+        factory(Post::class)->create()->each(function (Post $post): void {
+            factory(TagName::class, 3)->create()->each(function (TagName $tagName) use ($post): void {
+                factory(Tag::class)->create(['post_id' => $post->id, 'tag_name_id' => $tagName->id]);
+            });
+        });
+
+        $post = Post::with(['author', 'tags'])->first();
+
+        $tags = collect($post->tags)->map(function ($tag) {
+            return $tag->tagName;
+        })->toArray();
 
         $file = UploadedFile::fake()->createWithContent($post->filename, $this->faker->text(2000));
         Storage::cloud()->putFileAs('contents', $file, $post->filename, 'public');
@@ -42,6 +54,38 @@ class GetArticleDetailApiTest extends TestCase
                 'id' => $post->id,
                 'title' => $post->title,
                 'content' => $post->content,
+                'tags' => $tags,
+                'author' => [
+                    'name' => $post->author->name,
+                ],
+            ]);
+
+        $this->assertEquals(Storage::cloud()->get('contents/' . $post->filename), $post->content);
+    }
+
+    /**
+     * @test
+     */
+    public function should_タグがない場合の正しい構造のJSONが返される(): void
+    {
+        factory(Post::class)->create();
+
+        $post = Post::with(['author', 'tags'])->first();
+
+        $file = UploadedFile::fake()->createWithContent($post->filename, $this->faker->text(2000));
+        Storage::cloud()->putFileAs('contents', $file, $post->filename, 'public');
+
+        // 前準備としてS3に$fileが保存されたか
+        Storage::cloud()->assertExists('contents/' . $post->filename);
+
+        $response = $this->getJson(route('post.show', ['id' => $post->id]));
+
+        $response->assertStatus(200)
+            ->assertExactJson([
+                'id' => $post->id,
+                'title' => $post->title,
+                'content' => $post->content,
+                'tags' => [],
                 'author' => [
                     'name' => $post->author->name,
                 ],

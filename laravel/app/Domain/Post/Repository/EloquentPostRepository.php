@@ -51,7 +51,9 @@ class EloquentPostRepository implements PostRepository
     public function get(PostId $postId)
     {
         try {
-            $post = Post::where('id', $postId->toString())->with(['author'])->first();
+            $post = Post::where('id', $postId->toString())
+                ->with(['author', 'tags.tagName'])
+                ->first();
         } catch (\Exception $e) {
             throw $e;
         }
@@ -60,6 +62,14 @@ class EloquentPostRepository implements PostRepository
             return [];
         }
 
-        return $post->toArray();
+        $post = $post->toArray();
+
+        if ($post['tags'] !== null) {
+            $post['tags'] = collect($post['tags'])->map(function ($tag) {
+                return $tag['tag_name'];
+            })->toArray();
+        }
+
+        return $post;
     }
 }
