@@ -10,6 +10,8 @@ class Tag extends Model
 
     protected $keyType = 'string';
 
+    protected $visible = ['tagName'];
+
     public function post()
     {
         return $this->belongsTo(Post::class);

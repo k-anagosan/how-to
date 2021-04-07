@@ -12,12 +12,10 @@ class Post extends Model
 
     protected $keyType = 'string';
 
-    protected $appends = [
-        'content',
-    ];
+    protected $appends = ['content'];
 
     protected $visible = [
-        'id', 'title', 'author', 'content',
+        'id', 'title', 'author', 'content', 'tags',
     ];
 
     public function author()
