@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Post;
+use App\Models\Tag;
+use App\Models\TagName;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\UploadedFile;
@@ -27,7 +29,17 @@ class GetArticleDetailApiTest extends TestCase
      */
     public function should_正しい構造のJSONが返される(): void
     {
-        $post = factory(Post::class)->create();
+        factory(Post::class)->create()->each(function (Post $post): void {
+            factory(TagName::class, 3)->create()->each(function (TagName $tagName) use ($post): void {
+                factory(Tag::class)->create(['post_id' => $post->id, 'tag_name_id' => $tagName->id]);
+            });
+        });
+
+        $post = Post::with(['author', 'tags'])->first();
+
+        $tags = collect($post->tags)->map(function ($tag) {
+            return $tag->tagName;
+        })->toArray();
 
         $file = UploadedFile::fake()->createWithContent($post->filename, $this->faker->text(2000));
         Storage::cloud()->putFileAs('contents', $file, $post->filename, 'public');
@@ -42,6 +54,7 @@ class GetArticleDetailApiTest extends TestCase
                 'id' => $post->id,
                 'title' => $post->title,
                 'content' => $post->content,
+                'tags' => $tags,
                 'author' => [
                     'name' => $post->author->name,
                 ],
