@@ -75,4 +75,5 @@ jobs:
 
       - run:
           name: lint vue and js files
-          command: ./laravel/node_modules/.bin/eslint ./laravel/resources/js/
+          command: npm run lint
+          working_directory: laravel
