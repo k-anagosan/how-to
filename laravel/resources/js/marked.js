@@ -1,7 +1,6 @@
 import marked from "marked";
 import hljs from "highlightjs";
 
-
 marked.setOptions({
     breaks: true,
     gfm: true,
@@ -11,7 +10,9 @@ marked.setOptions({
         const highlightCode = hljs.highlightAuto(code, [lang]).value;
         let formattedCode = `${highlightCode}`;
         if (name) {
-            formattedCode = `<p class="pre-title"><span>${name}</span></p>${formattedCode}`;
+            formattedCode = `<p class="pre-title named"><span>${name}</span></p>${formattedCode}`;
+        } else {
+            formattedCode = `<div class="pre-title nameless"><span></span></div>${formattedCode}`;
         }
         return formattedCode;
     },

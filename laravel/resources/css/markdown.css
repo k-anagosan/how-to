@@ -823,7 +823,7 @@
 .md-preview-area .highlight pre,
 .md-preview-area pre {
     position: relative;
-    padding: 0 20px 20px;
+    padding: 0 1rem 1rem;
     overflow: auto;
     font-size: 85%;
     line-height: 1.45;
@@ -988,8 +988,22 @@
     vertical-align: middle;
 }
 
-.md-preview-area .pre-title span {
-    padding: .2rem .3rem;
+
+
+
+.md-preview-area .pre-title.named {
+    height: 1rem;
+}
+.md-preview-area .pre-title.nameless {
+    height: 1rem;
+}
+
+.md-preview-area .pre-title.named span {
+    padding: 0 .3rem;
     background-color: #333;
-    color: #eee
+    color: #eee;
+}
+
+.md-preview-area .pre-title.nameless span {
+    display: none;
 }
