@@ -1,7 +1,7 @@
 <template>
   <div class="edit">
     <form id="edit" @submit.prevent="post">
-      <div class="flex flex-col h-screen header-offset">
+      <div class="flex flex-col h-screen pagetop-offset">
         <input
           v-model="postForm.title"
           type="text"

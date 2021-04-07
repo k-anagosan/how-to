@@ -1,5 +1,5 @@
 <template>
-  <header class="absolute top-0 w-full bg-blue-200">
+  <header class="w-full bg-blue-200">
     <nav
       class="sm:container flex justify-between items-center h-full px-8 sm:px-16 mx-auto"
     >

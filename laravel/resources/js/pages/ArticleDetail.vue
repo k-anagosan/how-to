@@ -1,5 +1,5 @@
 <template>
-  <div class="relative header-exact-offset flex flex-col lg:px-16 sm:pb-8">
+  <div class="relative pagetop-offset flex flex-col lg:px-16 sm:pb-8">
     <div
       class="lg:hidden flex justify-between items-center sticky z-50 top-0 sm:px-8 px-4 sm:-mx-8 mx-0 bg-white border-b border-blue-50"
     >

@@ -5,12 +5,8 @@
 @import "./markdown.css";
 @import "~highlightjs/styles/github.css";
 
-.header-exact-offset {
-    @apply pt-16;
-}
-
-.header-offset {
-    @apply pt-24;
+.pagetop-offset {
+    @apply pt-8;
 }
 
 .header-height {
@@ -18,12 +14,9 @@
 }
 
 @screen sm {
-    .header-exact-offset {
-        @apply pt-20;
-    }
     
-    .header-offset {
-        @apply pt-32;
+    .pagetop-offset {
+        @apply pt-12;
     }
 
     .header-height {
