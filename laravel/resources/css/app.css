@@ -4,3 +4,29 @@
 
 @import "./markdown.css";
 @import "~highlightjs/styles/github.css";
+
+.header-exact-offset {
+    @apply pt-16;
+}
+
+.header-offset {
+    @apply pt-24;
+}
+
+.header-height {
+    @apply h-16;
+}
+
+@screen sm {
+    .header-exact-offset {
+        @apply pt-20;
+    }
+    
+    .header-offset {
+        @apply pt-32;
+    }
+
+    .header-height {
+        @apply h-20;
+    }
+}

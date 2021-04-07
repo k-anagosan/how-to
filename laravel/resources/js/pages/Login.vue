@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-screen-sm mx-auto">
+  <div class="max-w-screen-sm header-offset mx-auto">
     <ul class="flex justify-start items-center h-12">
       <li class="h-full mr-2 relative">
         <button
