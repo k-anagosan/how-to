@@ -13,6 +13,15 @@
     @apply h-16;
 }
 
+.main-height {
+    height: calc(100vh - 4rem);
+}
+
+.min-main-height {
+    min-height: calc(100vh - 4rem);
+}
+
+
 @screen sm {
     
     .pagetop-offset {
@@ -21,5 +30,13 @@
 
     .header-height {
         @apply h-20;
+    }
+
+    .main-height {
+        height: calc(100vh - 5rem);
+    }
+    
+    .min-main-height {
+        min-height: calc(100vh - 5rem);
     }
 }

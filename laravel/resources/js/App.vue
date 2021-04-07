@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen relative flex flex-col bg-blue-50">
     <Header class="sm:h-20 h-16 z-50" />
-    <main class="min-h-screen flex-auto container mx-auto sm:px-8 z-0">
+    <main class="min-main-height flex-auto container mx-auto sm:px-8 z-0">
       <RouterView />
     </main>
     <Footer v-if="$route.path !== '/edit' && $route.path !== '/login'" />
