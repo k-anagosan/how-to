@@ -93,7 +93,9 @@ export default {
       const response = await window.axios.get(`/api/post/${this.id}`);
 
       if (response.status !== OK) {
-        this.$store.commit("error/setCode", response.status);
+        this.$store.commit("error/setErrorCode", response.status, {
+          root: true,
+        });
         return;
       }
       this.article = response.data;
