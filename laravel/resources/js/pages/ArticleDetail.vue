@@ -31,10 +31,20 @@
           <div class="md-preview-area" v-html="formattedContent"></div>
         </article>
         <aside v-if="article" class="lg:flex ml-6 hidden w-1/3 flex-col">
-          <ul class="tags shadow-md bg-white w-full p-4 mb-8 rounded-lg">
-            <li>tag1</li>
-            <li>tag1</li>
-            <li>tag1</li>
+          <ul
+            v-if="article.tags"
+            class="tags flex flex-row flex-wrap shadow-md bg-white w-full p-4 mb-8 rounded-lg"
+          >
+            <li
+              v-for="tag in article.tags"
+              :key="tag.name"
+              class="w-1/2 py-4 pr-4 flex justify-start items-center"
+            >
+              <div class="rounded-full bg-black h-8 w-8 mr-2"></div>
+              <span>
+                {{ tag.name }}
+              </span>
+            </li>
           </ul>
           <div class="w-full sticky top-8">
             <div
