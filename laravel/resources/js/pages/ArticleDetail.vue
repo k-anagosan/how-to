@@ -66,7 +66,6 @@
 </template>
 
 <script>
-import { OK } from "../utils";
 export default {
   props: {
     id: {
@@ -90,16 +89,9 @@ export default {
   },
   methods: {
     async fetchArticle() {
-      const response = await window.axios.get(`/api/post/${this.id}`);
-
-      if (response.status !== OK) {
-        this.$store.commit("error/setErrorCode", response.status, {
-          root: true,
-        });
-        return;
-      }
-      this.article = response.data;
-      this.formattedContent = this.format(response.data.content);
+      const article = await this.$store.dispatch("post/getArticle", this.id);
+      this.article = article;
+      this.formattedContent = this.format(article.content);
     },
     format(val) {
       const sanitizedContent = this.$dompurify.sanitize(val);
