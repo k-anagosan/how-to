@@ -161,7 +161,7 @@ describe("auth.js actions", () => {
                 ...originalWindow,
                 axios: {
                     get: () => ({
-                        data: "",
+                        data: [],
                         status: OK,
                     }),
                 },

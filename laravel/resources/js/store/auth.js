@@ -93,9 +93,10 @@ const actions = {
         context.commit("setApiIsSuccess", null);
 
         const response = await window.axios.get("/api/user");
-        const user = response.data || null;
 
         if (response.status === OK) {
+            const user =
+                Object.keys(response.data).length > 0 ? response.data : null;
             context.commit("setUser", user);
             context.commit("setApiIsSuccess", true);
             return;
