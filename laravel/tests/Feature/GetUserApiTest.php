@@ -38,7 +38,6 @@ class GetUserApiTest extends TestCase
     {
         $response = $this->getJson(route('user'));
 
-        $response->assertStatus(200);
-        $this->assertEquals($response->content(), '');
+        $response->assertStatus(200)->assertExactJson([]);
     }
 }

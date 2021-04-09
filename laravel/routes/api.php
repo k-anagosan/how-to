@@ -15,7 +15,7 @@ Route::post('/register', 'App\Http\Controllers\Auth\RegisterController@register'
 Route::post('/login', 'App\Http\Controllers\Auth\LoginController@login')->name('login');
 Route::post('/logout', 'App\Http\Controllers\Auth\LoginController@logout')->name('logout');
 
-Route::get('/user', fn () => Auth::user())->name('user');
+Route::get('/user', fn () => Auth::check() ? Auth::user() : [])->name('user');
 
 Route::post('/post', App\Http\Actions\PostAction::class)->name('post.create');
 Route::get('/post/{id}', App\Http\Actions\GetArticleAction::class)->name('post.show');
