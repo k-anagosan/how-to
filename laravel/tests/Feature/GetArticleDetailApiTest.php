@@ -37,10 +37,6 @@ class GetArticleDetailApiTest extends TestCase
 
         $post = Post::with(['author', 'tags'])->first();
 
-        $tags = collect($post->tags)->map(function ($tag) {
-            return $tag->tagName;
-        })->toArray();
-
         $file = UploadedFile::fake()->createWithContent($post->filename, $this->faker->text(2000));
         Storage::cloud()->putFileAs('contents', $file, $post->filename, 'public');
 
@@ -54,7 +50,9 @@ class GetArticleDetailApiTest extends TestCase
                 'id' => $post->id,
                 'title' => $post->title,
                 'content' => $post->content,
-                'tags' => $tags,
+                'tags' => $post->tags->map(function ($tag) {
+                    return $tag->tagName;
+                })->toArray(),
                 'author' => [
                     'name' => $post->author->name,
                 ],
