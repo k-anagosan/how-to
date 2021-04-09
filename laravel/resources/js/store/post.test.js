@@ -3,6 +3,7 @@ import { createLocalVue } from "@vue/test-utils";
 import "@/bootstrap";
 import {
     randomStr,
+    OK,
     CREATED,
     INTERNAL_SERVER_ERROR,
     UNPROCESSABLE_ENTITY,
@@ -44,6 +45,10 @@ describe("post.js actions", () => {
             ...originalWindow,
             axios: {
                 post: (url, data) => ({
+                    data: res(url, data),
+                    status,
+                }),
+                get: (url, data) => ({
                     data: res(url, data),
                     status,
                 }),
@@ -92,9 +97,35 @@ describe("post.js actions", () => {
             expect(store.state.post.apiIsSuccess).toBe(true);
             done();
         });
+
+        it("getArticleアクションにより記事データが取得できるか*", async done => {
+            const article = {
+                id: randomStr(20),
+                title: randomStr(30),
+                content: randomStr(100),
+                tags: [
+                    { name: randomStr(10) },
+                    { name: randomStr(10) },
+                    { name: randomStr(10) },
+                ],
+                author: {
+                    name: randomStr(10),
+                },
+            };
+            const res = () => article;
+
+            mockAxios(res, OK);
+
+            expect(store.state.post.apiIsSuccess).toBe(null);
+            const receiveArticle = await testedAction("getArticle");
+
+            expect(article).toEqual(receiveArticle);
+            expect(store.state.post.apiIsSuccess).toBe(true);
+            done();
+        });
     });
 
-    describe("API request failed with status code 500", () => {
+    describe("API request failed with status code 500 or 404", () => {
         beforeEach(() => {
             mockAxios(() => null, INTERNAL_SERVER_ERROR);
             setErrorCode.mock.calls = [];
@@ -132,6 +163,18 @@ describe("post.js actions", () => {
 
             it("errorストアのsetErrorCodeが呼び出されるか", async done => {
                 await setErrorCodeTest("postPhoto");
+                done();
+            });
+        });
+
+        describe("getArticle アクションでリクエストに失敗", () => {
+            it("apiIsSuccessに正しく値が保存されるか", async done => {
+                await apiIsSuccessTest("getArticle");
+                done();
+            });
+
+            it("errorストアのsetErrorCodeが呼び出されるか", async done => {
+                await setErrorCodeTest("getArticle");
                 done();
             });
         });

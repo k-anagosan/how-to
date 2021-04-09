@@ -23,20 +23,7 @@
 
 
 @screen sm {
-    
     .pagetop-offset {
         @apply pt-12;
-    }
-
-    .header-height {
-        @apply h-20;
-    }
-
-    .main-height {
-        height: calc(100vh - 5rem);
-    }
-    
-    .min-main-height {
-        min-height: calc(100vh - 5rem);
     }
 }

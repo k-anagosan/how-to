@@ -1,4 +1,4 @@
-import { CREATED, UNPROCESSABLE_ENTITY, hasProperty } from "../utils";
+import { OK, CREATED, UNPROCESSABLE_ENTITY, hasProperty } from "../utils";
 
 const state = {
     apiIsSuccess: null,
@@ -75,6 +75,20 @@ const actions = {
                 root: true,
             });
         }
+        context.commit("setApiIsSuccess", false);
+        return null;
+    },
+    async getArticle(context, data) {
+        context.commit("setApiIsSuccess", null);
+
+        const response = await window.axios.get(`/api/post/${data}`);
+
+        if (response.status === OK) {
+            context.commit("setApiIsSuccess", true);
+            return response.data;
+        }
+
+        context.commit("error/setErrorCode", response.status, { root: true });
         context.commit("setApiIsSuccess", false);
         return null;
     },

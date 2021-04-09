@@ -82,14 +82,13 @@ describe("App.vue", () => {
         expect(wrapper.vm.$route.path).toBe("/");
     });
 
-    it("正規のuriでなければ何も表示しない", async () => {
+    it("正規のuriでなければ/not-foundにリダイレクト", async () => {
         const uri = randomStr();
 
         await wrapper.vm.$router.push(`/${uri}`).catch(err => {
             console.log(err);
         });
-        expect(wrapper.findComponent(Login).exists()).toBe(false);
-        expect(wrapper.findComponent(CardList).exists()).toBe(false);
+        expect(wrapper.vm.$route.path).toBe("/not-found");
     });
 
     it("ステータスコード500が確認されたら/500にリダイレクト", async () => {
