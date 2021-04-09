@@ -18,7 +18,7 @@ class MakeActionCommand extends Command
      *
      * @var string
      */
-    protected $description = ' Create a new action class';
+    protected $description = 'Create a new Action class';
 
     /**
      * Create a new command instance.
@@ -33,7 +33,7 @@ class MakeActionCommand extends Command
      */
     public function handle(): void
     {
-        $actionName = $this->argument('actionName');
+        $actionName = $this->argument('actionName') . 'Action';
 
         $actionPath = app_path() . '/Http/Actions/' . $actionName . '.php';
 
@@ -59,12 +59,18 @@ class MakeActionCommand extends Command
         namespace App\\Http\\Actions;
 
         use App\\Http\\Controllers\\Controller;
-        use Illuminate\\Http\\Request;
-        use Illuminate\\Http\\Response;
 
         class ${actionName} extends Controller
         {
-            //
+            public function __construct()
+            {
+                // 
+            }
+
+            public function __invoke()
+            {
+                // 
+            }
         }
         EOD;
 
