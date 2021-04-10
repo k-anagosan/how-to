@@ -72,4 +72,25 @@ class EloquentPostRepository implements PostRepository
 
         return $post;
     }
+
+    public function retrieve()
+    {
+        try {
+            $posts = Post::with(['author', 'tags.tagName'])
+                ->orderBy(Post::CREATED_AT, 'desc')
+                ->paginate(10)
+                ->toArray();
+        } catch (\Exception $e) {
+            throw $e;
+        }
+
+        $posts['data'] = collect($posts['data'])->map(function ($post) {
+            $post['tags'] = collect($post['tags'])->map(function ($tag) {
+                return $tag['tag_name'];
+            })->toArray();
+            return $post;
+        });
+
+        return $posts;
+    }
 }

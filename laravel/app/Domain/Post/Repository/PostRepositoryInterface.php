@@ -34,4 +34,11 @@ interface PostRepositoryInterface
      * @return array
      */
     public function get(PostId $postId);
+
+    /**
+     * Postストアから記事一覧を取得する.
+     *
+     * @return array
+     */
+    public function retrieve();
 }
