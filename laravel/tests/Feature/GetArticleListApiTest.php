@@ -14,11 +14,19 @@ class GetArticleListApiTest extends TestCase
     use RefreshDatabase,
         WithFaker;
 
-    private const POST_SIZE = 101;
+    private const ARTICLE_SIZE = 300;
+
+    private $perPage = 15;
+
+    private $maxPage = 20;
 
     public function setUp(): void
     {
         parent::setUp();
+
+        $this->perPage = (new Post())->getPerPage();
+
+        $this->maxPage = floor(self::ARTICLE_SIZE / $this->perPage);
     }
 
     /**
@@ -26,7 +34,7 @@ class GetArticleListApiTest extends TestCase
      */
     public function should_パラメーターがない場合に正しい構造のJSONが返却される(): void
     {
-        factory(Post::class, self::POST_SIZE)->create()->map(function ($post): void {
+        factory(Post::class, self::ARTICLE_SIZE)->create()->map(function ($post): void {
             factory(TagName::class, 3)->create()->map(function ($tagName) use ($post): void {
                 factory(Tag::class)->create(['post_id' => $post->id, 'tag_name_id' => $tagName->id]);
             });
@@ -36,7 +44,7 @@ class GetArticleListApiTest extends TestCase
 
         $posts = Post::with(['author', 'tags.tagName'])
             ->orderBy(Post::CREATED_AT, 'desc')
-            ->limit(10)
+            ->limit($this->perPage)
             ->get();
 
         $expect = $posts->map(function ($post) {
@@ -53,7 +61,7 @@ class GetArticleListApiTest extends TestCase
         })->toArray();
 
         $response->assertStatus(200)
-            ->assertJsonCount(10, 'data')
+            ->assertJsonCount($this->perPage, 'data')
             ->assertJsonFragment(['data' => $expect]);
     }
 
@@ -62,20 +70,20 @@ class GetArticleListApiTest extends TestCase
      */
     public function should_ページのクエリストリングがある場合に正しい構造のJSONが返却される(): void
     {
-        factory(Post::class, self::POST_SIZE)->create()->map(function ($post): void {
+        factory(Post::class, self::ARTICLE_SIZE)->create()->map(function ($post): void {
             factory(TagName::class, 3)->create()->map(function ($tagName) use ($post): void {
                 factory(Tag::class)->create(['post_id' => $post->id, 'tag_name_id' => $tagName->id]);
             });
         });
 
-        $page = random_int(1, floor(self::POST_SIZE / 10));
+        $page = random_int(1, $this->maxPage);
 
         $response = $this->getJson(route('posts', ['page' => $page]));
 
         $posts = Post::with(['author', 'tags.tagName'])
             ->orderBy(Post::CREATED_AT, 'desc')
-            ->limit(10)
-            ->offset(($page - 1) * 10)
+            ->limit($this->perPage)
+            ->offset(($page - 1) * $this->perPage)
             ->get();
 
         $expect = $posts->map(function ($post) {
@@ -92,7 +100,7 @@ class GetArticleListApiTest extends TestCase
         })->toArray();
 
         $response->assertStatus(200)
-            ->assertJsonCount(10, 'data')
+            ->assertJsonCount($this->perPage, 'data')
             ->assertJsonFragment(['data' => $expect]);
     }
 }
