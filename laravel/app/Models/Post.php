@@ -18,6 +18,8 @@ class Post extends Model
         'id', 'title', 'author', 'tags',
     ];
 
+    protected $perPage = 18;
+
     public function author()
     {
         return $this->belongsTo(User::class, 'user_id', 'id', 'users');

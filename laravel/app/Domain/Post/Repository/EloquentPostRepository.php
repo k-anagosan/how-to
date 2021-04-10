@@ -78,7 +78,7 @@ class EloquentPostRepository implements PostRepository
         try {
             $posts = Post::with(['author', 'tags.tagName'])
                 ->orderBy(Post::CREATED_AT, 'desc')
-                ->paginate(10)
+                ->paginate((new Post)->getPerPage())
                 ->toArray();
         } catch (\Exception $e) {
             throw $e;
