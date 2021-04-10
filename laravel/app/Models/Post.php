@@ -15,7 +15,7 @@ class Post extends Model
     protected $appends = ['content'];
 
     protected $visible = [
-        'id', 'title', 'author', 'content', 'tags',
+        'id', 'title', 'author', 'tags',
     ];
 
     public function author()

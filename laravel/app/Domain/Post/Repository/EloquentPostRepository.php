@@ -62,7 +62,7 @@ class EloquentPostRepository implements PostRepository
             return [];
         }
 
-        $post = $post->toArray();
+        $post = $post->makeVisible('content')->toArray();
 
         if ($post['tags'] !== null) {
             $post['tags'] = collect($post['tags'])->map(function ($tag) {
