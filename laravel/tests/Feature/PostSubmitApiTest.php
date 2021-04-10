@@ -28,7 +28,7 @@ class PostSubmitApiTest extends TestCase
         $this->data = [
             'title' => $this->faker->sentence,
             'content' => $this->faker->text(2000),
-            'tags' => $this->faker->words(3),
+            'tags' => $this->faker->unique()->words(3),
         ];
     }
 
