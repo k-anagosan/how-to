@@ -21,6 +21,10 @@ class PostItemService
         $this->postRepository = $postRepository;
     }
 
+    /**
+     * 与えられたPostItemEntityをもとに永続化を行う.
+     * @param PostItemEntity $postItemEntity
+     */
     public function saveItem(PostItemEntity $postItemEntity): PostId
     {
         $this->cloudContentRepository->save($postItemEntity->getId(), $postItemEntity->getContent());
@@ -32,6 +36,10 @@ class PostItemService
         );
     }
 
+    /**
+     * 記事IDをもとに保存されている記事を削除する.
+     * @param PostId $postId
+     */
     public function deleteItem(PostId $postId): void
     {
         $this->cloudContentRepository->delete($postId);
@@ -39,8 +47,20 @@ class PostItemService
         $this->postRepository->delete($postId);
     }
 
-    public function getArticle(PostId $postId)
+    /**
+     * 記事IDをもとに記事データを取得する.
+     * @param PostId $postId
+     */
+    public function getArticle(PostId $postId): array
     {
         return $this->postRepository->get($postId);
+    }
+
+    /**
+     * 記事一覧データを取得する.
+     */
+    public function getArticleList(): array
+    {
+        return $this->postRepository->retrieve();
     }
 }
