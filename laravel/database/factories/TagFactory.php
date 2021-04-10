@@ -2,15 +2,13 @@
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
 
-use App\Models\Post;
 use App\Models\Tag;
-use App\Models\TagName;
 use Faker\Generator as Faker;
 
 $factory->define(Tag::class, function (Faker $faker) {
     return [
-        'post_id' => factory(Post::class)->create()->id,
-        'tag_name_id' => factory(TagName::class)->create()->id,
+        'post_id' => Str::random(20),
+        'tag_name_id' => $faker->unique->numberBetween(1),
         'created_at' => $faker->dateTime(),
         'updated_at' => $faker->dateTime(),
     ];
