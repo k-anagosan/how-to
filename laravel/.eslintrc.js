@@ -52,5 +52,6 @@ module.exports = {
         "prefer-destructuring": "off",
         "func-names": "off",
         "vue/no-v-html": "off",
+        "id-length": "off",
     },
 };
