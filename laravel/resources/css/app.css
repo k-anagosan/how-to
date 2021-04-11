@@ -21,6 +21,20 @@
     min-height: calc(100vh - 4rem);
 }
 
+.min-card-height {
+    height: 240px;
+    min-height: 240px;
+}
+
+
+.article-card-image::before {
+    content: "";
+    display: block;
+    padding-top: 56.25%;
+    background-color: #ddd;
+    border-radius: 8px;
+}
+
 
 @screen sm {
     .pagetop-offset {
