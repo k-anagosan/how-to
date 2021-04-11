@@ -55,6 +55,7 @@
     },
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/resources/js/$1"
-    }
+    },
+    "setupFiles": ["<rootDir>/resources/js/test-setup.js"]
   }
 }

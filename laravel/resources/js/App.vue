@@ -4,7 +4,7 @@
     <main
       class="min-main-height flex-auto z-0"
       :class="{
-        'container mx-auto sm:px-8': !$route.path.match(
+        'container mx-auto sm:px-8 md:px-16': !$route.path.match(
           /^\/article\/[a-zA-Z0-9]{20}$/g
         ),
       }"
