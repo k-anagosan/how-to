@@ -23,7 +23,7 @@ const article = () => ({
 });
 const responseFactory = (current_page, per_page, last_page) => ({
     current_page,
-    data: Array(per_page).fill(null).map(article),
+    data: [...Array(per_page)].map(article),
     per_page,
     last_page,
 });
@@ -84,39 +84,16 @@ describe("表示関連", () => {
         expect(spyFetchArticleList).toHaveBeenCalled();
         expect(wrapper.vm.$data.list).toEqual(response.data);
     });
+    it("ページアクセスしたらdataにページネーション情報が保存される", () => {
+        expect(spyFetchArticleList).toHaveBeenCalled();
+        const pagination = { ...response };
+        delete pagination.data;
+        expect(wrapper.vm.$data.pagination).toEqual(pagination);
+    });
 
     it("dataに記事一覧情報が保存されたら記事一覧が表示される", () => {
         expect(spyFetchArticleList).toHaveBeenCalled();
         expect(wrapper.findAll("card-stub").length).toBe(per_page);
-    });
-
-    it("現在ページ数と総ページ数が'x / y'の形式で表示される", async done => {
-        expect(spyFetchArticleList).toHaveBeenCalled();
-        await wrapper.setData({ pagination: { current_page: 2 } });
-        expect(wrapper.find(".current_page").text()).toBe(`2 / ${last_page}`);
-        done();
-    });
-
-    it("1ページ目ならNewerが非表示になる", () => {
-        expect(spyFetchArticleList).toHaveBeenCalled();
-        expect(wrapper.find(".newer").exists()).toBe(false);
-        expect(wrapper.find(".older").exists()).toBe(true);
-    });
-
-    it("1ページ目と最終ページでなければNewerとOlderが表示される", async done => {
-        await wrapper.setData({ pagination: { current_page: 2 } });
-        expect(spyFetchArticleList).toHaveBeenCalled();
-        expect(wrapper.find(".newer").exists()).toBe(true);
-        expect(wrapper.find(".older").exists()).toBe(true);
-        done();
-    });
-
-    it("最終ページならOlderが非表示になる", async done => {
-        await wrapper.setData({ pagination: { current_page: last_page } });
-        expect(spyFetchArticleList).toHaveBeenCalled();
-        expect(wrapper.find(".newer").exists()).toBe(true);
-        expect(wrapper.find(".older").exists()).toBe(false);
-        done();
     });
 });
 
