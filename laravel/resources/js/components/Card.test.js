@@ -75,7 +75,7 @@ describe("Vue Router 関連", () => {
         delete noneStubOption.stubs;
         wrapper = mount(Card, noneStubOption);
     });
-    it("カードRouterViewのtoに記事詳細ページへのurlが設定される", () => {
+    it("カードRouterLinkのtoに記事詳細ページへのurlが設定される", () => {
         expect(wrapper.find(".card").props().to).toBe(`/article/${article.id}`);
     });
     it("カードをクリックしたら記事詳細ページに飛ぶ", async done => {
@@ -84,7 +84,7 @@ describe("Vue Router 関連", () => {
         expect(wrapper.vm.$route.path).toBe(`/article/${article.id}`);
         done();
     });
-    it("タグRouterViewのtoにタグページ（未実装）へのurl（仮では'/'）が設定される", () => {
+    it("タグRouterLinkのtoにタグページ（未実装）へのurl（仮では'/'）が設定される", () => {
         const tags = wrapper.findAll(".tag");
 
         tags.wrappers.forEach(tag => {
