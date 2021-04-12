@@ -4,28 +4,7 @@
       v-if="list"
       class="cardlist xl:mx-40 mx-4 grid lg:grid-rows-6 lg:grid-cols-3 sm:grid-rows-9 sm:grid-cols-2 sm:gap-6 gap-y-6"
     >
-      <li v-for="article in list" :key="article.id" class="shadow-md">
-        <RouterLink :to="`/article/${article.id}`">
-          <figure class="article-card-image">
-            <img alt="" />
-          </figure>
-          <div class="flex flex-col bg-white sm:p-6 p-4 min-card-height">
-            <p class="mb-2">{{ article.author.name }}</p>
-            <h2 class="mb-4 flex-auto font-bold">{{ article.title }}</h2>
-            <ul v-if="article.tags" class="flex flex-wrap">
-              <li
-                v-for="tag in article.tags"
-                :key="tag.name"
-                class="inline-block px-1 mr-1 mb-1 border text-sm"
-              >
-                <RouterLink to="/">
-                  {{ tag.name }}
-                </RouterLink>
-              </li>
-            </ul>
-          </div>
-        </RouterLink>
-      </li>
+      <Card v-for="article in list" :key="article.id" :article="article" />
     </ul>
     <ul v-if="pagination" class="pagination relative xl:mx-40 mx-4 my-12 h-12">
       <li
@@ -62,7 +41,12 @@
   </div>
 </template>
 <script>
+import Card from "../components/Card.vue";
+
 export default {
+  components: {
+    Card,
+  },
   props: {
     page: {
       type: Number,

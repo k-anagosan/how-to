@@ -87,7 +87,7 @@ describe("表示関連", () => {
 
     it("dataに記事一覧情報が保存されたら記事一覧が表示される", () => {
         expect(spyFetchArticleList).toHaveBeenCalled();
-        expect(wrapper.findAll(".cardlist > li").length).toBe(per_page);
+        expect(wrapper.findAll("card-stub").length).toBe(per_page);
     });
 
     it("現在ページ数と総ページ数が'x / y'の形式で表示される", async done => {
