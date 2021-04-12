@@ -79,6 +79,7 @@ export default {
   watch: {
     $route: {
       async handler() {
+        [this.list, this.pagination] = [null, null];
         await this.fetchArticleList();
       },
       immediate: true,
@@ -86,11 +87,13 @@ export default {
   },
   methods: {
     async fetchArticleList() {
-      const response = await window.axios.get(`/api/posts/?page=${this.page}`);
-
-      this.list = response.data.data;
-      delete response.data.data;
-      this.pagination = response.data;
+      const response = await this.$store.dispatch(
+        "post/getArticleList",
+        this.page
+      );
+      this.list = response.data;
+      delete response.data;
+      this.pagination = response;
     },
   },
 };
