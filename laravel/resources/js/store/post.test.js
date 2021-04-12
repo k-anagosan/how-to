@@ -123,6 +123,35 @@ describe("post.js actions", () => {
             expect(store.state.post.apiIsSuccess).toBe(true);
             done();
         });
+
+        it("getArticleListアクションにより記事データが取得できるか*", async done => {
+            const article = {
+                id: randomStr(20),
+                title: randomStr(30),
+                content: randomStr(100),
+                tags: [
+                    { name: randomStr(10) },
+                    { name: randomStr(10) },
+                    { name: randomStr(10) },
+                ],
+                author: {
+                    name: randomStr(10),
+                },
+            };
+            const articleList = {
+                data: [article, article, article, article],
+            };
+            const res = () => articleList;
+
+            mockAxios(res, OK);
+
+            expect(store.state.post.apiIsSuccess).toBe(null);
+            const receiveArticleList = await testedAction("getArticleList");
+
+            expect(articleList).toEqual(receiveArticleList);
+            expect(store.state.post.apiIsSuccess).toBe(true);
+            done();
+        });
     });
 
     describe("API request failed with status code 500 or 404", () => {

@@ -64,12 +64,8 @@ const routes = [
         },
     },
     {
-        path: "/not-found",
-        component: NotFound,
-    },
-    {
         path: "*",
-        redirect: "/not-found",
+        component: NotFound,
     },
 ];
 

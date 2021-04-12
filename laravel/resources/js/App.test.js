@@ -9,89 +9,125 @@ import App from "@/App.vue";
 import CardList from "@/pages/CardList.vue";
 import Login from "@/pages/Login.vue";
 import Edit from "@/pages/Edit.vue";
+import ArticleDetail from "@/pages/ArticleDetail.vue";
+import InternalServerError from "@/pages/errors/InternalServerError.vue";
+import NotFound from "@/pages/errors/NotFound.vue";
 
-import { randomStr, INTERNAL_SERVER_ERROR } from "./utils";
+import { randomStr, INTERNAL_SERVER_ERROR, NOT_FOUND } from "./utils";
 
-describe("App.vue", () => {
-    let wrapper = null;
-    const localVue = createLocalVue();
-    localVue.use(VueRouter);
-    localVue.use(Vuex);
+jest.mock("@/pages/CardList.vue", () => ({
+    name: "CardList",
+    render: h => h("h1", "CardList"),
+}));
+jest.mock("@/pages/Login.vue", () => ({
+    name: "Login",
+    render: h => h("h1", "Login"),
+}));
+jest.mock("@/pages/Edit.vue", () => ({
+    name: "Edit",
+    render: h => h("h1", "Edit"),
+}));
+jest.mock("@/pages/ArticleDetail.vue", () => ({
+    name: "ArticleDetail",
+    render: h => h("h1", "ArticleDetail"),
+}));
+jest.mock("@/pages/errors/InternalServerError.vue", () => ({
+    name: "InternalServerError",
+    render: h => h("h1", "InternalServerError"),
+}));
+jest.mock("@/pages/errors/NotFound.vue", () => ({
+    name: "NotFound",
+    render: h => h("h1", "NotFound"),
+}));
 
-    beforeEach(() => {
-        wrapper = mount(App, {
-            localVue,
-            router,
-            store,
-            stubs: {
-                "ion-icon": true,
-            },
-        });
+let wrapper = null;
+const localVue = createLocalVue();
+localVue.use(VueRouter);
+localVue.use(Vuex);
+
+beforeEach(() => {
+    wrapper = mount(App, {
+        localVue,
+        router,
+        store,
+        stubs: {
+            Header: true,
+            Footer: true,
+        },
     });
+});
 
-    afterEach(() => {
-        wrapper.destroy();
-        wrapper.vm.$router.push("/").catch(() => {});
-    });
+afterEach(() => {
+    wrapper.destroy();
+    wrapper.vm.$router.push("/").catch(() => {});
+});
 
-    it("/にアクセスしたらCardListを表示する", async () => {
+describe("アクセス結果", () => {
+    it("/にアクセスしたらCardListを表示する", async done => {
         const uri = randomStr();
-        await wrapper.vm.$router.push(`/${uri}`).catch(err => {
-            console.log(err);
-        });
-        await wrapper.vm.$router.push("/").catch(err => {
-            console.log(err);
-        });
+        await wrapper.vm.$router.push(`/${uri}`).catch(() => {});
+        await wrapper.vm.$router.push("/").catch(() => {});
         expect(wrapper.findComponent(CardList).exists()).toBe(true);
+        done();
     });
 
-    it("/loginにアクセスしたらLoginを表示する", async () => {
-        await wrapper.vm.$router.push("/login").catch(err => {
-            console.log(err);
-        });
-        expect(wrapper.findComponent(Login).exists()).toBe(true);
-    });
-
-    it("ログイン中に/loginにアクセスしたら/にリダイレクトされる", async () => {
-        wrapper.vm.$store.commit("auth/setUser", true);
-
-        expect(wrapper.vm.$route.path).toBe("/");
-
+    it("/loginにアクセスしたらLoginを表示する", async done => {
         await wrapper.vm.$router.push("/login").catch(() => {});
-
-        expect(wrapper.vm.$route.path).toBe("/");
+        expect(wrapper.findComponent(Login).exists()).toBe(true);
+        done();
     });
 
-    it("ログイン中に/editにアクセスしたらEditを表示する", async () => {
+    it("ログイン中に/editにアクセスしたらEditを表示する", async done => {
         wrapper.vm.$store.commit("auth/setUser", true);
-
         expect(wrapper.vm.$route.path).toBe("/");
-
         await wrapper.vm.$router.push("/edit").catch(() => {});
-
         expect(wrapper.findComponent(Edit).exists()).toBe(true);
+        done();
     });
 
-    it("未認証中に/editにアクセスしたら/にリダイレクトされる", async () => {
+    it("/article/xxxにアクセスしたらArticleDetailを表示する", async done => {
+        await wrapper.vm.$router
+            .push(`/article/${randomStr(20)}`)
+            .catch(() => {});
+        expect(wrapper.findComponent(ArticleDetail).exists()).toBe(true);
+        done();
+    });
+
+    it("設定していないルートにアクセスしたらNotFoundを表示する", async done => {
+        await wrapper.vm.$router.push(`/${randomStr(10)}`).catch(() => {});
+        expect(wrapper.findComponent(NotFound).exists()).toBe(true);
+        done();
+    });
+});
+
+describe("リダイレクト", () => {
+    it("ログイン中に/loginにアクセスしたら/にリダイレクトされる", async done => {
+        wrapper.vm.$store.commit("auth/setUser", true);
+        expect(wrapper.vm.$route.path).toBe("/");
+        await wrapper.vm.$router.push("/login").catch(() => {});
+        expect(wrapper.vm.$route.path).toBe("/");
+        done();
+    });
+
+    it("未認証中に/editにアクセスしたら/にリダイレクトされる", async done => {
         wrapper.vm.$store.commit("auth/setUser", null);
-
         expect(wrapper.vm.$route.path).toBe("/");
-
         await wrapper.vm.$router.push("/edit").catch(() => {});
-
         expect(wrapper.vm.$route.path).toBe("/");
+        done();
     });
 
-    it("正規のuriでなければ/not-foundにリダイレクト", async () => {
-        const uri = randomStr();
+    it("ステータスコード404が確認されたら/not-foundにリダイレクト", async done => {
+        expect(wrapper.vm.$route.path).toBe("/");
 
-        await wrapper.vm.$router.push(`/${uri}`).catch(err => {
-            console.log(err);
-        });
+        await wrapper.vm.$store.commit("error/setErrorCode", NOT_FOUND);
+
         expect(wrapper.vm.$route.path).toBe("/not-found");
+        expect(wrapper.findComponent(NotFound).exists()).toBe(true);
+        done();
     });
 
-    it("ステータスコード500が確認されたら/500にリダイレクト", async () => {
+    it("ステータスコード500が確認されたら/500にリダイレクト", async done => {
         expect(wrapper.vm.$route.path).toBe("/");
 
         await wrapper.vm.$store.commit(
@@ -100,5 +136,7 @@ describe("App.vue", () => {
         );
 
         expect(wrapper.vm.$route.path).toBe("/500");
+        expect(wrapper.findComponent(InternalServerError).exists()).toBe(true);
+        done();
     });
 });

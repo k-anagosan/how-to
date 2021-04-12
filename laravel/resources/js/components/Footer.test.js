@@ -60,10 +60,11 @@ describe("Footer.vue のRouterLink", () => {
         wrapper.destroy();
     });
 
-    it("'Login / Register'をクリックしたら'/login'にアクセスされる", async () => {
+    it("'Login / Register'をクリックしたら'/login'にアクセスされる", async done => {
         expect(wrapper.vm.$route.path).not.toBe("/login");
         await wrapper.find("a").trigger("click");
         expect(wrapper.vm.$route.path).toBe("/login");
+        done();
     });
 });
 
@@ -98,21 +99,23 @@ describe("Footer.vueのauthストア", () => {
         authStoreMock.actions.logout.mock.calls = [];
     });
 
-    it("'logout'がクリックされたら'auth/logout'アクションが実行される", async () => {
+    it("'logout'がクリックされたら'auth/logout'アクションが実行される", async done => {
         await wrapper.find("button").trigger("click");
         expect(authStoreMock.actions.logout).toHaveBeenCalled();
+        done();
     });
 
-    it("'auth/logout'アクションが実行された後、'/'へリダイレクト", async () => {
+    it("'auth/logout'アクションが実行された後、'/'へリダイレクト", async done => {
         expect(wrapper.vm.$route.path).toBe("/login");
         expect(authStoreMock.actions.logout).not.toHaveBeenCalled();
 
         await wrapper.find("button").trigger("click");
         expect(authStoreMock.actions.logout).toHaveBeenCalled();
         expect(wrapper.vm.$route.path).toBe("/");
+        done();
     });
 
-    it("'auth/logout'アクションが実行された場所が'/'であれば$router.push('/')が実行されない", async () => {
+    it("'auth/logout'アクションが実行された場所が'/'であれば$router.push('/')が実行されない", async done => {
         await wrapper.vm.$router.push("/");
         expect(wrapper.vm.$route.path).toBe("/");
         expect(spyPush).toHaveBeenCalledTimes(1);
@@ -122,9 +125,10 @@ describe("Footer.vueのauthストア", () => {
         expect(wrapper.vm.$route.path).toBe("/");
         expect(spyPush).toHaveBeenCalledTimes(1);
         expect(authStoreMock.actions.logout).toHaveBeenCalled();
+        done();
     });
 
-    it("'auth/logout'アクションが失敗したら$router.push('/')が実行されない", async () => {
+    it("'auth/logout'アクションが失敗したら$router.push('/')が実行されない", async done => {
         wrapper.vm.$store.commit("auth/setApiIsSuccess", false);
         expect(wrapper.vm.$store.state.auth.apiIsSuccess).toBe(false);
 
@@ -134,6 +138,7 @@ describe("Footer.vueのauthストア", () => {
         await wrapper.find("button").trigger("click");
         expect(authStoreMock.actions.logout).toHaveBeenCalled();
         expect(wrapper.vm.$route.path).toBe("/login");
+        done();
     });
 });
 

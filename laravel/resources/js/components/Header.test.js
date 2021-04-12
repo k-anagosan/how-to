@@ -43,18 +43,20 @@ describe("Header.vue のRouterLink", () => {
         });
     };
 
-    it("'Login / Register'をクリックしたら'/login'にアクセスされる", async () => {
+    it("'Login / Register'をクリックしたら'/login'にアクセスされる", async done => {
         const wrapper = mountWrapper(false);
         expect(wrapper.vm.$route.path).not.toBe("/login");
         await wrapper.find("a.login-link").trigger("click");
         expect(wrapper.vm.$route.path).toBe("/login");
+        done();
     });
 
-    it("'Edit Button'をクリックしたら'/edit'にアクセスされる", async () => {
+    it("'Edit Button'をクリックしたら'/edit'にアクセスされる", async done => {
         const wrapper = mountWrapper(true);
         expect(wrapper.vm.$route.path).not.toBe("/edit");
         await wrapper.find("a.edit-button").trigger("click");
         expect(wrapper.vm.$route.path).toBe("/edit");
+        done();
     });
 });
 
