@@ -2,7 +2,7 @@
   <div class="pagetop-offset">
     <ul
       v-if="list"
-      class="xl:mx-40 mx-4 grid lg:grid-rows-6 lg:grid-cols-3 sm:grid-rows-9 sm:grid-cols-2 sm:gap-6 gap-y-6"
+      class="cardlist xl:mx-40 mx-4 grid lg:grid-rows-6 lg:grid-cols-3 sm:grid-rows-9 sm:grid-cols-2 sm:gap-6 gap-y-6"
     >
       <li v-for="article in list" :key="article.id" class="shadow-md">
         <RouterLink :to="`/article/${article.id}`">
@@ -27,10 +27,10 @@
         </RouterLink>
       </li>
     </ul>
-    <ul v-if="pagination" class="relative xl:mx-40 mx-4 my-12 h-12">
+    <ul v-if="pagination" class="pagination relative xl:mx-40 mx-4 my-12 h-12">
       <li
-        v-show="pagination.current_page > 1"
-        class="absolute top-1/2 left-0 -translate-y-1/2 transform"
+        v-if="pagination.current_page > 1"
+        class="newer absolute top-1/2 left-0 -translate-y-1/2 transform"
       >
         <RouterLink :to="`/?page=${pagination.current_page - 1}`">
           <div class="flex items-center p-2 pl-0">
@@ -40,13 +40,13 @@
         </RouterLink>
       </li>
       <li
-        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform flex items-center"
+        class="current_page absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform flex items-center"
       >
         {{ pagination.current_page }} / {{ pagination.last_page }}
       </li>
       <li
         v-if="pagination.current_page < pagination.last_page"
-        class="absolute top-1/2 right-0 -translate-y-1/2 transform"
+        class="older absolute top-1/2 right-0 -translate-y-1/2 transform"
       >
         <RouterLink
           :to="`/?page=${pagination.current_page + 1}`"
@@ -91,6 +91,7 @@ export default {
         "post/getArticleList",
         this.page
       );
+      if (!response) return;
       this.list = response.data;
       delete response.data;
       this.pagination = response;
