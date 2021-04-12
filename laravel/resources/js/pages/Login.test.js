@@ -54,16 +54,18 @@ describe("表示、入力関連", () => {
             localVue,
         });
     });
-    it("#login-tabをクリックしたらログインフォームが表示される", async () => {
+    it("#login-tabをクリックしたらログインフォームが表示される", async done => {
         await wrapper.find("#login-tab").trigger("click");
         expect(wrapper.find("#login-form").isVisible()).toBe(true);
         expect(wrapper.find("#register-form").isVisible()).toBe(false);
+        done();
     });
 
-    it("#register-tabをクリックしたら登録フォームが表示される", async () => {
+    it("#register-tabをクリックしたら登録フォームが表示される", async done => {
         await wrapper.find("#register-tab").trigger("click");
         expect(wrapper.find("#login-form").isVisible()).toBe(false);
         expect(wrapper.find("#register-form").isVisible()).toBe(true);
+        done();
     });
 
     it("#login-formに入力した値がdataに保存される", () => {
@@ -115,21 +117,23 @@ describe("Vuex", () => {
             await wrapper.vm.$router.push("/login").catch(() => {});
         });
 
-        it("#register-formを送信したらauth/registerアクションが実行される", async () => {
+        it("#register-formを送信したらauth/registerアクションが実行される", async done => {
             expect(wrapper.vm.$route.path).toBe("/login");
             await wrapper.find("#register-form").trigger("submit");
 
             expect(authStoreMock.actions.register).toHaveBeenCalled();
 
             expect(wrapper.vm.$route.path).toBe("/");
+            done();
         });
 
-        it("#login-formを送信したらauth/registerアクションが実行される", async () => {
+        it("#login-formを送信したらauth/registerアクションが実行される", async done => {
             expect(wrapper.vm.$route.path).toBe("/login");
             await wrapper.find("#login-form").trigger("submit");
 
             expect(authStoreMock.actions.login).toHaveBeenCalled();
             expect(wrapper.vm.$route.path).toBe("/");
+            done();
         });
     });
 
@@ -171,21 +175,23 @@ describe("Vuex", () => {
             spyClearMessage.mock.calls = [];
         });
 
-        it("registerの結果422エラーの時はリダイレクトしない", async () => {
+        it("registerの結果422エラーの時はリダイレクトしない", async done => {
             expect(wrapper.vm.$route.path).toBe("/login");
 
             await wrapper.find("#register-form").trigger("submit");
 
             expect(authStoreMock.actions.register).toHaveBeenCalled();
             expect(wrapper.vm.$route.path).toBe("/login");
+            done();
         });
-        it("loginの結果422エラーの時はリダイレクトしない", async () => {
+        it("loginの結果422エラーの時はリダイレクトしない", async done => {
             expect(wrapper.vm.$route.path).toBe("/login");
 
             await wrapper.find("#login-form").trigger("submit");
 
             expect(authStoreMock.actions.login).toHaveBeenCalled();
             expect(wrapper.vm.$route.path).toBe("/login");
+            done();
         });
 
         it("#login-formのバリデーションエラーを正しく算出している", () => {
@@ -240,11 +246,12 @@ describe("Vuex", () => {
         it("ページアクセス時にclearMessage()が呼び出されている", () => {
             expect(spyClearMessage).toHaveBeenCalledTimes(1);
         });
-        it("タブ切り替えによりclearMessage()が呼び出されている", async () => {
+        it("タブ切り替えによりclearMessage()が呼び出されている", async done => {
             spyClearMessage.mock.calls = [];
             expect(spyClearMessage).not.toHaveBeenCalled();
             await wrapper.setData({ tab: 2 });
             expect(spyClearMessage).toHaveBeenCalled();
+            done();
         });
     });
 });
