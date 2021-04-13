@@ -38,18 +38,17 @@ const response = responseFactory(current_page, per_page, last_page);
 
 const postModule = {
     namespaced: true,
-    state: { apiIsSuccess: null },
     actions: {
         getArticleList: jest.fn().mockImplementation(() => ({ ...response })),
     },
 };
 
+const router = new VueRouter();
 const store = new Vuex.Store({
     modules: {
         post: postModule,
     },
 });
-const router = new VueRouter();
 
 const options = {
     store,
@@ -58,7 +57,7 @@ const options = {
     stubs: {
         "ion-icon": true,
     },
-    setProps: {
+    propsData: {
         page: current_page,
     },
 };
