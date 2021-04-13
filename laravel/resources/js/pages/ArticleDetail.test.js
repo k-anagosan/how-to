@@ -11,9 +11,7 @@ const localVue = createLocalVue();
 localVue.use(VueRouter);
 localVue.use(Vuex);
 
-let wrapper = null;
-
-const article = {
+const responseFactory = () => ({
     id: randomStr(20),
     title: randomStr(30),
     content: randomStr(100),
@@ -25,85 +23,59 @@ const article = {
     author: {
         name: randomStr(10),
     },
-};
+});
+
+const response = responseFactory();
 
 const postModuleMock = {
     namespaced: true,
-    state: {
-        apiIsSuccess: true,
-    },
     actions: {
-        getArticle: jest.fn().mockImplementation(() => article),
+        getArticle: jest.fn().mockImplementation(() => ({ ...response })),
     },
 };
-const spyFormat = jest.spyOn(ArticleDetail.methods, "format");
+const router = new VueRouter();
+const store = new Vuex.Store({
+    modules: {
+        post: postModuleMock,
+    },
+});
 
+const options = {
+    store,
+    router,
+    localVue,
+    propsData: { id: randomStr(20) },
+    stubs: {
+        "ion-icon": true,
+    },
+};
+
+const factory = options => shallowMount(ArticleDetail, options);
+
+const spyFetchArticle = jest.spyOn(ArticleDetail.methods, "fetchArticle");
+
+let wrapper = null;
 beforeEach(() => {
-    const router = new VueRouter({ mode: "history" });
-    const store = new Vuex.Store({
-        modules: {
-            post: postModuleMock,
-        },
-    });
-    const $marked = jest.fn().mockImplementation(val => val);
-    const $dompurify = {
-        sanitize: jest.fn().mockImplementation(val => val),
-    };
-
-    wrapper = shallowMount(ArticleDetail, {
-        store,
-        router,
-        localVue,
-        propsData: { id: randomStr(20) },
-        stubs: {
-            "ion-icon": true,
-        },
-        mocks: {
-            $marked,
-            $dompurify,
-        },
-    });
+    wrapper = factory(options);
+    spyFetchArticle.mock.calls = [];
 });
 
 describe("表示、入力関連", () => {
-    beforeEach(() => {
-        spyFormat.mock.calls = [];
-        wrapper.vm.$marked.mock.calls = [];
-        wrapper.vm.$dompurify.sanitize.mock.calls = [];
-    });
-    it("ページアクセスしたら記事データを取得できる", async done => {
-        await wrapper.vm.$router.push("/").catch(() => {});
-        expect(wrapper.vm.$route.path).toBe("/");
+    beforeEach(async () => {
         const path = `/article/${randomStr(20)}`;
         await wrapper.vm.$router.push(path);
         expect(wrapper.vm.$route.path).toBe(path);
-        expect(wrapper.vm.$data.article).toEqual(article);
-        done();
     });
 
-    it("ページアクセスしたらformat()が実行される", async done => {
-        expect(spyFormat).not.toHaveBeenCalled();
-        await wrapper.vm.$router.push("/").catch(() => {});
-        expect(wrapper.vm.$route.path).toBe("/");
-
-        const path = `/article/${randomStr(20)}`;
-        await wrapper.vm.$router.push(path);
-        expect(spyFormat).toHaveBeenCalled();
-        expect(wrapper.vm.$route.path).toBe(path);
-        expect(wrapper.vm.$data.formattedContent).toEqual(`${article.content}`);
-        done();
+    it("ページアクセスしたら記事データを取得できる", () => {
+        expect(spyFetchArticle).toHaveBeenCalledTimes(1);
+        expect(wrapper.vm.$data.article).toEqual(response);
     });
 
-    it("format()が実行されたサニタイズ処理が実行される", () => {
-        expect(spyFormat).not.toHaveBeenCalled();
-        expect(wrapper.vm.$marked).not.toHaveBeenCalled();
-        expect(wrapper.vm.$dompurify.sanitize).not.toHaveBeenCalled();
-
-        wrapper.vm.format(randomStr(100));
-
-        expect(spyFormat).toHaveBeenCalled();
-        expect(wrapper.vm.$marked).toHaveBeenCalled();
-        expect(wrapper.vm.$dompurify.sanitize).toHaveBeenCalled();
+    it("記事データを取得したらMarkdownPreviewへarticle.contentを渡せる", () => {
+        expect(wrapper.find("markdownpreview-stub").props().text).toEqual(
+            response.content
+        );
     });
 });
 
@@ -113,7 +85,7 @@ describe("Vuex", () => {
         spyFetchArticle.mock.calls = [];
         postModuleMock.actions.getArticle.mock.calls = [];
     });
-    it("ページアクセスしたらgetArticleが実行される", async done => {
+    it("ページアクセスしたらgetArticleアクションが実行される", async done => {
         expect(postModuleMock.actions.getArticle).not.toHaveBeenCalled();
         expect(spyFetchArticle).not.toHaveBeenCalled();
         await wrapper.vm.$router.push(`/article/${randomStr(20)}`);

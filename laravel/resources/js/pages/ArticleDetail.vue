@@ -19,20 +19,17 @@
         </button>
       </div>
     </div>
-    <div class="container mx-auto flex flex-col lg:px-16 sm:p-8 pagetop-offset">
-      <div class="title-area min-h-8 p-8 text-center">
+    <div
+      class="container mx-auto flex flex-col lg:px-32 sm:p-8 sm:pb-16 pagetop-offset"
+    >
+      <div class="title-area sm:h-8 m-8 text-center">
         <h1 v-if="article" class="text-2xl">{{ article.title }}</h1>
       </div>
-
       <div class="flex">
         <article
           class="min-main-height sm:shadow-md sm:p-10 p-5 pb-8 sm:rounded-lg bg-white lg:w-2/3 w-full"
         >
-          <div
-            v-if="article"
-            class="md-preview-area"
-            v-html="formattedContent"
-          ></div>
+          <MarkdownPreview v-if="article" :text="article.content" />
         </article>
         <aside v-if="article" class="lg:flex ml-6 hidden w-1/3 flex-col">
           <ul
@@ -66,7 +63,11 @@
 </template>
 
 <script>
+import MarkdownPreview from "../components/MarkdownPreview.vue";
 export default {
+  components: {
+    MarkdownPreview,
+  },
   props: {
     id: {
       type: String,
@@ -76,7 +77,6 @@ export default {
   data() {
     return {
       article: null,
-      formattedContent: "",
     };
   },
   watch: {
@@ -90,12 +90,8 @@ export default {
   methods: {
     async fetchArticle() {
       const article = await this.$store.dispatch("post/getArticle", this.id);
+      if (!article) return;
       this.article = article;
-      this.formattedContent = this.format(article.content);
-    },
-    format(val) {
-      const sanitizedContent = this.$dompurify.sanitize(val);
-      return this.$marked(sanitizedContent);
     },
   },
 };
