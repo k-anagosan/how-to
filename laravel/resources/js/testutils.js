@@ -1,8 +1,9 @@
 import { shallowMount, createLocalVue, mount } from "@vue/test-utils";
+import Vue from "vue";
 import VueRouter from "vue-router";
 import Vuex from "vuex";
 
-class TestComponent {
+class TestUtils {
     /**
      * マウント対象のコンポーネントとマウンティングオプションをセットする
      *
@@ -12,6 +13,7 @@ class TestComponent {
     setMountOption(Component, options) {
         this.Component = Component;
         this.options = { ...options };
+        this.localVue = createLocalVue();
     }
 
     /**
@@ -20,16 +22,16 @@ class TestComponent {
      * @param {Object} routes
      */
     setVueRouter(routes) {
-        const localVue = createLocalVue();
-
         const router = new VueRouter({
             routes: { ...routes },
             mode: "history",
         });
 
+        this.localVue.use(VueRouter);
+
         this.options = {
             ...this.options,
-            localVue,
+            localVue: this.localVue,
             router,
         };
     }
@@ -40,15 +42,49 @@ class TestComponent {
      * @param {Object} modules
      */
     setVuex(modules) {
-        const localVue = createLocalVue();
+        const store = this.createVuexStore(modules);
 
-        const store = new Vuex.Store({ modules: { ...modules } });
+        this.localVue.use(Vuex);
 
         this.options = {
             ...this.options,
-            localVue,
+            localVue: this.localVue,
             store,
         };
+    }
+
+    /**
+     * Vuexストアのみを生成する
+     *
+     * @param {*} modules
+     * @return {*}
+     */
+    createVuexStore(modules) {
+        Vue.use(Vuex);
+        this.store = new Vuex.Store({ modules: { ...modules } });
+        return this.store;
+    }
+
+    /**
+     * axiosをモックする
+     *
+     * @param {*} get
+     * @param {*} post
+     */
+    mockAxios(get, post) {
+        const originalWindow = { ...window };
+        this.windowSpy = jest.spyOn(global, "window", "get");
+        this.windowSpy.mockImplementation(() => ({
+            ...originalWindow,
+            axios: { get, post },
+        }));
+    }
+
+    /**
+     * axiosのモックを解除する
+     */
+    restoreAxios() {
+        if (this.windowSpy) this.windowSpy.mockRestore();
     }
 
     /**
@@ -113,6 +149,18 @@ class TestComponent {
     computedValue(target, options) {
         return this.Component.computed[target].call(options);
     }
+
+    async testedAction(action, payload) {
+        if (!this.store) {
+            return null;
+        }
+        const data = await this.store.dispatch(action, payload);
+        return data;
+    }
+
+    testedGetter(getter) {
+        return this.store.getters[`${getter}`];
+    }
 }
 
-export default TestComponent;
+export default TestUtils;
