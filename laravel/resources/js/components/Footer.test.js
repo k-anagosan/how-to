@@ -1,190 +1,137 @@
-import Vuex from "vuex";
-import VueRouter from "vue-router";
-
-import {
-    mount,
-    shallowMount,
-    createLocalVue,
-    RouterLinkStub,
-} from "@vue/test-utils";
+import TestUtils from "@/testutils";
+import { RouterLinkStub } from "@vue/test-utils";
 
 import Footer from "@/components/Footer.vue";
 
-const localVue = createLocalVue();
-localVue.use(Vuex);
-localVue.use(VueRouter);
+const Test = new TestUtils();
+const logout = jest.fn();
+Test.setSpys({ logout });
 
-const authStoreMock = {
-    namespaced: true,
-    actions: {
-        logout: jest.fn(),
-    },
-    getters: {
-        isAuthenticated: jest.fn().mockImplementation(() => true),
-    },
-    state: {
-        apiIsSuccess: true,
-    },
-    mutations: {
-        setApiIsSuccess: (state, apiIsSuccess) => {
-            state.apiIsSuccess = apiIsSuccess;
+const setVuex = isAuth => {
+    const setApiIsSuccess = (state, apiIsSuccess) => {
+        state.apiIsSuccess = apiIsSuccess;
+    };
+    const isAuthenticated = () => isAuth;
+    Test.setVuex({
+        auth: {
+            namespaced: true,
+            actions: { logout },
+            getters: { isAuthenticated },
+            state: { apiIsSuccess: true },
+            mutations: { setApiIsSuccess },
         },
-    },
+    });
 };
 
-const router = new VueRouter({
-    mode: "history",
-    routes: [{ path: "/login" }],
+let wrapper = null;
+
+beforeEach(() => {
+    Test.setMountOption(Footer, {});
+    Test.setVueRouter();
 });
 
+afterEach(() => {
+    Test.clearSpysCalledTimes();
+    wrapper.destroy();
+});
+
+const checkIsAccessedByClick = async (to, target) => {
+    expect(wrapper.vm.$route.path).not.toBe(to);
+    await wrapper.find(target).trigger("click");
+    expect(wrapper.vm.$route.path).toBe(to);
+};
+
 describe("Footer.vue のRouterLink", () => {
-    let wrapper = null;
-
-    beforeEach(() => {
-        authStoreMock.getters.isAuthenticated = jest.fn(() => false);
-        const store = new Vuex.Store({
-            modules: {
-                auth: authStoreMock,
-            },
-        });
-
-        wrapper = mount(Footer, {
-            router,
-            localVue,
-            store,
-        });
-    });
-
-    afterEach(() => {
-        authStoreMock.getters.isAuthenticated = jest.fn(() => true);
-        wrapper.destroy();
-    });
-
     it("'Login / Register'をクリックしたら'/login'にアクセスされる", async done => {
-        expect(wrapper.vm.$route.path).not.toBe("/login");
-        await wrapper.find("a").trigger("click");
-        expect(wrapper.vm.$route.path).toBe("/login");
+        setVuex(false);
+        wrapper = Test.wrapperFactory();
+        await checkIsAccessedByClick("/login", "a");
         done();
     });
 });
 
 describe("Footer.vueのauthストア", () => {
-    let wrapper = null;
     let spyPush = null;
 
-    beforeEach(async () => {
-        const store = new Vuex.Store({
-            modules: {
-                auth: authStoreMock,
-            },
-        });
+    const checkSpyIsCalled = async (to, target) => {
+        Test.clearSpysCalledTimes();
 
-        wrapper = shallowMount(Footer, {
-            store,
-            localVue,
-            router,
+        expect(spyPush).not.toHaveBeenCalled();
+        expect(logout).not.toHaveBeenCalled();
+
+        await wrapper.find(target).trigger("click");
+        expect(wrapper.vm.$route.path).toBe(to);
+        expect(spyPush).not.toHaveBeenCalled();
+        expect(logout).toHaveBeenCalled();
+    };
+
+    beforeEach(async () => {
+        Test.setMountOption(Footer, {
             stubs: {
                 RouterLink: RouterLinkStub,
             },
         });
+        setVuex(true);
+        wrapper = Test.shallowWrapperFactory();
 
         spyPush = jest.spyOn(wrapper.vm.$router, "push");
+        Test.setSpys({ spyPush });
 
         await wrapper.vm.$router.push("/login").catch(() => {});
-        spyPush.mock.calls = [];
-    });
-
-    afterEach(() => {
-        wrapper.destroy();
-        authStoreMock.actions.logout.mock.calls = [];
+        expect(wrapper.vm.$route.path).toBe("/login");
+        Test.clearSpysCalledTimes();
     });
 
     it("'logout'がクリックされたら'auth/logout'アクションが実行される", async done => {
         await wrapper.find("button").trigger("click");
-        expect(authStoreMock.actions.logout).toHaveBeenCalled();
+        expect(logout).toHaveBeenCalled();
         done();
     });
 
     it("'auth/logout'アクションが実行された後、'/'へリダイレクト", async done => {
-        expect(wrapper.vm.$route.path).toBe("/login");
-        expect(authStoreMock.actions.logout).not.toHaveBeenCalled();
-
-        await wrapper.find("button").trigger("click");
-        expect(authStoreMock.actions.logout).toHaveBeenCalled();
-        expect(wrapper.vm.$route.path).toBe("/");
+        expect(logout).not.toHaveBeenCalled();
+        await checkIsAccessedByClick("/", "button");
+        expect(logout).toHaveBeenCalled();
         done();
     });
 
     it("'auth/logout'アクションが実行された場所が'/'であれば$router.push('/')が実行されない", async done => {
         await wrapper.vm.$router.push("/");
         expect(wrapper.vm.$route.path).toBe("/");
-        expect(spyPush).toHaveBeenCalledTimes(1);
-        expect(authStoreMock.actions.logout).not.toHaveBeenCalled();
-
-        await wrapper.find("button").trigger("click");
-        expect(wrapper.vm.$route.path).toBe("/");
-        expect(spyPush).toHaveBeenCalledTimes(1);
-        expect(authStoreMock.actions.logout).toHaveBeenCalled();
+        await checkSpyIsCalled("/", "button");
         done();
     });
 
     it("'auth/logout'アクションが失敗したら$router.push('/')が実行されない", async done => {
         wrapper.vm.$store.commit("auth/setApiIsSuccess", false);
         expect(wrapper.vm.$store.state.auth.apiIsSuccess).toBe(false);
-
-        expect(wrapper.vm.$route.path).toBe("/login");
-        expect(authStoreMock.actions.logout).not.toHaveBeenCalled();
-
-        await wrapper.find("button").trigger("click");
-        expect(authStoreMock.actions.logout).toHaveBeenCalled();
-        expect(wrapper.vm.$route.path).toBe("/login");
+        await checkSpyIsCalled("/login", "button");
         done();
     });
 });
 
 describe("Footer.vue v-if", () => {
-    let wrapper = null;
+    const testShowing = isAuth => {
+        expect(wrapper.find("button").exists()).toBe(isAuth);
+        expect(wrapper.findComponent(RouterLinkStub).exists()).toBe(!isAuth);
+    };
 
-    afterEach(() => {
-        authStoreMock.getters.isAuthenticated = jest.fn(() => true);
-    });
-
-    it("ログインしてないときはログイン/登録リンクのみが表示", () => {
-        authStoreMock.getters.isAuthenticated = jest.fn(() => false);
-        const store = new Vuex.Store({
-            modules: {
-                auth: authStoreMock,
-            },
-        });
-
-        wrapper = shallowMount(Footer, {
-            store,
-            localVue,
-            router,
+    beforeEach(() => {
+        Test.setMountOption(Footer, {
             stubs: {
                 RouterLink: RouterLinkStub,
             },
         });
-        expect(wrapper.find("button").exists()).toBe(false);
-        expect(wrapper.findComponent(RouterLinkStub).exists()).toBe(true);
+    });
+    it("ログインしてないときはログイン/登録リンクのみが表示", () => {
+        setVuex(false);
+        wrapper = Test.shallowWrapperFactory();
+        testShowing(false);
     });
 
     it("ログイン中はログアウトボタンのみが表示", () => {
-        const store = new Vuex.Store({
-            modules: {
-                auth: authStoreMock,
-            },
-        });
-
-        wrapper = shallowMount(Footer, {
-            store,
-            localVue,
-            router,
-            stubs: {
-                RouterLink: RouterLinkStub,
-            },
-        });
-        expect(wrapper.find("button").exists()).toBe(true);
-        expect(wrapper.findComponent(RouterLinkStub).exists()).toBe(false);
+        setVuex(true);
+        wrapper = Test.shallowWrapperFactory();
+        testShowing(true);
     });
 });

@@ -1,9 +1,15 @@
 import { shallowMount, createLocalVue, mount } from "@vue/test-utils";
-import Vue from "vue";
 import VueRouter from "vue-router";
 import Vuex from "vuex";
 
 class TestUtils {
+    constructor() {
+        const localVue = createLocalVue();
+        localVue.use(Vuex);
+        localVue.use(VueRouter);
+        this.localVue = localVue;
+    }
+
     /**
      * マウント対象のコンポーネントとマウンティングオプションをセットする
      *
@@ -12,23 +18,35 @@ class TestUtils {
      */
     setMountOption(Component, options) {
         this.Component = Component;
-        this.options = { ...options };
-        this.localVue = createLocalVue();
+        this.options = { ...this.options, ...options };
     }
 
     /**
-     * VurRouterをoptionsにセットする
+     * VueRouterを生成してoptionsにセットする
      *
      * @param {Object} routes
      */
     setVueRouter(routes) {
-        const router = new VueRouter({
-            routes: { ...routes },
+        const routerOption = {
             mode: "history",
-        });
+        };
 
-        this.localVue.use(VueRouter);
+        if (Array.isArray(routes)) routerOption.routes = routes;
 
+        const router = new VueRouter(routerOption);
+
+        this.setVueRouterInstance(router);
+
+        return router;
+    }
+
+    /**
+     * 生成済みVueRouterをセットする
+     *
+     * @param {*} router
+     */
+    setVueRouterInstance(router) {
+        this.router = router;
         this.options = {
             ...this.options,
             localVue: this.localVue,
@@ -37,15 +55,25 @@ class TestUtils {
     }
 
     /**
-     * Vuexをoptionsにセットする
+     * Vuexストアを生成してoptionsにセットする
      *
      * @param {Object} modules
      */
     setVuex(modules) {
         const store = this.createVuexStore(modules);
 
-        this.localVue.use(Vuex);
+        this.setVuexInstance(store);
 
+        return store;
+    }
+
+    /**
+     * 生成済みVuexストアをセットする
+     *
+     * @param {*} store
+     */
+    setVuexInstance(store) {
+        this.store = store;
         this.options = {
             ...this.options,
             localVue: this.localVue,
@@ -60,7 +88,6 @@ class TestUtils {
      * @return {*}
      */
     createVuexStore(modules) {
-        Vue.use(Vuex);
         this.store = new Vuex.Store({ modules: { ...modules } });
         return this.store;
     }
@@ -90,16 +117,16 @@ class TestUtils {
     /**
      * スパイファンクションをセットする
      */
-    setSpys(...spys) {
-        this.spys = spys;
+    setSpys(spys) {
+        this.spys = this.spys ? { ...this.spys, ...spys } : spys;
     }
 
     /**
      * セットされているスパイファンクションの呼び出し履歴をクリアにする
      */
     clearSpysCalledTimes() {
-        this.spys.forEach(spy => {
-            spy.mock.calls = [];
+        Object.keys(this.spys).forEach(key => {
+            this.spys[key].mock.calls = [];
         });
     }
 
@@ -107,17 +134,24 @@ class TestUtils {
      * セットされているスパイファンクションがすべて呼び出されているかチェックする
      */
     checkSpysHaveBeenCalled() {
-        this.spys.forEach(spy => {
-            expect(spy).toHaveBeenCalled();
+        Object.keys(this.spys).forEach(key => {
+            expect(this.spys[key]).toHaveBeenCalled();
         });
+    }
+
+    static async checkSpyIsCalled(spy, args, callback) {
+        expect(spy).not.toHaveBeenCalled();
+        await callback();
+        expect(spy).toHaveBeenCalled();
+        expect(spy.mock.calls[0]).toEqual(args);
     }
 
     /**
      * セットされているスパイファンクションがすべてまだ呼び出されていないかチェックする
      */
     checkSpysHaveNotBeenCalled() {
-        this.spys.forEach(spy => {
-            expect(spy).not.toHaveBeenCalled();
+        Object.keys(this.spys).forEach(key => {
+            expect(this.spys[key]).not.toHaveBeenCalled();
         });
     }
 
@@ -127,7 +161,10 @@ class TestUtils {
      * @return {any}
      */
     shallowWrapperFactory() {
-        return shallowMount(this.Component, this.options);
+        this.wrapper = shallowMount(this.Component, {
+            ...this.options,
+        });
+        return this.wrapper;
     }
 
     /**
@@ -136,7 +173,10 @@ class TestUtils {
      * @return {any}
      */
     wrapperFactory() {
-        return mount(this.Component, this.options);
+        this.wrapper = mount(this.Component, {
+            ...this.options,
+        });
+        return this.wrapper;
     }
 
     /**
@@ -160,6 +200,59 @@ class TestUtils {
 
     testedGetter(getter) {
         return this.store.getters[`${getter}`];
+    }
+
+    async testRouting(from, to) {
+        if (!this.wrapper) return;
+        expect(this.wrapper.vm.$route.path).toBe(from);
+        if (from === to) return;
+        await this.wrapper.vm.$router.push(to).catch(() => {});
+        expect(this.wrapper.vm.$route.path).toBe(to);
+    }
+
+    async testRoutingWithComponent(from, to, Component) {
+        if (!this.wrapper) return;
+        expect(this.wrapper.vm.$route.path).toBe(from);
+        if (!to || from !== to)
+            await this.wrapper.vm.$router.push(to).catch(() => {});
+        expect(this.wrapper.findComponent(Component).exists()).toBe(true);
+    }
+
+    async testRedirect(from, to, redirectPath) {
+        if (!this.wrapper) return;
+        expect(this.wrapper.vm.$route.path).toBe(from);
+        if (!to || from !== to)
+            await this.wrapper.vm.$router.push(to).catch(() => {});
+        expect(this.wrapper.vm.$route.path).toBe(redirectPath);
+    }
+
+    async testApiResponse(moduleAndAction, expected) {
+        const receive = await this.testApiResult(moduleAndAction, true);
+        expect(receive).toStrictEqual(expected);
+    }
+
+    async testApiResult(moduleAndAction, result) {
+        const [module] = moduleAndAction.split("/");
+        expect(this.store.state[module].apiIsSuccess).toBe(null);
+        const receive = await this.testedAction(`${moduleAndAction}`);
+        expect(this.store.state[module].apiIsSuccess).toBe(result);
+        return receive;
+    }
+
+    async testStateWithAction(moduleAndAction, target, expected) {
+        await this.testApiResult(moduleAndAction, true);
+        const [module] = moduleAndAction.split("/");
+        expect(this.store.state[module][target]).toStrictEqual(expected);
+    }
+
+    static async testSpyIsCalled(spys, callback) {
+        spys.forEach(spy => {
+            expect(spy).not.toHaveBeenCalled();
+        });
+        await callback();
+        spys.forEach(spy => {
+            expect(spy).toHaveBeenCalled();
+        });
     }
 }
 

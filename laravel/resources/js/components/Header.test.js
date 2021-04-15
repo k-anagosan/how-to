@@ -1,113 +1,81 @@
-import Vuex from "vuex";
-import VueRouter from "vue-router";
-
-import {
-    mount,
-    shallowMount,
-    createLocalVue,
-    RouterLinkStub,
-} from "@vue/test-utils";
-
+import TestUtils from "@/testutils";
 import Header from "@/components/Header.vue";
 
-describe("Header.vue のRouterLink", () => {
-    const mountWrapper = isLogin => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-        localVue.use(VueRouter);
-        const isAuthenticated = jest.fn().mockImplementation(() => isLogin);
-        const username = jest.fn().mockImplementation(() => "testuser");
+const Test = new TestUtils();
 
-        const authStoreMock = {
+let wrapper = null;
+let isAuthenticated = null;
+let username = null;
+
+const setVuex = isAuth => {
+    isAuthenticated = jest.fn().mockImplementation(() => isAuth);
+    username = jest.fn().mockImplementation(() => "testuser");
+    Test.setSpys({ isAuthenticated, username });
+
+    Test.setVuex({
+        auth: {
             namespaced: true,
             getters: {
-                isAuthenticated,
                 username,
+                isAuthenticated,
             },
-        };
-        const store = new Vuex.Store({
-            modules: {
-                auth: authStoreMock,
-            },
-        });
+        },
+    });
+};
 
-        const router = new VueRouter({
-            mode: "history",
-            routes: [{ path: "/login" }, { path: "/edit" }],
-        });
+beforeEach(() => {
+    Test.setMountOption(Header, {});
+    Test.setVueRouter();
+});
 
-        return mount(Header, {
-            store,
-            router,
-            localVue,
-        });
+afterEach(() => {
+    isAuthenticated = null;
+    username = null;
+    Test.clearSpysCalledTimes();
+});
+
+describe("Header.vue のRouterLink", () => {
+    const checkIsAccessedByClick = async (to, target) => {
+        expect(wrapper.vm.$route.path).not.toBe(to);
+        await wrapper.find(target).trigger("click");
+        expect(wrapper.vm.$route.path).toBe(to);
     };
 
     it("'Login / Register'をクリックしたら'/login'にアクセスされる", async done => {
-        const wrapper = mountWrapper(false);
-        expect(wrapper.vm.$route.path).not.toBe("/login");
-        await wrapper.find("a.login-link").trigger("click");
-        expect(wrapper.vm.$route.path).toBe("/login");
+        setVuex(false);
+        wrapper = Test.wrapperFactory();
+        await checkIsAccessedByClick("/login", "a.login-link");
         done();
     });
 
     it("'Edit Button'をクリックしたら'/edit'にアクセスされる", async done => {
-        const wrapper = mountWrapper(true);
-        expect(wrapper.vm.$route.path).not.toBe("/edit");
-        await wrapper.find("a.edit-button").trigger("click");
-        expect(wrapper.vm.$route.path).toBe("/edit");
+        setVuex(true);
+        wrapper = Test.wrapperFactory();
+        await checkIsAccessedByClick("/edit", "a.edit-button");
         done();
     });
 });
 
 describe("Header.vueのナビゲーション", () => {
-    const localVue = createLocalVue();
-    let wrapper = null;
-    const isAuthenticated = jest
-        .fn()
-        .mockReturnValueOnce(false)
-        .mockReturnValueOnce(true)
-        .mockReturnValueOnce(true);
-    const username = jest.fn().mockImplementation(() => "testuser");
-
-    beforeEach(() => {
-        localVue.use(Vuex);
-
-        const authStoreMock = {
-            namespaced: true,
-            getters: {
-                isAuthenticated,
-                username,
-            },
-        };
-        const store = new Vuex.Store({
-            modules: {
-                auth: authStoreMock,
-            },
-        });
-
-        wrapper = shallowMount(Header, {
-            store,
-            localVue,
-            stubs: {
-                RouterLink: RouterLinkStub,
-            },
-        });
-    });
-
     it("ログインしてないときはログイン/登録リンクのみを表示", () => {
+        setVuex(false);
+        wrapper = Test.wrapperFactory();
         expect(wrapper.find(".submit-button").exists()).toBe(false);
         expect(wrapper.find(".header-username").exists()).toBe(false);
         expect(wrapper.find(".login-link").exists()).toBe(true);
     });
 
     it("ログイン中はユーザー名とEditボタンを表示", () => {
+        setVuex(true);
+        wrapper = Test.wrapperFactory();
         expect(wrapper.find(".submit-button").exists()).toBe(true);
         expect(wrapper.find(".header-username").exists()).toBe(true);
         expect(wrapper.find(".login-link").exists()).toBe(false);
     });
 
     it("ナビゲーションに正しいユーザー名が表示される", () => {
+        setVuex(true);
+        wrapper = Test.wrapperFactory();
         expect(wrapper.find(".header-username").exists()).toBe(true);
         expect(wrapper.find(".header-username").text()).toBe("testuser");
     });
