@@ -1,11 +1,9 @@
-import { shallowMount } from "@vue/test-utils";
 import MarkdownPreview from "@/components/MarkdownPreview.vue";
 
 import { randomStr } from "@/utils";
+import TestUtils from "@/testutils";
 
-const text = randomStr(200);
-
-let wrapper = null;
+const Test = new TestUtils();
 
 const spyFormat = jest.spyOn(MarkdownPreview.methods, "format");
 const $marked = jest.fn().mockImplementation(val => val);
@@ -13,42 +11,42 @@ const $dompurify = {
     sanitize: jest.fn().mockImplementation(val => val),
 };
 
-const computedValue = target =>
-    MarkdownPreview.computed[target].call({
-        text,
-        format: spyFormat,
+Test.setSpys({ spyFormat, $marked, sanitize: $dompurify.sanitize });
+
+const text = randomStr(200);
+
+const options = {
+    propsData: { text },
+    mocks: {
         $marked,
         $dompurify,
-    });
+    },
+};
 
+let wrapper = null;
 beforeEach(() => {
-    expect(spyFormat).not.toHaveBeenCalled();
-    expect($marked).not.toHaveBeenCalled();
-    expect($dompurify.sanitize).not.toHaveBeenCalled();
-    wrapper = shallowMount(MarkdownPreview, {
-        propsData: { text },
-        mocks: {
-            $marked,
-            $dompurify,
-        },
-    });
+    Test.checkSpysHaveNotBeenCalled();
+    Test.setMountOption(MarkdownPreview, options);
+    wrapper = Test.shallowWrapperFactory();
 });
 
 afterEach(() => {
-    spyFormat.mock.calls = [];
-    $marked.mock.calls = [];
-    $dompurify.sanitize.mock.calls = [];
+    Test.clearSpysCalledTimes();
 });
 
 describe("表示関連", () => {
     it("propsのtextを受け取ったらフォーマットが実行される", () => {
-        expect(spyFormat).toHaveBeenCalled();
-        expect($marked).toHaveBeenCalled();
-        expect($dompurify.sanitize).toHaveBeenCalled();
+        Test.checkSpysHaveBeenCalled();
     });
 
     it("正しい値でフォーマットされる", () => {
-        expect(computedValue("formattedContent")).toBe(text);
+        const options = {
+            text,
+            format: spyFormat,
+            $marked,
+            $dompurify,
+        };
+        expect(Test.computedValue("formattedContent", options)).toBe(text);
     });
 
     it("マークダウンテキストが正しく表示される", () => {
