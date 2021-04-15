@@ -83,6 +83,12 @@ describe("表示、入力関連", () => {
             expect(wrapper.props().icon).toEqual(response.author);
         });
     });
+
+    it("記事データを取得したらIconListへarticle.tagsを渡せる", () => {
+        expect(wrapper.find("iconlist-stub").props().icons).toEqual(
+            response.tags
+        );
+    });
 });
 
 describe("Vuex", () => {
