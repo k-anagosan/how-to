@@ -77,6 +77,12 @@ describe("表示、入力関連", () => {
             response.content
         );
     });
+
+    it("記事データを取得したらIconへarticle.authorを渡せる", () => {
+        wrapper.findAll("icon-stub").wrappers.forEach(wrapper => {
+            expect(wrapper.props().icon).toEqual(response.author);
+        });
+    });
 });
 
 describe("Vuex", () => {

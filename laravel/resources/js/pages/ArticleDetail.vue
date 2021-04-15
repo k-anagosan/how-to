@@ -7,9 +7,8 @@
       <div
         class="container flex justify-between items-center mx-auto sm:px-8 px-5"
       >
-        <div class="py-4 flex justify-between items-center">
-          <div class="rounded-full bg-black h-8 w-8 mr-2"></div>
-          <span> {{ article.author.name }}</span>
+        <div class="py-4">
+          <Icon :icon="article.author" />
         </div>
         <button
           type="button"
@@ -48,11 +47,8 @@
             </li>
           </ul>
           <div class="w-full sticky top-8">
-            <div
-              class="author shadow-md bg-white p-4 flex justify-start items-center mb-8 rounded-lg"
-            >
-              <div class="rounded-full bg-black h-8 w-8 mr-2"></div>
-              <span v-if="article"> {{ article.author.name }}</span>
+            <div class="shadow-md bg-white p-4 mb-8 rounded-lg">
+              <Icon :icon="article.author" />
             </div>
             <div class="index shadow-md bg-white p-4 rounded-lg h-20"></div>
           </div>
@@ -64,9 +60,12 @@
 
 <script>
 import MarkdownPreview from "../components/MarkdownPreview.vue";
+import Icon from "../components/Icon.vue";
+
 export default {
   components: {
     MarkdownPreview,
+    Icon,
   },
   props: {
     id: {
