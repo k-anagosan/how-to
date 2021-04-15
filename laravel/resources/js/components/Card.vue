@@ -5,7 +5,7 @@
         <img alt="" />
       </figure>
       <div class="flex flex-col bg-white sm:p-6 p-4 min-card-height">
-        <p class="article-author mb-2">{{ article.author.name }}</p>
+        <Icon :icon="article.author" size="sm" class="mb-2" />
         <h2 class="article-title mb-4 flex-auto font-bold">
           {{ article.title }}
         </h2>
@@ -26,7 +26,11 @@
 </template>
 
 <script>
+import Icon from "../components/Icon";
 export default {
+  components: {
+    Icon,
+  },
   props: {
     article: {
       type: Object,

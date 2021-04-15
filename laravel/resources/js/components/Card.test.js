@@ -52,10 +52,8 @@ afterEach(() => {
 });
 
 describe("表示関連", () => {
-    it("投稿者が正しく表示される", () => {
-        expect(wrapper.find(".article-author").text()).toBe(
-            article.author.name
-        );
+    it("article.authorをIconに渡せる", () => {
+        expect(wrapper.find("icon-stub").props().icon).toEqual(article.author);
     });
     it("タイトルが正しく表示される", () => {
         expect(wrapper.find(".article-title").text()).toBe(article.title);
