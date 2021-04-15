@@ -84,11 +84,10 @@
             ></textarea>
           </div>
           <div v-show="tab === 2" class="preview-content w-full">
-            <div
-              id="preview-area"
-              class="md-preview-area sm:p-10 p-4 break-words"
-              v-html="htmlContent"
-            ></div>
+            <MarkdownPreview
+              :text="postForm.content"
+              class="sm:p-10 p-4 break-words"
+            />
           </div>
         </div>
       </div>
@@ -118,11 +117,13 @@
 </template>
 <script>
 import Button from "../components/SubmitButton.vue";
+import MarkdownPreview from "../components/MarkdownPreview.vue";
 import { mapState, mapGetters } from "vuex";
 
 export default {
   components: {
     Button,
+    MarkdownPreview,
   },
   data() {
     return {
@@ -131,7 +132,6 @@ export default {
         content: "",
         tags: [],
       },
-      htmlContent: "",
       tagsString: "",
       tab: 1,
     };
@@ -145,9 +145,6 @@ export default {
     }),
   },
   watch: {
-    "postForm.content"(val) {
-      this.htmlContent = this.format(val);
-    },
     tagsString(val) {
       const tags = val.split(" ");
       if (tags.length === 1 && tags[0] === "") {
@@ -189,10 +186,6 @@ export default {
     },
     reset() {
       this.$el.querySelector("input[type='file']").value = null;
-    },
-    format(val) {
-      const sanitizedContent = this.$dompurify.sanitize(val);
-      return this.$marked(sanitizedContent);
     },
     clearMessage() {
       this.$store.commit("post/setPostValidationMessage", null);
