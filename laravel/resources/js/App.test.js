@@ -1,8 +1,5 @@
-import { mount, createLocalVue } from "@vue/test-utils";
-import VueRouter from "vue-router";
+import TestUtils from "@/testutils";
 import router from "@/router";
-
-import Vuex from "vuex";
 import store from "@/store/index";
 
 import App from "@/App.vue";
@@ -40,62 +37,55 @@ jest.mock("@/pages/errors/NotFound.vue", () => ({
     render: h => h("h1", "NotFound"),
 }));
 
-let wrapper = null;
-const localVue = createLocalVue();
-localVue.use(VueRouter);
-localVue.use(Vuex);
+const Test = new TestUtils();
+Test.setMountOption(App, {
+    stubs: {
+        Header: true,
+        Footer: true,
+    },
+});
 
+let wrapper = null;
 beforeEach(() => {
-    wrapper = mount(App, {
-        localVue,
-        router,
-        store,
-        stubs: {
-            Header: true,
-            Footer: true,
-        },
-    });
+    Test.setVuexInstance(store);
+    Test.setVueRouterInstance(router);
+    wrapper = Test.wrapperFactory();
 });
 
 afterEach(() => {
-    wrapper.destroy();
     wrapper.vm.$router.push("/").catch(() => {});
+    wrapper.destroy();
+    wrapper = null;
 });
 
 describe("アクセス結果", () => {
     it("/にアクセスしたらCardListを表示する", async done => {
-        const uri = randomStr();
-        await wrapper.vm.$router.push(`/${uri}`).catch(() => {});
-        await wrapper.vm.$router.push("/").catch(() => {});
-        expect(wrapper.findComponent(CardList).exists()).toBe(true);
+        await Test.testRoutingWithComponent("/", null, CardList);
         done();
     });
 
     it("/loginにアクセスしたらLoginを表示する", async done => {
-        await wrapper.vm.$router.push("/login").catch(() => {});
-        expect(wrapper.findComponent(Login).exists()).toBe(true);
+        await Test.testRoutingWithComponent("/", "/login", Login);
         done();
     });
 
     it("ログイン中に/editにアクセスしたらEditを表示する", async done => {
         wrapper.vm.$store.commit("auth/setUser", true);
-        expect(wrapper.vm.$route.path).toBe("/");
-        await wrapper.vm.$router.push("/edit").catch(() => {});
-        expect(wrapper.findComponent(Edit).exists()).toBe(true);
+        await Test.testRoutingWithComponent("/", "/edit", Edit);
         done();
     });
 
     it("/article/xxxにアクセスしたらArticleDetailを表示する", async done => {
-        await wrapper.vm.$router
-            .push(`/article/${randomStr(20)}`)
-            .catch(() => {});
-        expect(wrapper.findComponent(ArticleDetail).exists()).toBe(true);
+        await Test.testRoutingWithComponent(
+            "/",
+            `/article/${randomStr(20)}`,
+            ArticleDetail
+        );
         done();
     });
 
     it("設定していないルートにアクセスしたらNotFoundを表示する", async done => {
-        await wrapper.vm.$router.push(`/${randomStr(10)}`).catch(() => {});
-        expect(wrapper.findComponent(NotFound).exists()).toBe(true);
+        await Test.testRoutingWithComponent("/", `/${randomStr(10)}`, NotFound);
         done();
     });
 });
@@ -103,40 +93,28 @@ describe("アクセス結果", () => {
 describe("リダイレクト", () => {
     it("ログイン中に/loginにアクセスしたら/にリダイレクトされる", async done => {
         wrapper.vm.$store.commit("auth/setUser", true);
-        expect(wrapper.vm.$route.path).toBe("/");
-        await wrapper.vm.$router.push("/login").catch(() => {});
-        expect(wrapper.vm.$route.path).toBe("/");
+        await Test.testRedirect("/", "/login", "/");
         done();
     });
 
     it("未認証中に/editにアクセスしたら/にリダイレクトされる", async done => {
         wrapper.vm.$store.commit("auth/setUser", null);
-        expect(wrapper.vm.$route.path).toBe("/");
-        await wrapper.vm.$router.push("/edit").catch(() => {});
-        expect(wrapper.vm.$route.path).toBe("/");
+        await Test.testRedirect("/", "/edit", "/");
         done();
     });
 
     it("ステータスコード404が確認されたら/not-foundにリダイレクト", async done => {
-        expect(wrapper.vm.$route.path).toBe("/");
-
         await wrapper.vm.$store.commit("error/setErrorCode", NOT_FOUND);
-
-        expect(wrapper.vm.$route.path).toBe("/not-found");
-        expect(wrapper.findComponent(NotFound).exists()).toBe(true);
+        await Test.testRoutingWithComponent("/not-found", null, NotFound);
         done();
     });
 
     it("ステータスコード500が確認されたら/500にリダイレクト", async done => {
-        expect(wrapper.vm.$route.path).toBe("/");
-
         await wrapper.vm.$store.commit(
             "error/setErrorCode",
             INTERNAL_SERVER_ERROR
         );
-
-        expect(wrapper.vm.$route.path).toBe("/500");
-        expect(wrapper.findComponent(InternalServerError).exists()).toBe(true);
+        await Test.testRoutingWithComponent("/500", null, InternalServerError);
         done();
     });
 });

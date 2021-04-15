@@ -1,6 +1,4 @@
-import Vuex from "vuex";
-import { createLocalVue } from "@vue/test-utils";
-import "@/bootstrap";
+import TestUtils from "@/testutils";
 import {
     randomStr,
     OK,
@@ -11,171 +9,119 @@ import {
 
 import post from "@/store/post";
 
-const localVue = createLocalVue();
-localVue.use(Vuex);
+const Test = new TestUtils();
+const setErrorCode = jest.fn();
+Test.setSpys({ setErrorCode });
+
+const initialState = { ...post.state };
 
 let store = null;
-const setErrorCode = jest.fn();
-
 beforeEach(() => {
-    const error = {
-        namespaced: true,
-        mutations: {
-            setErrorCode,
+    store = Test.createVuexStore({
+        error: {
+            namespaced: true,
+            mutations: {
+                setErrorCode,
+            },
         },
-    };
-
-    store = new Vuex.Store({
-        modules: {
-            post,
-            error,
+        post: {
+            ...post,
+            state: { ...initialState },
         },
     });
 });
 
-const testedAction = (action, payload = {}) =>
-    store.dispatch(`post/${action}`, payload);
+afterEach(() => {
+    Test.restoreAxios();
+});
 
 describe("post.js actions", () => {
-    let windowSpy = null;
-    let originalWindow = null;
-
-    const mockAxios = (res, status) => {
-        windowSpy.mockImplementation(() => ({
-            ...originalWindow,
-            axios: {
-                post: (url, data) => ({
-                    data: res(url, data),
-                    status,
-                }),
-                get: (url, data) => ({
-                    data: res(url, data),
-                    status,
-                }),
-            },
-        }));
-    };
-
-    beforeEach(() => {
-        originalWindow = { ...window };
-        windowSpy = jest.spyOn(global, "window", "get");
-    });
-    afterEach(() => {
-        windowSpy.mockRestore();
-        store.commit("post/setApiIsSuccess", null, { root: true });
-    });
-
     describe("API request succeded", () => {
+        const postId = randomStr(20);
+        const postFilename = `${randomStr(20)}.jpg`;
+        const article = {
+            id: randomStr(20),
+            title: randomStr(30),
+            content: randomStr(100),
+            tags: [
+                { name: randomStr(10) },
+                { name: randomStr(10) },
+                { name: randomStr(10) },
+            ],
+            author: {
+                name: randomStr(10),
+            },
+        };
+        const articleList = {
+            data: [article, article, article, article],
+        };
+
         it("postItemアクションにより正しいIDが取得できるか", async done => {
-            const postId = randomStr(20);
-            const res = () => ({
-                post_id: postId,
+            const post = () => ({
+                data: { post_id: postId },
+                status: CREATED,
             });
-
-            mockAxios(res, CREATED);
-
-            expect(store.state.post.apiIsSuccess).toBe(null);
-            const receiveId = await testedAction("postItem");
-
-            expect(receiveId).toEqual(postId);
-            expect(store.state.post.apiIsSuccess).toBe(true);
+            Test.mockAxios(null, post);
+            await Test.testApiResponse("post/postItem", postId);
             done();
         });
 
         it("postPhotoアクションにより正しいファイル名が取得できるか*", async done => {
-            const postFilename = `${randomStr(20)}.jpg`;
-            const res = () => ({
-                filename: postFilename,
+            const post = () => ({
+                data: { filename: postFilename },
+                status: CREATED,
             });
-
-            mockAxios(res, CREATED);
-
-            expect(store.state.post.apiIsSuccess).toBe(null);
-            const receiveFilename = await testedAction("postPhoto");
-
-            expect(receiveFilename).toEqual(postFilename);
-            expect(store.state.post.apiIsSuccess).toBe(true);
+            Test.mockAxios(null, post);
+            await Test.testApiResponse("post/postPhoto", postFilename);
             done();
         });
 
         it("getArticleアクションにより記事データが取得できるか*", async done => {
-            const article = {
-                id: randomStr(20),
-                title: randomStr(30),
-                content: randomStr(100),
-                tags: [
-                    { name: randomStr(10) },
-                    { name: randomStr(10) },
-                    { name: randomStr(10) },
-                ],
-                author: {
-                    name: randomStr(10),
-                },
-            };
-            const res = () => article;
-
-            mockAxios(res, OK);
-
-            expect(store.state.post.apiIsSuccess).toBe(null);
-            const receiveArticle = await testedAction("getArticle");
-
-            expect(article).toEqual(receiveArticle);
-            expect(store.state.post.apiIsSuccess).toBe(true);
+            const get = () => ({
+                data: article,
+                status: OK,
+            });
+            Test.mockAxios(get, null);
+            await Test.testApiResponse("post/getArticle", article);
             done();
         });
 
         it("getArticleListアクションにより記事データが取得できるか*", async done => {
-            const article = {
-                id: randomStr(20),
-                title: randomStr(30),
-                content: randomStr(100),
-                tags: [
-                    { name: randomStr(10) },
-                    { name: randomStr(10) },
-                    { name: randomStr(10) },
-                ],
-                author: {
-                    name: randomStr(10),
-                },
-            };
-            const articleList = {
-                data: [article, article, article, article],
-            };
-            const res = () => articleList;
-
-            mockAxios(res, OK);
-
-            expect(store.state.post.apiIsSuccess).toBe(null);
-            const receiveArticleList = await testedAction("getArticleList");
-
-            expect(articleList).toEqual(receiveArticleList);
-            expect(store.state.post.apiIsSuccess).toBe(true);
+            const get = () => ({
+                data: articleList,
+                status: OK,
+            });
+            Test.mockAxios(get, null);
+            await Test.testApiResponse("post/getArticleList", articleList);
             done();
         });
     });
 
     describe("API request failed with status code 500 or 404", () => {
-        beforeEach(() => {
-            mockAxios(() => null, INTERNAL_SERVER_ERROR);
-            setErrorCode.mock.calls = [];
+        const res = () => ({
+            data: null,
+            status: INTERNAL_SERVER_ERROR,
         });
 
-        const apiIsSuccessTest = async action => {
-            expect(store.state.post.apiIsSuccess).toBe(null);
-            await testedAction(action);
-            expect(store.state.post.apiIsSuccess).toBe(false);
+        const setErrorCodeTest = async action => {
+            await TestUtils.checkSpyIsCalled(
+                setErrorCode,
+                [{}, INTERNAL_SERVER_ERROR],
+                () => Test.testedAction(`post/${action}`)
+            );
         };
 
-        const setErrorCodeTest = async action => {
-            expect(setErrorCode).toHaveBeenCalledTimes(0);
-            await testedAction(action);
-            expect(setErrorCode).toHaveBeenCalledTimes(1);
-            expect(setErrorCode.mock.calls[0][1]).toBe(INTERNAL_SERVER_ERROR);
-        };
+        beforeEach(() => {
+            Test.mockAxios(res, res);
+        });
+
+        afterEach(() => {
+            Test.clearSpysCalledTimes();
+        });
 
         describe("postItem アクションでリクエストに失敗", () => {
             it("apiIsSuccessに正しく値が保存されるか", async done => {
-                await apiIsSuccessTest("postItem");
+                await Test.testApiResult("post/postItem", false);
                 done();
             });
 
@@ -186,7 +132,7 @@ describe("post.js actions", () => {
         });
         describe("postPhoto アクションでリクエストに失敗", () => {
             it("apiIsSuccessに正しく値が保存されるか", async done => {
-                await apiIsSuccessTest("postPhoto");
+                await Test.testApiResult("post/postPhoto", false);
                 done();
             });
 
@@ -195,10 +141,9 @@ describe("post.js actions", () => {
                 done();
             });
         });
-
         describe("getArticle アクションでリクエストに失敗", () => {
             it("apiIsSuccessに正しく値が保存されるか", async done => {
-                await apiIsSuccessTest("getArticle");
+                await Test.testApiResult("post/getArticle", false);
                 done();
             });
 
@@ -222,19 +167,18 @@ describe("post.js actions", () => {
         const validationTest = async (action, postOrPhoto) => {
             expect(store.state.post.apiIsSuccess).toBe(null);
             expect(store.state.post[postOrPhoto]).toBe(null);
-            await testedAction(action);
-
+            await Test.testedAction(`post/${action}`);
             expect(store.state.post.apiIsSuccess).toBe(false);
             expect(store.state.post[postOrPhoto]).toBe(message);
         };
 
         it("postItemアクションに422エラーで失敗した時、postValidationMessageに正しく値が保存されるか", async done => {
             delete message.photo;
-            const res = () => ({
-                errors: message,
+            const post = () => ({
+                data: { errors: message },
+                status: UNPROCESSABLE_ENTITY,
             });
-            mockAxios(res, UNPROCESSABLE_ENTITY);
-
+            Test.mockAxios(null, post);
             await validationTest("postItem", "postValidationMessage");
             done();
         });
@@ -242,10 +186,11 @@ describe("post.js actions", () => {
         it("postPhotoアクションに422エラーで失敗した時、photoValidationMessageに正しく値が保存されるか", async done => {
             delete message.title;
             delete message.content;
-            const res = () => ({
-                errors: message,
+            const post = () => ({
+                data: { errors: message },
+                status: UNPROCESSABLE_ENTITY,
             });
-            mockAxios(res, UNPROCESSABLE_ENTITY);
+            Test.mockAxios(null, post);
 
             await validationTest("postPhoto", "photoValidationMessage");
             done();
@@ -254,9 +199,6 @@ describe("post.js actions", () => {
 });
 
 describe("post.js getters", () => {
-    const testedGetter = getter => store.getters[`post/${getter}`];
-    const state = { store };
-
     beforeEach(() => {
         store.commit("post/setPostValidationMessage", null);
         store.commit("post/setPhotoValidationMessage", null);
@@ -274,13 +216,11 @@ describe("post.js getters", () => {
                 photo: [arrayMessage[4], arrayMessage[5]],
             });
 
-            const message = testedGetter("allErrors", state);
-
+            const message = Test.testedGetter("post/allErrors");
             expect(message).toStrictEqual(arrayMessage);
         });
         it("何もバリデーションメッセージが無いとき、allErrorsゲッターにより正しい値を取得できるか", () => {
-            const message = testedGetter("allErrors", state);
-
+            const message = Test.testedGetter("post/allErrors");
             expect(message).toStrictEqual([]);
         });
     });
