@@ -103,7 +103,7 @@ describe("表示、入力関連", () => {
 describe("Vuex", () => {
     describe("正常終了", () => {
         const actionCheck = (spy, id, event) => {
-            TestUtils.testSpyIsCalled([spy], () =>
+            TestUtils.checkSpysAreCalled([spy], () =>
                 wrapper.find(id).trigger(event)
             );
         };
@@ -162,7 +162,7 @@ describe("Vuex", () => {
 
             Test.clearSpysCalledTimes();
 
-            TestUtils.testSpyIsCalled(
+            TestUtils.checkSpysAreCalled(
                 [setPostValidationMessage, setPhotoValidationMessage],
                 wrapper.vm.clearMessage
             );
@@ -171,11 +171,10 @@ describe("Vuex", () => {
             ).toStrictEqual([]);
         });
 
-        it("メッセージを閉じるボタンを押すとclearMessage()が呼び出される", async done => {
-            await TestUtils.testSpyIsCalled([spyClearMessage], () =>
-                wrapper.find("#close-message").trigger("click")
+        it("clearイベントが発火するとclearMessage()が呼び出される", () => {
+            TestUtils.checkSpysAreCalled([spyClearMessage], () =>
+                wrapper.find("errormessages-stub").vm.$emit("clear")
             );
-            done();
         });
     });
 });

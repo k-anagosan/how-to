@@ -95,35 +95,20 @@
         <Button id="post-btn" type="submit">Post</Button>
       </div>
     </form>
-    <div
-      v-if="errors.length > 0"
-      class="absolute flex justify-between items-center bottom-8 sm:left-4 rounded p-4 pr-3 bg-red-100"
-    >
-      <ul class="mr-4">
-        <li v-for="msg in errors" :key="msg" class="text-red-400">
-          {{ msg }}
-        </li>
-      </ul>
-      <button
-        id="close-message"
-        type="button"
-        class="flex items-center"
-        @click="clearMessage"
-      >
-        <ion-icon name="close-outline"></ion-icon>
-      </button>
-    </div>
+    <ErrorMessages :errors="errors" @clear="clearMessage" />
   </div>
 </template>
 <script>
 import Button from "../components/SubmitButton.vue";
 import MarkdownPreview from "../components/MarkdownPreview.vue";
+import ErrorMessages from "../components/ErrorMessages.vue";
 import { mapState, mapGetters } from "vuex";
 
 export default {
   components: {
     Button,
     MarkdownPreview,
+    ErrorMessages,
   },
   data() {
     return {
