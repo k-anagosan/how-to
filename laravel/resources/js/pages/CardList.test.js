@@ -1,12 +1,10 @@
-import { shallowMount, createLocalVue } from "@vue/test-utils";
+import TestUtils from "@/testutils";
 import CardList from "@/pages/CardList.vue";
-import Vuex from "vuex";
-import VueRouter from "vue-router";
 import { randomStr } from "../utils";
 
-const localVue = createLocalVue();
-localVue.use(VueRouter);
-localVue.use(Vuex);
+const Test = new TestUtils();
+const spyFetchArticleList = jest.spyOn(CardList.methods, "fetchArticleList");
+Test.setSpys({ spyFetchArticleList });
 
 const article = () => ({
     id: randomStr(20),
@@ -32,80 +30,58 @@ const { current_page, per_page, last_page } = {
 
 const response = responseFactory(current_page, per_page, last_page);
 
-const postModule = {
+const post = {
     namespaced: true,
     actions: {
         getArticleList: jest.fn().mockImplementation(() => ({ ...response })),
     },
 };
 
-const router = new VueRouter();
-const store = new Vuex.Store({
-    modules: {
-        post: postModule,
-    },
-});
+Test.setSpys({ getArticleList: post.actions.getArticleList });
+
+Test.setVueRouter();
+Test.setVuex({ post });
 
 const options = {
-    store,
-    router,
-    localVue,
-    stubs: {
-        "ion-icon": true,
-    },
     propsData: {
         page: current_page,
     },
+    stubs: {
+        "ion-icon": true,
+    },
 };
 
-const factory = options => shallowMount(CardList, options);
-
-const spyFetchArticleList = jest.spyOn(CardList.methods, "fetchArticleList");
+let wrapper = null;
+beforeEach(() => {
+    Test.checkSpysHaveNotBeenCalled();
+    Test.setMountOption(CardList, options);
+    wrapper = Test.shallowWrapperFactory();
+    Test.checkSpysHaveBeenCalled();
+});
+afterEach(() => {
+    Test.clearSpysCalledTimes();
+    wrapper = null;
+});
 
 describe("表示関連", () => {
-    let wrapper = null;
-
-    beforeEach(() => {
-        expect(spyFetchArticleList).not.toHaveBeenCalled();
-        wrapper = factory(options);
-        expect(spyFetchArticleList).toHaveBeenCalled();
-    });
-
-    afterEach(() => {
-        spyFetchArticleList.mock.calls = [];
-        wrapper = null;
-    });
-
     it("ページアクセスしたらdataに記事一覧情報が保存される", () => {
         expect(wrapper.vm.$data.list).toEqual(response.data);
     });
     it("ページアクセスしたらdataにページネーション情報が保存される", () => {
-        expect(spyFetchArticleList).toHaveBeenCalled();
         const pagination = { ...response };
         delete pagination.data;
         expect(wrapper.vm.$data.pagination).toEqual(pagination);
     });
 
     it("dataに記事一覧情報が保存されたら記事一覧が表示される", () => {
-        expect(spyFetchArticleList).toHaveBeenCalled();
         expect(wrapper.findAll("card-stub").length).toBe(per_page);
     });
 });
 
 describe("Vuex", () => {
-    let wrapper = null;
-    beforeEach(() => {
-        spyFetchArticleList.mock.calls = [];
-        postModule.actions.getArticleList.mock.calls = [];
-        expect(postModule.actions.getArticleList).not.toHaveBeenCalled();
-        expect(spyFetchArticleList).not.toHaveBeenCalled();
-        wrapper = factory(options);
-    });
-
     it("ページアクセスしたらgetArticleListが実行される", async done => {
         await wrapper.vm.$router.push(`/`).catch(() => {});
-        expect(postModule.actions.getArticleList).toHaveBeenCalled();
-        expect(spyFetchArticleList).toHaveBeenCalled();
+        Test.checkSpysHaveBeenCalled();
         done();
     });
 });

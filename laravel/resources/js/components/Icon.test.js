@@ -33,24 +33,10 @@ describe("表示関連", () => {
         checkClass("icon-size-md");
     });
 
-    it("propsのsizeが'sm'ならicon-size-smクラスが付与される", () => {
-        propsData.size = "sm";
+    it.each([["sm"], ["md"], ["lg"]])("propsのsizeが'%s'ならicon-size-%sクラスが付与される", size => {
+        propsData.size = size;
         Test.setMountOption(Icon, { propsData });
         wrapper = Test.shallowWrapperFactory();
-        checkClass("icon-size-sm");
-    });
-
-    it("propsのsizeが'md'ならicon-size-mdクラスが付与される", () => {
-        propsData.size = "md";
-        Test.setMountOption(Icon, { propsData });
-        wrapper = Test.shallowWrapperFactory();
-        checkClass("icon-size-md");
-    });
-
-    it("propsのsizeが'lg'ならicon-size-lgクラスが付与される", () => {
-        propsData.size = "lg";
-        Test.setMountOption(Icon, { propsData });
-        wrapper = Test.shallowWrapperFactory();
-        checkClass("icon-size-lg");
+        checkClass(`icon-size-${size}`);
     });
 });

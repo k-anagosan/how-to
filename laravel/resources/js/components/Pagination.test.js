@@ -1,14 +1,8 @@
-import {
-    mount,
-    shallowMount,
-    createLocalVue,
-    RouterLinkStub,
-} from "@vue/test-utils";
+import TestUtils from "@/testutils";
+import { RouterLinkStub } from "@vue/test-utils";
 import Pagination from "@/components/Pagination.vue";
-import VueRouter from "vue-router";
 
-const localVue = createLocalVue();
-localVue.use(VueRouter);
+const Test = new TestUtils();
 
 const { current_page, per_page, last_page } = {
     current_page: 1,
@@ -22,26 +16,21 @@ const paginationFactory = (current_page, per_page, last_page) => ({
     last_page,
 });
 
-const router = new VueRouter({ mode: "history" });
-
 const options = {
-    router,
-    localVue,
+    propsData: {
+        pagination: paginationFactory(current_page, per_page, last_page),
+    },
     stubs: {
         RouterLink: RouterLinkStub,
         "ion-icon": true,
     },
-    propsData: {
-        pagination: paginationFactory(current_page, per_page, last_page),
-    },
 };
 
-const factory = options => shallowMount(Pagination, options);
-
 let wrapper = null;
-
 beforeEach(() => {
-    wrapper = factory(options);
+    Test.setMountOption(Pagination, options);
+    Test.setVueRouter();
+    wrapper = Test.shallowWrapperFactory();
 });
 
 afterEach(() => {
@@ -56,9 +45,7 @@ describe("表示関連", () => {
         await wrapper.setProps({
             pagination: { ...options.propsData.pagination, current_page },
         });
-        expect(wrapper.find(".current_page").text()).toBe(
-            `${current_page} / ${last_page}`
-        );
+        expect(wrapper.find(".current_page").text()).toBe(`${current_page} / ${last_page}`);
         done();
     });
 
@@ -90,48 +77,29 @@ describe("表示関連", () => {
     });
 });
 
-describe("Vue Router 関連", () => {
-    const noneRouterLinkStub = { ...options };
-    delete noneRouterLinkStub.stubs.RouterLink;
+describe.each([["left-button"], ["right-button"]])("Vue Router 関連", button => {
+    let current_page = 1;
+    let path = null;
     beforeEach(() => {
-        wrapper = mount(Pagination, noneRouterLinkStub);
+        options.stubs = ["ion-icon"];
+        Test.setMountOption(Pagination, options);
+        wrapper = Test.wrapperFactory();
+        if (button === "left-button") {
+            current_page = 2;
+        }
+        path = button === "left-button" ? `/?page=${current_page - 1}` : `/?page=${current_page + 1}`;
     });
 
-    it("left-button RouterLinkのtoに前ページへのurlが設定される", async done => {
-        const current_page = 2;
-        await wrapper.setProps({
-            pagination: {
-                ...noneRouterLinkStub.propsData.pagination,
-                current_page,
-            },
-        });
-        expect(wrapper.find(".left-button").props().to).toBe(
-            `/?page=${current_page - 1}`
-        );
+    it("%s RouterLinkのtoに正しいページのurlが設定される", async done => {
+        await wrapper.setProps({ pagination: { ...options.propsData.pagination, current_page } });
+        expect(wrapper.find(`.${button}`).props().to).toBe(path);
         done();
     });
-    it("left-button をクリックしたら前ページへ飛ぶ", async done => {
-        const current_page = 2;
-        await wrapper.setProps({
-            pagination: {
-                ...noneRouterLinkStub.propsData.pagination,
-                current_page,
-            },
-        });
+    it("%s をクリックしたら正しいページへ飛ぶ", async done => {
+        await wrapper.setProps({ pagination: { ...options.propsData.pagination, current_page } });
         expect(wrapper.vm.$route.path).toBe(`/`);
-        await wrapper.find(".left-button").trigger("click");
-        expect(wrapper.vm.$route.fullPath).toBe(`/?page=${current_page - 1}`);
-        done();
-    });
-    it("right-button RouterLinkのtoに次ページへのurlが設定される", () => {
-        expect(wrapper.find(".right-button").props().to).toBe(
-            `/?page=${current_page + 1}`
-        );
-    });
-    it("right-button をクリックしたら次ページへ飛ぶ", async done => {
-        expect(wrapper.vm.$route.path).toBe(`/`);
-        await wrapper.find(".right-button").trigger("click");
-        expect(wrapper.vm.$route.fullPath).toBe(`/?page=${current_page + 1}`);
+        await wrapper.find(`.${button}`).trigger("click");
+        expect(wrapper.vm.$route.fullPath).toBe(path);
         done();
     });
 });

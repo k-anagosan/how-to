@@ -56,15 +56,7 @@ describe("auth.js actions", () => {
             ["auth/login", res, "login", expected],
             ["auth/logout", { status: OK }, "logout", null],
             ["ログイン時auth/getCurrentUser", res, "getCurrentUser", expected],
-            [
-                "未ログイン時auth/getCurrentUser",
-                {
-                    data: [],
-                    status: OK,
-                },
-                "getCurrentUser",
-                null,
-            ],
+            ["未ログイン時auth/getCurrentUser", { data: [], status: OK }, "getCurrentUser", null],
         ])("%sによりstateに正しく値が保存される", async (_, res, action, expected) => {
             if (action === "register") {
                 res.status = CREATED;
