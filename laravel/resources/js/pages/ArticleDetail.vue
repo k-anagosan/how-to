@@ -7,9 +7,8 @@
       <div
         class="container flex justify-between items-center mx-auto sm:px-8 px-5"
       >
-        <div class="py-4 flex justify-between items-center">
-          <div class="rounded-full bg-black h-8 w-8 mr-2"></div>
-          <span> {{ article.author.name }}</span>
+        <div class="py-4">
+          <Icon :icon="article.author" />
         </div>
         <button
           type="button"
@@ -19,43 +18,25 @@
         </button>
       </div>
     </div>
-    <div class="container mx-auto flex flex-col lg:px-16 sm:p-8 pagetop-offset">
-      <div class="title-area min-h-8 p-8 text-center">
+    <div
+      class="container mx-auto flex flex-col lg:px-32 sm:p-8 sm:pb-16 pagetop-offset"
+    >
+      <div class="title-area sm:h-8 m-8 text-center">
         <h1 v-if="article" class="text-2xl">{{ article.title }}</h1>
       </div>
-
       <div class="flex">
         <article
           class="min-main-height sm:shadow-md sm:p-10 p-5 pb-8 sm:rounded-lg bg-white lg:w-2/3 w-full"
         >
-          <div
-            v-if="article"
-            class="md-preview-area"
-            v-html="formattedContent"
-          ></div>
+          <MarkdownPreview v-if="article" :text="article.content" />
         </article>
         <aside v-if="article" class="lg:flex ml-6 hidden w-1/3 flex-col">
-          <ul
-            v-if="article.tags"
-            class="tags flex flex-row flex-wrap shadow-md bg-white w-full p-4 mb-8 rounded-lg"
-          >
-            <li
-              v-for="tag in article.tags"
-              :key="tag.name"
-              class="w-1/2 py-4 pr-4 flex justify-start items-center"
-            >
-              <div class="rounded-full bg-black h-8 w-8 mr-2"></div>
-              <span>
-                {{ tag.name }}
-              </span>
-            </li>
-          </ul>
+          <div class="bg-white shadow-md w-full p-4 mb-8 rounded-lg">
+            <IconList :icons="article.tags" />
+          </div>
           <div class="w-full sticky top-8">
-            <div
-              class="author shadow-md bg-white p-4 flex justify-start items-center mb-8 rounded-lg"
-            >
-              <div class="rounded-full bg-black h-8 w-8 mr-2"></div>
-              <span v-if="article"> {{ article.author.name }}</span>
+            <div class="shadow-md bg-white p-4 mb-8 rounded-lg">
+              <Icon :icon="article.author" />
             </div>
             <div class="index shadow-md bg-white p-4 rounded-lg h-20"></div>
           </div>
@@ -66,7 +47,16 @@
 </template>
 
 <script>
+import MarkdownPreview from "../components/MarkdownPreview.vue";
+import Icon from "../components/Icon.vue";
+import IconList from "../components/IconList.vue";
+
 export default {
+  components: {
+    MarkdownPreview,
+    Icon,
+    IconList,
+  },
   props: {
     id: {
       type: String,
@@ -76,7 +66,6 @@ export default {
   data() {
     return {
       article: null,
-      formattedContent: "",
     };
   },
   watch: {
@@ -90,12 +79,8 @@ export default {
   methods: {
     async fetchArticle() {
       const article = await this.$store.dispatch("post/getArticle", this.id);
+      if (!article) return;
       this.article = article;
-      this.formattedContent = this.format(article.content);
-    },
-    format(val) {
-      const sanitizedContent = this.$dompurify.sanitize(val);
-      return this.$marked(sanitizedContent);
     },
   },
 };

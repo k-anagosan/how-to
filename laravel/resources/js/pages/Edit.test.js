@@ -1,243 +1,147 @@
-import Vuex from "vuex";
-import VueRouter from "vue-router";
-
-import { shallowMount, createLocalVue } from "@vue/test-utils";
+import TestUtils from "@/testutils";
 import Edit from "@/pages/Edit.vue";
 
 import { randomStr } from "../utils.js";
 
-const localVue = createLocalVue();
+const Test = new TestUtils();
 
-localVue.use(Vuex);
-localVue.use(VueRouter);
+const allErrors = jest.fn().mockImplementation(() => []);
+const [postItem, postPhoto] = [jest.fn().mockImplementation(() => randomStr(20)), jest.fn()];
+const [setPostValidationMessage, setPhotoValidationMessage] = [
+    jest.fn().mockImplementation(state => {
+        state.postValidationMessage = null;
+    }),
+    jest.fn().mockImplementation(state => {
+        state.photoValidationMessage = null;
+    }),
+];
 
-let wrapper = null;
-const postModuleMock = {
-    namespaced: true,
-    state: {
-        apiIsSuccess: true,
-        postValidationMessage: null,
-        photoValidationMessage: null,
-    },
-    getters: {
-        allErrors: jest.fn().mockImplementation(() => []),
-    },
-    actions: {
-        postItem: jest.fn(),
-        postPhoto: jest.fn(),
-    },
-    mutations: {
-        setPostValidationMessage: jest.fn().mockImplementation(state => {
-            state.postValidationMessage = null;
-        }),
-        setPhotoValidationMessage: jest.fn().mockImplementation(state => {
-            state.photoValidationMessage = null;
-        }),
-    },
+Test.setSpys({
+    allErrors,
+    postItem,
+    postPhoto,
+    setPostValidationMessage,
+    setPhotoValidationMessage,
+});
+
+const initialState = {
+    apiIsSuccess: true,
+    postValidationMessage: null,
+    photoValidationMessage: null,
 };
 
+const options = {
+    stubs: { "ion-icon": true },
+};
+
+let post = null;
+let wrapper = null;
+beforeEach(() => {
+    post = {
+        namespaced: true,
+        state: { ...initialState },
+        getters: { allErrors },
+        actions: { postItem, postPhoto },
+        mutations: { setPostValidationMessage, setPhotoValidationMessage },
+    };
+
+    Test.setMountOption(Edit, options);
+    Test.setVueRouter();
+    Test.setVuex({ post });
+    wrapper = Test.shallowWrapperFactory();
+});
+
 afterEach(() => {
+    Test.clearSpysCalledTimes();
+    wrapper.vm.$router.push("/").catch(() => {});
     wrapper = null;
 });
 
 describe("表示、入力関連", () => {
-    beforeEach(() => {
-        const store = new Vuex.Store({
-            modules: {
-                post: postModuleMock,
-            },
-        });
-        wrapper = shallowMount(Edit, {
-            store,
-            localVue,
-            stubs: {
-                "ion-icon": true,
-            },
-            mocks: {
-                $marked: jest.fn().mockImplementation(val => val),
-                $dompurify: {
-                    sanitize: jest.fn().mockImplementation(val => val),
-                },
-            },
-        });
-    });
-
-    const showingTest = async (tab, showTarget, hiddenTarget) => {
+    it.each([
+        ["#write-tab", "をクリックしたらテキストエリアが表示される"],
+        ["#preview-tab", "をクリックしたらプレビューエリアが表示される"],
+    ])("%s%s", async tab => {
         await wrapper.find(tab).trigger("click");
-        expect(wrapper.find(showTarget).isVisible()).toBe(true);
-        expect(wrapper.find(hiddenTarget).isVisible()).toBe(false);
-    };
-
-    it("#write-tabをクリックしたらテキストエリアが表示される", async done => {
-        await showingTest("#write-tab", ".edit-content", ".preview-content");
-        expect(wrapper.vm.$data.tab).toBe(1);
-        done();
+        expect(wrapper.find(".preview-content").isVisible()).toBe(tab === "#preview-tab");
+        expect(wrapper.find(".edit-content").isVisible()).toBe(tab === "#write-tab");
     });
 
-    it("#preview-tabをクリックしたらプレビューエリアが表示される", async done => {
-        await showingTest("#preview-tab", ".preview-content", ".edit-content");
-        expect(wrapper.vm.$data.tab).toBe(2);
-        done();
-    });
-
-    it("フォームに入力した値がpostFormやtagsStringに保存される", async done => {
-        const tags = [randomStr(), randomStr(), randomStr()];
-        const inputData = {
-            title: randomStr(),
-            content: randomStr(),
-            tagsString: `${tags[0]} ${tags[1]} ${tags[2]}`,
-        };
-
-        wrapper.find("[name='title']").setValue(inputData.title);
-        await wrapper.find("[name='tags']").setValue(inputData.tagsString);
-        wrapper.find("[name='content']").setValue(inputData.content);
-
-        expect(wrapper.vm.$data.postForm).toEqual({
-            title: inputData.title,
-            tags,
-            content: inputData.content,
-        });
-        expect(wrapper.vm.$data.tagsString).toBe(inputData.tagsString);
-        done();
-    });
-
-    it("プレビューにサニタイズされたhtmlが出力される", async done => {
-        const content = randomStr(100);
-
-        expect(wrapper.vm.$dompurify.sanitize).not.toHaveBeenCalled();
-        expect(wrapper.vm.$marked).not.toHaveBeenCalled();
-        await wrapper.find("[name='content']").setValue(content);
-
-        expect(wrapper.vm.$data.htmlContent).toEqual(content);
-        expect(wrapper.vm.$dompurify.sanitize).toHaveBeenCalled();
-        expect(wrapper.vm.$marked).toHaveBeenCalled();
-        done();
+    it.each([
+        ["title", "postForm", randomStr()],
+        ["tags", "tagsString", `${randomStr()} ${randomStr()} ${randomStr()}`],
+        ["content", "postForm", randomStr()],
+    ])("%sフォームに入力した値が%sに保存される", async (name, _, inputData) => {
+        if (name === "tags") {
+            await wrapper.find(`[name='${name}']`).setValue(inputData);
+            expect(wrapper.vm.$data.postForm[name]).toEqual(inputData.split(" "));
+            expect(wrapper.vm.$data.tagsString).toBe(inputData);
+        } else {
+            wrapper.find(`[name='${name}']`).setValue(inputData);
+            expect(wrapper.vm.$data.postForm[name]).toBe(inputData);
+        }
     });
 });
 
 describe("Vuex", () => {
-    const router = new VueRouter({
-        mode: "history",
-        routes: [{ path: "/" }],
-    });
-
     describe("正常終了", () => {
-        beforeEach(async () => {
-            const store = new Vuex.Store({
-                modules: {
-                    post: postModuleMock,
-                },
-            });
-
-            wrapper = shallowMount(Edit, {
-                store,
-                router,
-                localVue,
-                stubs: {
-                    "ion-icon": true,
-                },
-                mocks: {
-                    $marked: jest.fn().mockImplementation(val => val),
-                    $dompurify: {
-                        sanitize: jest.fn().mockImplementation(val => val),
-                    },
-                },
-            });
-            await wrapper.vm.$router.push("/edit").catch(() => {});
-        });
-
-        it("#editを送信したらpost/postItemアクションが実行される", async done => {
-            expect(postModuleMock.actions.postItem).not.toHaveBeenCalled();
-            await wrapper.find("#edit").trigger("submit");
-            expect(postModuleMock.actions.postItem).toHaveBeenCalled();
-            done();
-        });
-
-        it("#post-photoにアップロードしたらpost/postPhotoアクションが実行される", async done => {
-            expect(postModuleMock.actions.postPhoto).not.toHaveBeenCalled();
-            await wrapper.find("#post-photo").trigger("change");
-            expect(postModuleMock.actions.postPhoto).toHaveBeenCalled();
-            done();
-        });
-    });
-    describe("異常終了", () => {
-        let store = null;
-        const computedValue = target =>
-            Edit.computed[target].call({ $store: store });
-
-        const spyClearMessage = jest.spyOn(Edit.methods, "clearMessage");
-        jest.spyOn(Edit.methods, "takeFile").mockImplementation(() => ({}));
-        const message = [randomStr(), randomStr(), randomStr()];
-
-        const createWrapper = () => {
-            store = new Vuex.Store({
-                modules: {
-                    post: postModuleMock,
-                },
-            });
-
-            wrapper = shallowMount(Edit, {
-                store,
-                router,
-                localVue,
-                mocks: {
-                    $marked: jest.fn().mockImplementation(val => val),
-                    $dompurify: {
-                        sanitize: jest.fn().mockImplementation(val => val),
-                    },
-                },
-                stubs: {
-                    "ion-icon": true,
-                },
+        const actionCheck = (spy, id, event) => {
+            TestUtils.checkSpysAreCalled([spy], async () => {
+                await wrapper.find(id).trigger(event);
             });
         };
 
-        beforeEach(() => {
-            postModuleMock.state.apiIsSuccess = false;
-            postModuleMock.getters.allErrors = jest
-                .fn()
-                .mockImplementation(() => message);
-
-            createWrapper();
+        beforeEach(async () => {
+            await Test.testRouting("/", "/edit");
+            Test.clearSpysCalledTimes();
         });
-        afterEach(() => {
-            postModuleMock.mutations.setPostValidationMessage.mock.calls = [];
-            postModuleMock.mutations.setPhotoValidationMessage.mock.calls = [];
-            spyClearMessage.mock.calls = [];
+
+        it.each([
+            ["#edit", "を送信", "postItem", "submit"],
+            ["#post-photo", "にアップロード", "postPhoto", "change"],
+        ])("%s%sしたらpost/%sが実行される", (id, _, action, event) => {
+            actionCheck(post.actions[action], id, event);
+        });
+    });
+    describe("異常終了", () => {
+        const message = [randomStr(), randomStr(), randomStr()];
+        const spyClearMessage = jest.spyOn(Edit.methods, "clearMessage");
+        const allErrors = jest.fn().mockImplementation(() => message);
+        Test.setSpys({ spyClearMessage, allErrors });
+
+        jest.spyOn(Edit.methods, "takeFile").mockImplementation(() => ({}));
+        let store = null;
+
+        beforeEach(() => {
+            post.state.apiIsSuccess = false;
+            post.getters.allErrors = allErrors;
+            store = Test.setVuex({ post });
+            wrapper = Test.shallowWrapperFactory();
         });
 
         it("バリデーションメッセージを正しく算出している", () => {
-            const errors = computedValue("errors");
+            const errors = Test.computedValue("errors", { $store: store });
             expect(errors).toEqual(message);
         });
 
         it("clearMessage()によりバリデーショメッセージをクリアできる", () => {
-            postModuleMock.getters.allErrors = jest
-                .fn()
-                .mockImplementation(() => []);
+            const allErrors = jest.fn().mockImplementation(() => []);
+            Test.setSpys({ allErrors });
+            post.getters.allErrors = allErrors;
+            store = Test.setVuex({ post });
+            wrapper = Test.shallowWrapperFactory();
 
-            createWrapper();
+            Test.clearSpysCalledTimes();
 
-            postModuleMock.mutations.setPostValidationMessage.mock.calls = [];
-            postModuleMock.mutations.setPhotoValidationMessage.mock.calls = [];
-
-            wrapper.vm.clearMessage();
-
-            expect(spyClearMessage).toHaveBeenCalledTimes(1);
-            expect(
-                postModuleMock.mutations.setPostValidationMessage
-            ).toHaveBeenCalledTimes(1);
-            expect(
-                postModuleMock.mutations.setPhotoValidationMessage
-            ).toHaveBeenCalledTimes(1);
-
-            expect(computedValue("errors")).toStrictEqual([]);
+            TestUtils.checkSpysAreCalled(
+                [setPostValidationMessage, setPhotoValidationMessage],
+                wrapper.vm.clearMessage
+            );
+            expect(Test.computedValue("errors", { $store: store })).toStrictEqual([]);
         });
 
-        it("メッセージを閉じるボタンを押すとclearMessage()が呼び出される", async done => {
-            await wrapper.find("#close-message").trigger("click");
-            expect(spyClearMessage).toHaveBeenCalledTimes(1);
-            done();
+        it("clearイベントが発火するとclearMessage()が呼び出される", () => {
+            TestUtils.checkSpysAreCalled([spyClearMessage], () => wrapper.find("errormessages-stub").vm.$emit("clear"));
         });
     });
 });

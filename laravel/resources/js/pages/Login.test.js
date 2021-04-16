@@ -1,105 +1,75 @@
-import Vuex from "vuex";
-import VueRouter from "vue-router";
-
-import { mount, shallowMount, createLocalVue } from "@vue/test-utils";
+import TestUtils from "@/testutils";
 import Login from "@/pages/Login.vue";
-
 import { randomStr } from "../utils.js";
 
-const localVue = createLocalVue();
+const Test = new TestUtils();
 
-localVue.use(Vuex);
-localVue.use(VueRouter);
+let auth = null;
 
 let wrapper = null;
-const authStoreMock = {
-    namespaced: true,
-    state: {
-        apiIsSuccess: true,
-        loginValidationMessage: {},
-        registerValidationMessage: {},
-    },
-    actions: {
-        register: jest.fn(),
-        login: jest.fn(),
-    },
-    mutations: {
-        setLoginValidationMessage: jest.fn().mockImplementation(state => {
-            state.loginValidationMessage = null;
-        }),
-        setRegisterValidationMessage: jest.fn().mockImplementation(state => {
-            state.registerValidationMessage = null;
-        }),
-    },
-};
-
-const router = new VueRouter({
-    mode: "history",
-    routes: [{ path: "/" }],
+beforeEach(() => {
+    auth = {
+        namespaced: true,
+        state: { apiIsSuccess: true, loginValidationMessage: {}, registerValidationMessage: {} },
+        actions: { register: jest.fn(), login: jest.fn() },
+        mutations: {
+            setLoginValidationMessage: jest.fn().mockImplementation(state => {
+                state.loginValidationMessage = null;
+            }),
+            setRegisterValidationMessage: jest.fn().mockImplementation(state => {
+                state.registerValidationMessage = null;
+            }),
+        },
+    };
+    Test.setSpys({
+        register: auth.actions.register,
+        login: auth.actions.login,
+        loginValidation: auth.mutations.setLoginValidationMessage,
+        registerValidation: auth.mutations.setRegisterValidationMessage,
+    });
+    Test.setMountOption(Login, {});
+    Test.setVuex({ auth });
+    Test.setVueRouter();
+    wrapper = Test.shallowWrapperFactory();
 });
-
 afterEach(() => {
+    wrapper.vm.$router.push("/").catch(() => {});
+    Test.clearSpysCalledTimes();
     wrapper = null;
 });
 
 describe("表示、入力関連", () => {
-    beforeEach(() => {
-        const store = new Vuex.Store({
-            modules: {
-                auth: authStoreMock,
-            },
-        });
-        wrapper = mount(Login, {
-            store,
-            localVue,
-        });
-    });
-    it("#login-tabをクリックしたらログインフォームが表示される", async done => {
-        await wrapper.find("#login-tab").trigger("click");
-        expect(wrapper.find("#login-form").isVisible()).toBe(true);
-        expect(wrapper.find("#register-form").isVisible()).toBe(false);
-        done();
-    });
+    const data = {
+        name: randomStr(),
+        email: randomStr(),
+        password: randomStr(),
+        passwordConfirmation: randomStr(),
+    };
 
-    it("#register-tabをクリックしたら登録フォームが表示される", async done => {
-        await wrapper.find("#register-tab").trigger("click");
-        expect(wrapper.find("#login-form").isVisible()).toBe(false);
-        expect(wrapper.find("#register-form").isVisible()).toBe(true);
-        done();
+    it.each([
+        ["#login-tab", "ログインフォーム"],
+        ["#register-tab", "登録フォーム"],
+    ])("%sをクリックしたら%sが表示される", async target => {
+        await wrapper.find(target).trigger("click");
+        const isLoginForm = target === "#login-tab";
+        expect(wrapper.find("#login-form").isVisible()).toBe(isLoginForm);
+        expect(wrapper.find("#register-form").isVisible()).toBe(!isLoginForm);
     });
 
-    it("#login-formに入力した値がdataに保存される", () => {
-        const data = { email: randomStr(), password: randomStr() };
-
-        wrapper.find("#login-email").setValue(data.email);
-        wrapper.find("#login-password").setValue(data.password);
-
-        expect(wrapper.vm.$data.loginForm).toEqual({
-            email: data.email,
-            password: data.password,
-        });
-    });
-
-    it("#register-formに入力した値がdataに保存される", () => {
-        const data = {
-            name: randomStr(),
-            email: randomStr(),
-            password: randomStr(),
-            passwordConfirmation: randomStr(),
-        };
-
-        wrapper.find("#username").setValue(data.name);
-        wrapper.find("#email").setValue(data.email);
-        wrapper.find("#password").setValue(data.password);
-        wrapper
-            .find("#password-confirmation")
-            .setValue(data.passwordConfirmation);
-
-        expect(wrapper.vm.$data.registerForm).toEqual({
-            name: data.name,
-            email: data.email,
-            password: data.password,
-            password_confirmation: data.passwordConfirmation,
+    it.each([
+        ["#login-form", ["#login-email", "#login-password"], ["email", "password"], [data.email, data.password]],
+        [
+            "#register-form",
+            ["#username", "#email", "#password", "#password-confirmation"],
+            ["name", "email", "password", "password_confirmation"],
+            [data.name, data.email, data.password, data.passwordConfirmation],
+        ],
+    ])("%sに入力した値がdataに保存される", (formId, ids, props, datas) => {
+        wrapper = Test.wrapperFactory();
+        ids.forEach((id, index) => {
+            wrapper.find(id).setValue(datas[index]);
+            const form = formId === "#login-form" ? "loginForm" : "registerForm";
+            expect(wrapper.vm.$data[form][props[index]]).toBe(datas[index]);
         });
     });
 });
@@ -107,150 +77,81 @@ describe("表示、入力関連", () => {
 describe("Vuex", () => {
     describe("正常終了", () => {
         beforeEach(async () => {
-            const store = new Vuex.Store({
-                modules: {
-                    auth: authStoreMock,
-                },
+            await Test.testRouting("/", "/login");
+        });
+
+        it.each([
+            ["#register-form", "register"],
+            ["#login-form", "login"],
+        ])("%sを送信したらauth/%sが実行される", async (id, action) => {
+            expect(wrapper.vm.$route.path).toBe("/login");
+            await TestUtils.checkSpysAreCalled([auth.actions[action]], async () => {
+                await wrapper.find(id).trigger("submit");
             });
-
-            wrapper = shallowMount(Login, { store, router, localVue });
-            await wrapper.vm.$router.push("/login").catch(() => {});
-        });
-
-        it("#register-formを送信したらauth/registerアクションが実行される", async done => {
-            expect(wrapper.vm.$route.path).toBe("/login");
-            await wrapper.find("#register-form").trigger("submit");
-
-            expect(authStoreMock.actions.register).toHaveBeenCalled();
-
             expect(wrapper.vm.$route.path).toBe("/");
-            done();
-        });
-
-        it("#login-formを送信したらauth/registerアクションが実行される", async done => {
-            expect(wrapper.vm.$route.path).toBe("/login");
-            await wrapper.find("#login-form").trigger("submit");
-
-            expect(authStoreMock.actions.login).toHaveBeenCalled();
-            expect(wrapper.vm.$route.path).toBe("/");
-            done();
         });
     });
 
     describe("異常終了", () => {
         let store = null;
-        const computedValue = target =>
-            Login.computed[target].call({ $store: store });
         const spyClearMessage = jest.spyOn(Login.methods, "clearMessage");
-
+        Test.setSpys({ spyClearMessage });
         beforeEach(async () => {
-            authStoreMock.state.apiIsSuccess = false;
-            authStoreMock.state.loginValidationMessage = {
+            auth.state.apiIsSuccess = false;
+            auth.state.loginValidationMessage = {
                 email: [randomStr()],
                 password: [randomStr()],
             };
-            authStoreMock.state.registerValidationMessage = {
+            auth.state.registerValidationMessage = {
                 name: [randomStr()],
                 email: [randomStr()],
                 password: [randomStr(), randomStr()],
             };
+            store = Test.setVuex({ auth });
+            wrapper = Test.shallowWrapperFactory();
+            await Test.testRouting("/", "/login");
+        });
 
-            store = new Vuex.Store({
-                modules: {
-                    auth: authStoreMock,
-                },
+        it.each([
+            ["register", "#register-form"],
+            ["login", "#login-form"],
+        ])("%sの結果422エラーの時はリダイレクトしない", async (action, form) => {
+            await TestUtils.checkSpysAreCalled([auth.actions[action]], async () => {
+                expect(wrapper.vm.$route.path).toBe("/login");
+                await wrapper.find(form).trigger("submit");
+                expect(wrapper.vm.$route.path).toBe("/login");
             });
-
-            wrapper = shallowMount(Login, {
-                store,
-                router,
-                localVue,
-            });
-            await wrapper.vm.$router.push("/login").catch(() => {});
         });
 
-        afterEach(() => {
-            authStoreMock.mutations.setLoginValidationMessage.mock.calls = [];
-            authStoreMock.mutations.setRegisterValidationMessage.mock.calls = [];
-            spyClearMessage.mock.calls = [];
+        it.each([
+            ["#login-form", "loginErrors", "loginValidationMessage"],
+            ["register-form", "registerErrors", "registerValidationMessage"],
+        ])("%sのバリデーションエラーを正しく算出している", (_, target, message) => {
+            const errors = Test.computedValue(target, { $store: store });
+            expect(errors).toEqual(auth.state[message]);
         });
 
-        it("registerの結果422エラーの時はリダイレクトしない", async done => {
-            expect(wrapper.vm.$route.path).toBe("/login");
+        it.each([
+            ["loginValidationMessage", "loginErrors"],
+            ["registerValidationMessage", "registerErrors"],
+        ])("clearMessage()により、auth.state.%sがクリアされる", (message, target) => {
+            let errors = Test.computedValue(target, { $store: store });
+            expect(errors).toEqual(auth.state[message]);
+            Test.clearSpysCalledTimes();
 
-            await wrapper.find("#register-form").trigger("submit");
-
-            expect(authStoreMock.actions.register).toHaveBeenCalled();
-            expect(wrapper.vm.$route.path).toBe("/login");
-            done();
-        });
-        it("loginの結果422エラーの時はリダイレクトしない", async done => {
-            expect(wrapper.vm.$route.path).toBe("/login");
-
-            await wrapper.find("#login-form").trigger("submit");
-
-            expect(authStoreMock.actions.login).toHaveBeenCalled();
-            expect(wrapper.vm.$route.path).toBe("/login");
-            done();
-        });
-
-        it("#login-formのバリデーションエラーを正しく算出している", () => {
-            const errors = computedValue("loginErrors");
-            expect(errors).toEqual(authStoreMock.state.loginValidationMessage);
-        });
-
-        it("#register-formのバリデーションエラーを正しく算出している", () => {
-            const errors = computedValue("registerErrors");
-
-            expect(errors).toEqual(
-                authStoreMock.state.registerValidationMessage
-            );
-
-            // registerがstoreからloginValidationMessageを受け取っていることを確認できればいい
-        });
-        it("clearMessage()により、authのloginValidationMessageとregisterValidationMessageがクリアされる", () => {
-            // computedの各値を取得
-            let loginErrors = computedValue("loginErrors");
-            let registerErrors = computedValue("registerErrors");
-
-            // computedの各値がauth.stateの対応するものと等しい
-            expect(loginErrors).toEqual(
-                authStoreMock.state.loginValidationMessage
-            );
-            expect(registerErrors).toEqual(
-                authStoreMock.state.registerValidationMessage
-            );
-
-            authStoreMock.mutations.setLoginValidationMessage.mock.calls = [];
-            authStoreMock.mutations.setRegisterValidationMessage.mock.calls = [];
-
-            // mutationを実行
             wrapper.vm.clearMessage();
-
-            // 各mutationが実行されたかチェック
-            expect(
-                authStoreMock.mutations.setLoginValidationMessage
-            ).toHaveBeenCalledTimes(1);
-            expect(
-                authStoreMock.mutations.setRegisterValidationMessage
-            ).toHaveBeenCalledTimes(1);
-
-            // 更新後のcomputedの値を取得
-            loginErrors = computedValue("loginErrors");
-            registerErrors = computedValue("registerErrors");
-
-            // clearMessage()によってcomputedの値がクリアされたことをチェック
-            expect(loginErrors).toBe(null);
-            expect(registerErrors).toBe(null);
+            expect(auth.mutations[`set${message.replace(/^\w/, c => c.toUpperCase())}`]);
+            errors = Test.computedValue(target, { $store: store });
+            expect(errors).toEqual(null);
         });
         it("ページアクセス時にclearMessage()が呼び出されている", () => {
-            expect(spyClearMessage).toHaveBeenCalledTimes(1);
+            expect(spyClearMessage).toHaveBeenCalled();
         });
         it("タブ切り替えによりclearMessage()が呼び出されている", async done => {
-            spyClearMessage.mock.calls = [];
-            expect(spyClearMessage).not.toHaveBeenCalled();
-            await wrapper.setData({ tab: 2 });
-            expect(spyClearMessage).toHaveBeenCalled();
+            Test.clearSpysCalledTimes();
+            await TestUtils.checkSpysAreCalled([spyClearMessage], () => {
+                wrapper.setData({ tab: 2 });
+            });
             done();
         });
     });

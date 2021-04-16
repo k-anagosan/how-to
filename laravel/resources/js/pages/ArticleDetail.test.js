@@ -1,124 +1,78 @@
-import Vuex from "vuex";
-import VueRouter from "vue-router";
-
-import { shallowMount, createLocalVue } from "@vue/test-utils";
+import TestUtils from "@/testutils";
 import ArticleDetail from "@/pages/ArticleDetail.vue";
-
 import { randomStr } from "@/utils";
 
-const localVue = createLocalVue();
+const Test = new TestUtils();
+const spyFetchArticle = jest.spyOn(ArticleDetail.methods, "fetchArticle");
+Test.setSpys({ spyFetchArticle });
 
-localVue.use(VueRouter);
-localVue.use(Vuex);
-
-let wrapper = null;
-
-const article = {
+const response = {
     id: randomStr(20),
     title: randomStr(30),
     content: randomStr(100),
-    tags: [
-        { name: randomStr(10) },
-        { name: randomStr(10) },
-        { name: randomStr(10) },
-    ],
+    tags: [{ name: randomStr(10) }, { name: randomStr(10) }, { name: randomStr(10) }],
     author: {
         name: randomStr(10),
     },
 };
 
-const postModuleMock = {
+const post = {
     namespaced: true,
-    state: {
-        apiIsSuccess: true,
-    },
     actions: {
-        getArticle: jest.fn().mockImplementation(() => article),
+        getArticle: jest.fn().mockImplementation(() => ({ ...response })),
     },
 };
-const spyFormat = jest.spyOn(ArticleDetail.methods, "format");
 
+Test.setSpys({ getArticle: post.actions.getArticle });
+Test.setVueRouter();
+Test.setVuex({ post });
+
+const options = {
+    propsData: { id: randomStr(20) },
+    stubs: {
+        "ion-icon": true,
+    },
+};
+
+let wrapper = null;
 beforeEach(() => {
-    const router = new VueRouter({ mode: "history" });
-    const store = new Vuex.Store({
-        modules: {
-            post: postModuleMock,
-        },
-    });
-    const $marked = jest.fn().mockImplementation(val => val);
-    const $dompurify = {
-        sanitize: jest.fn().mockImplementation(val => val),
-    };
-
-    wrapper = shallowMount(ArticleDetail, {
-        store,
-        router,
-        localVue,
-        propsData: { id: randomStr(20) },
-        stubs: {
-            "ion-icon": true,
-        },
-        mocks: {
-            $marked,
-            $dompurify,
-        },
-    });
+    Test.setMountOption(ArticleDetail, options);
+    wrapper = Test.shallowWrapperFactory();
+    Test.clearSpysCalledTimes();
 });
 
 describe("表示、入力関連", () => {
-    beforeEach(() => {
-        spyFormat.mock.calls = [];
-        wrapper.vm.$marked.mock.calls = [];
-        wrapper.vm.$dompurify.sanitize.mock.calls = [];
-    });
-    it("ページアクセスしたら記事データを取得できる", async done => {
-        await wrapper.vm.$router.push("/").catch(() => {});
-        expect(wrapper.vm.$route.path).toBe("/");
+    beforeEach(async () => {
         const path = `/article/${randomStr(20)}`;
         await wrapper.vm.$router.push(path);
         expect(wrapper.vm.$route.path).toBe(path);
-        expect(wrapper.vm.$data.article).toEqual(article);
-        done();
+        expect(spyFetchArticle).toHaveBeenCalled();
     });
 
-    it("ページアクセスしたらformat()が実行される", async done => {
-        expect(spyFormat).not.toHaveBeenCalled();
-        await wrapper.vm.$router.push("/").catch(() => {});
-        expect(wrapper.vm.$route.path).toBe("/");
-
-        const path = `/article/${randomStr(20)}`;
-        await wrapper.vm.$router.push(path);
-        expect(spyFormat).toHaveBeenCalled();
-        expect(wrapper.vm.$route.path).toBe(path);
-        expect(wrapper.vm.$data.formattedContent).toEqual(`${article.content}`);
-        done();
+    it("ページアクセスしたら記事データを取得できる", () => {
+        expect(wrapper.vm.$data.article).toEqual(response);
     });
 
-    it("format()が実行されたサニタイズ処理が実行される", () => {
-        expect(spyFormat).not.toHaveBeenCalled();
-        expect(wrapper.vm.$marked).not.toHaveBeenCalled();
-        expect(wrapper.vm.$dompurify.sanitize).not.toHaveBeenCalled();
+    it("記事データを取得したらMarkdownPreviewへarticle.contentを渡せる", () => {
+        expect(wrapper.find("markdownpreview-stub").props().text).toEqual(response.content);
+    });
 
-        wrapper.vm.format(randomStr(100));
+    it("記事データを取得したらIconへarticle.authorを渡せる", () => {
+        wrapper.findAll("icon-stub").wrappers.forEach(wrapper => {
+            expect(wrapper.props().icon).toEqual(response.author);
+        });
+    });
 
-        expect(spyFormat).toHaveBeenCalled();
-        expect(wrapper.vm.$marked).toHaveBeenCalled();
-        expect(wrapper.vm.$dompurify.sanitize).toHaveBeenCalled();
+    it("記事データを取得したらIconListへarticle.tagsを渡せる", () => {
+        expect(wrapper.find("iconlist-stub").props().icons).toEqual(response.tags);
     });
 });
 
 describe("Vuex", () => {
-    const spyFetchArticle = jest.spyOn(ArticleDetail.methods, "fetchArticle");
-    beforeEach(() => {
-        spyFetchArticle.mock.calls = [];
-        postModuleMock.actions.getArticle.mock.calls = [];
-    });
-    it("ページアクセスしたらgetArticleが実行される", async done => {
-        expect(postModuleMock.actions.getArticle).not.toHaveBeenCalled();
-        expect(spyFetchArticle).not.toHaveBeenCalled();
+    it("ページアクセスしたらgetArticleアクションが実行される", async done => {
+        Test.checkSpysHaveNotBeenCalled();
         await wrapper.vm.$router.push(`/article/${randomStr(20)}`);
-        expect(postModuleMock.actions.getArticle).toHaveBeenCalled();
-        expect(spyFetchArticle).toHaveBeenCalled();
+        Test.checkSpysHaveBeenCalled();
         done();
     });
 });

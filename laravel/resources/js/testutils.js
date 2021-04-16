@@ -146,6 +146,16 @@ class TestUtils {
         expect(spy.mock.calls[0]).toEqual(args);
     }
 
+    static async checkSpysAreCalled(spys, callback) {
+        spys.forEach(spy => {
+            expect(spy).not.toHaveBeenCalled();
+        });
+        await callback();
+        spys.forEach(spy => {
+            expect(spy).toHaveBeenCalled();
+        });
+    }
+
     /**
      * セットされているスパイファンクションがすべてまだ呼び出されていないかチェックする
      */
@@ -243,16 +253,6 @@ class TestUtils {
         await this.testApiResult(moduleAndAction, true);
         const [module] = moduleAndAction.split("/");
         expect(this.store.state[module][target]).toStrictEqual(expected);
-    }
-
-    static async testSpyIsCalled(spys, callback) {
-        spys.forEach(spy => {
-            expect(spy).not.toHaveBeenCalled();
-        });
-        await callback();
-        spys.forEach(spy => {
-            expect(spy).toHaveBeenCalled();
-        });
     }
 }
 

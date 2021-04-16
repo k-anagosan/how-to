@@ -1,12 +1,10 @@
-import { shallowMount, createLocalVue } from "@vue/test-utils";
+import TestUtils from "@/testutils";
 import CardList from "@/pages/CardList.vue";
-import Vuex from "vuex";
-import VueRouter from "vue-router";
 import { randomStr } from "../utils";
 
-const localVue = createLocalVue();
-localVue.use(VueRouter);
-localVue.use(Vuex);
+const Test = new TestUtils();
+const spyFetchArticleList = jest.spyOn(CardList.methods, "fetchArticleList");
+Test.setSpys({ spyFetchArticleList });
 
 const article = () => ({
     id: randomStr(20),
@@ -19,7 +17,7 @@ const article = () => ({
 });
 const responseFactory = (current_page, per_page, last_page) => ({
     current_page,
-    data: Array(per_page).fill(null).map(article),
+    data: [...Array(per_page)].map(article),
     per_page,
     last_page,
 });
@@ -32,99 +30,58 @@ const { current_page, per_page, last_page } = {
 
 const response = responseFactory(current_page, per_page, last_page);
 
-const postModule = {
+const post = {
     namespaced: true,
-    state: { apiIsSuccess: null },
     actions: {
         getArticleList: jest.fn().mockImplementation(() => ({ ...response })),
     },
 };
 
-const store = new Vuex.Store({
-    modules: {
-        post: postModule,
-    },
-});
-const router = new VueRouter();
+Test.setSpys({ getArticleList: post.actions.getArticleList });
+
+Test.setVueRouter();
+Test.setVuex({ post });
 
 const options = {
-    store,
-    router,
-    localVue,
+    propsData: {
+        page: current_page,
+    },
     stubs: {
         "ion-icon": true,
     },
-    setProps: {
-        page: current_page,
-    },
 };
 
-const factory = options => shallowMount(CardList, options);
-
-const spyFetchArticleList = jest.spyOn(CardList.methods, "fetchArticleList");
+let wrapper = null;
+beforeEach(() => {
+    Test.checkSpysHaveNotBeenCalled();
+    Test.setMountOption(CardList, options);
+    wrapper = Test.shallowWrapperFactory();
+    Test.checkSpysHaveBeenCalled();
+});
+afterEach(() => {
+    Test.clearSpysCalledTimes();
+    wrapper = null;
+});
 
 describe("表示関連", () => {
-    let wrapper = null;
-
-    beforeEach(() => {
-        expect(spyFetchArticleList).not.toHaveBeenCalled();
-        wrapper = factory(options);
-        expect(spyFetchArticleList).toHaveBeenCalled();
-    });
-
-    afterEach(() => {
-        spyFetchArticleList.mock.calls = [];
-        wrapper = null;
-    });
-
     it("ページアクセスしたらdataに記事一覧情報が保存される", () => {
         expect(wrapper.vm.$data.list).toEqual(response.data);
     });
+    it("ページアクセスしたらdataにページネーション情報が保存される", () => {
+        const pagination = { ...response };
+        delete pagination.data;
+        expect(wrapper.vm.$data.pagination).toEqual(pagination);
+    });
 
     it("dataに記事一覧情報が保存されたら記事一覧が表示される", () => {
-        expect(wrapper.findAll(".cardlist > li").length).toBe(per_page);
-    });
-
-    it("現在ページ数と総ページ数が'x / y'の形式で表示される", async done => {
-        await wrapper.setData({ pagination: { current_page: 2 } });
-        expect(wrapper.find(".current_page").text()).toBe(`2 / ${last_page}`);
-        done();
-    });
-
-    it("1ページ目ならNewerが非表示になる", () => {
-        expect(wrapper.find(".newer").exists()).toBe(false);
-        expect(wrapper.find(".older").exists()).toBe(true);
-    });
-
-    it("1ページ目と最終ページでなければNewerとOlderが表示される", async done => {
-        await wrapper.setData({ pagination: { current_page: 2 } });
-        expect(wrapper.find(".newer").exists()).toBe(true);
-        expect(wrapper.find(".older").exists()).toBe(true);
-        done();
-    });
-
-    it("最終ページならOlderが非表示になる", async done => {
-        await wrapper.setData({ pagination: { current_page: last_page } });
-        expect(wrapper.find(".newer").exists()).toBe(true);
-        expect(wrapper.find(".older").exists()).toBe(false);
-        done();
+        expect(wrapper.findAll("card-stub").length).toBe(per_page);
     });
 });
 
 describe("Vuex", () => {
-    let wrapper = null;
-    beforeEach(() => {
-        spyFetchArticleList.mock.calls = [];
-        postModule.actions.getArticleList.mock.calls = [];
-        expect(postModule.actions.getArticleList).not.toHaveBeenCalled();
-        expect(spyFetchArticleList).not.toHaveBeenCalled();
-        wrapper = factory(options);
-    });
-
     it("ページアクセスしたらgetArticleListが実行される", async done => {
         await wrapper.vm.$router.push(`/`).catch(() => {});
-        expect(postModule.actions.getArticleList).toHaveBeenCalled();
-        expect(spyFetchArticleList).toHaveBeenCalled();
+        Test.checkSpysHaveBeenCalled();
         done();
     });
 });
