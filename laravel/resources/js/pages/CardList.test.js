@@ -12,11 +12,7 @@ const article = () => ({
     id: randomStr(20),
     title: randomStr(30),
     content: randomStr(100),
-    tags: [
-        { name: randomStr(10) },
-        { name: randomStr(10) },
-        { name: randomStr(10) },
-    ],
+    tags: [{ name: randomStr(10) }, { name: randomStr(10) }, { name: randomStr(10) }],
     author: {
         name: randomStr(10),
     },
@@ -73,6 +69,7 @@ describe("表示関連", () => {
     beforeEach(() => {
         expect(spyFetchArticleList).not.toHaveBeenCalled();
         wrapper = factory(options);
+        expect(spyFetchArticleList).toHaveBeenCalled();
     });
 
     afterEach(() => {
@@ -81,31 +78,26 @@ describe("表示関連", () => {
     });
 
     it("ページアクセスしたらdataに記事一覧情報が保存される", () => {
-        expect(spyFetchArticleList).toHaveBeenCalled();
         expect(wrapper.vm.$data.list).toEqual(response.data);
     });
 
     it("dataに記事一覧情報が保存されたら記事一覧が表示される", () => {
-        expect(spyFetchArticleList).toHaveBeenCalled();
         expect(wrapper.findAll(".cardlist > li").length).toBe(per_page);
     });
 
     it("現在ページ数と総ページ数が'x / y'の形式で表示される", async done => {
-        expect(spyFetchArticleList).toHaveBeenCalled();
         await wrapper.setData({ pagination: { current_page: 2 } });
         expect(wrapper.find(".current_page").text()).toBe(`2 / ${last_page}`);
         done();
     });
 
     it("1ページ目ならNewerが非表示になる", () => {
-        expect(spyFetchArticleList).toHaveBeenCalled();
         expect(wrapper.find(".newer").exists()).toBe(false);
         expect(wrapper.find(".older").exists()).toBe(true);
     });
 
     it("1ページ目と最終ページでなければNewerとOlderが表示される", async done => {
         await wrapper.setData({ pagination: { current_page: 2 } });
-        expect(spyFetchArticleList).toHaveBeenCalled();
         expect(wrapper.find(".newer").exists()).toBe(true);
         expect(wrapper.find(".older").exists()).toBe(true);
         done();
@@ -113,7 +105,6 @@ describe("表示関連", () => {
 
     it("最終ページならOlderが非表示になる", async done => {
         await wrapper.setData({ pagination: { current_page: last_page } });
-        expect(spyFetchArticleList).toHaveBeenCalled();
         expect(wrapper.find(".newer").exists()).toBe(true);
         expect(wrapper.find(".older").exists()).toBe(false);
         done();

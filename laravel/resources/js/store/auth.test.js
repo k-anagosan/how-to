@@ -1,11 +1,5 @@
 import TestUtils from "@/testutils";
-import {
-    randomStr,
-    OK,
-    CREATED,
-    INTERNAL_SERVER_ERROR,
-    UNPROCESSABLE_ENTITY,
-} from "@/utils";
+import { randomStr, OK, CREATED, INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY } from "@/utils";
 
 import auth from "@/store/auth";
 
@@ -37,11 +31,18 @@ afterEach(() => {
 });
 
 describe("auth.js actions", () => {
-    const data = {
-        name: randomStr(),
-        email: `${randomStr()}@${randomStr()}.com`,
-        password: "password",
-        password_confirmation: "password",
+    const res = {
+        data: {
+            name: randomStr(),
+            email: `${randomStr()}@${randomStr()}.com`,
+            id: 1,
+        },
+        status: OK,
+    };
+    const expected = {
+        name: res.data.name,
+        email: res.data.email,
+        id: expect.anything(),
     };
 
     afterEach(() => {
@@ -50,85 +51,37 @@ describe("auth.js actions", () => {
     });
 
     describe("API request succeeded", () => {
-        it("registerアクションによりstateに正しく値が保存されるか", async done => {
-            const post = jest.fn().mockImplementation(() => ({
-                data: {
-                    name: data.name,
-                    email: data.email,
-                    id: 1,
+        it.each([
+            ["auth/register", res, "register", expected],
+            ["auth/login", res, "login", expected],
+            ["auth/logout", { status: OK }, "logout", null],
+            ["ログイン時auth/getCurrentUser", res, "getCurrentUser", expected],
+            [
+                "未ログイン時auth/getCurrentUser",
+                {
+                    data: [],
+                    status: OK,
                 },
-                status: CREATED,
-            }));
+                "getCurrentUser",
+                null,
+            ],
+        ])("%sによりstateに正しく値が保存される", async (_, res, action, expected) => {
+            if (action === "register") {
+                res.status = CREATED;
+            } else {
+                res.status = OK;
+            }
 
-            Test.mockAxios(null, post);
-            await Test.testStateWithAction("auth/register", "user", {
-                email: data.email,
-                id: expect.anything(),
-                name: data.name,
-            });
-            expect(post).toHaveBeenCalled();
-            done();
-        });
+            let [get, post] = [null, null];
+            if (action === "getCurrentUser") {
+                get = jest.fn().mockImplementation(() => res);
+            } else {
+                post = jest.fn().mockImplementation(() => res);
+            }
+            Test.mockAxios(get, post);
 
-        it("loginアクションによりstateに正しく値が保存されるか", async done => {
-            const post = jest.fn().mockImplementation(() => ({
-                data: {
-                    name: "testuser",
-                    email: data.email,
-                    id: 1,
-                },
-                status: OK,
-            }));
-
-            Test.mockAxios(null, post);
-            await Test.testStateWithAction("auth/login", "user", {
-                email: data.email,
-                id: expect.anything(),
-                name: "testuser",
-            });
-            expect(post).toHaveBeenCalled();
-            done();
-        });
-
-        it("logoutアクションによりstateに正しく値が保存されるか", async done => {
-            const post = jest.fn().mockImplementation(() => ({ status: OK }));
-
-            Test.mockAxios(null, post);
-            await Test.testStateWithAction("auth/logout", "user", null);
-            expect(post).toHaveBeenCalled();
-            done();
-        });
-
-        it("getUserアクションによりセッションがログイン済みのものであればstate.userにユーザー情報が保存されるか", async done => {
-            const get = jest.fn().mockImplementation(() => ({
-                data: {
-                    name: "test",
-                    email: "test@example.com",
-                    id: 1,
-                },
-                status: OK,
-            }));
-
-            Test.mockAxios(get, null);
-            await Test.testStateWithAction("auth/getCurrentUser", "user", {
-                name: "test",
-                email: "test@example.com",
-                id: expect.anything(),
-            });
-            expect(get).toHaveBeenCalled();
-            done();
-        });
-
-        it("getUserアクションによりセッションが未ログインのものであればstate.userにnullが保存されるか", async done => {
-            const get = jest.fn().mockImplementation(() => ({
-                data: [],
-                status: OK,
-            }));
-
-            Test.mockAxios(get, null);
-            await Test.testStateWithAction("auth/getCurrentUser", "user", null);
-            expect(get).toHaveBeenCalled();
-            done();
+            await Test.testStateWithAction(`auth/${action}`, "user", expected);
+            expect(post ?? get).toHaveBeenCalled();
         });
     });
 
@@ -143,63 +96,27 @@ describe("auth.js actions", () => {
         };
 
         const checkSpyIsCalled = action => {
-            TestUtils.checkSpyIsCalled(
-                setErrorCode,
-                [{}, INTERNAL_SERVER_ERROR],
-                () => Test.testApiResult(`auth/${action}`, false)
+            TestUtils.checkSpyIsCalled(setErrorCode, [{}, INTERNAL_SERVER_ERROR], () =>
+                Test.testApiResult(`auth/${action}`, false)
             );
         };
         beforeEach(() => {
             Test.mockAxios(get, post);
         });
 
-        describe("register アクションでリクエストに失敗", () => {
-            it("apiIsSuccessに正しく値が保存されるか", async done => {
-                await checkApiIsFailure("register");
-                done();
-            });
-
-            it("errorストアのsetErrorCodeが呼び出されるか", async done => {
-                await checkSpyIsCalled("register");
-                await done();
-            });
-        });
-
-        describe("login アクションでリクエストに失敗", () => {
-            it("apiIsSuccessに正しく値が保存されるか", async done => {
-                await checkApiIsFailure("login");
-                done();
-            });
-
-            it("errorストアのsetErrorCodeが呼び出されるか", async done => {
-                await checkSpyIsCalled("login");
-                done();
-            });
-        });
-
-        describe("logout アクションでリクエストに失敗", () => {
-            it("apiIsSuccessに正しく値が保存されるか", async done => {
-                await checkApiIsFailure("logout");
-                done();
-            });
-
-            it("errorストアのsetErrorCodeが呼び出されるか", async done => {
-                await checkSpyIsCalled("logout");
-                done();
-            });
-        });
-
-        describe("getCurrentUser アクションでリクエストに失敗", () => {
-            it("apiIsSuccessに正しく値が保存されるか", async done => {
-                await checkApiIsFailure("getCurrentUser");
-                done();
-            });
-
-            it("errorストアのsetErrorCodeが呼び出されるか", async done => {
-                await checkSpyIsCalled("getCurrentUser");
-                done();
-            });
-        });
+        describe.each([["register"], ["login"], ["logout"], ["getCurrentUser"]])(
+            "%sアクションでリクエストに失敗",
+            action => {
+                it("apiIsSuccessに正しく値が保存されるか", async done => {
+                    await checkApiIsFailure(action);
+                    done();
+                });
+                it("errorストアのsetErrorCodeが呼び出されるか", async done => {
+                    await checkSpyIsCalled(action);
+                    done();
+                });
+            }
+        );
     });
 
     describe("API request failed with status code 422", () => {
@@ -220,68 +137,46 @@ describe("auth.js actions", () => {
             expect(store.state.auth[target]).toEqual(validationErrorMessage);
         };
 
-        it("register アクションに422エラーで失敗した時registerErorrMessageに正しく値が保存されるか", async done => {
-            const post = () => ({
-                data: {
-                    errors: validationErrorMessage,
-                },
-                status: UNPROCESSABLE_ENTITY,
-            });
-            Test.mockAxios(null, post);
-            await checkApiIsFailure("register", "registerValidationMessage");
-            done();
-        });
-
-        it("login アクションに422エラーで失敗した時loginErrorMessageに正しく値が保存されるか", async done => {
-            delete validationErrorMessage.name;
-            const post = () => ({
-                data: {
-                    errors: validationErrorMessage,
-                },
-                status: UNPROCESSABLE_ENTITY,
-            });
-            Test.mockAxios(null, post);
-            await checkApiIsFailure("login", "loginValidationMessage");
-            done();
-        });
+        it.each([["register"], ["login"]])(
+            "%sアクションに422エラーで失敗した時%sErorrMessageに正しく値が保存されるか",
+            async action => {
+                if (action === "login") delete validationErrorMessage.name;
+                const post = () => ({
+                    data: {
+                        errors: validationErrorMessage,
+                    },
+                    status: UNPROCESSABLE_ENTITY,
+                });
+                Test.mockAxios(null, post);
+                await checkApiIsFailure(action, `${action}ValidationMessage`);
+            }
+        );
     });
 });
 
 describe("auth.js getters", () => {
-    describe("authenticated", () => {
-        const user = {
-            id: 1,
-            name: "testuser",
-            email: "test@example.com",
-        };
+    const user = {
+        id: 1,
+        name: "testuser",
+        email: "test@example.com",
+    };
+
+    describe.each([
+        ["ログイン済み", true],
+        ["未ログイン", false],
+    ])("%s", (describe, isAuth) => {
         beforeEach(() => {
-            store.commit("auth/setUser", user);
+            store.commit("auth/setUser", isAuth ? user : null);
         });
 
-        it("ログイン済のとき、isAuthenticatedゲッターにより正しい値を取得できるか", () => {
+        it(`${describe}のとき、isAuthenticatedゲッターにより正しい値を取得できるか`, () => {
             const isLogin = Test.testedGetter("auth/isAuthenticated");
-            expect(isLogin).toBe(true);
+            expect(isLogin).toBe(isAuth);
         });
 
-        it("ログイン済のとき、usernameゲッターにより正しい値を取得できるか", () => {
+        it(`${describe}のとき、usernameゲッターにより正しい値を取得できるか`, () => {
             const username = Test.testedGetter("auth/username");
-            expect(username).toBe(user.name);
-        });
-    });
-
-    describe("not authenticated", () => {
-        beforeEach(() => {
-            store.commit("auth/setUser", null);
-        });
-
-        it("未ログインのとき、isAuthenticatedゲッターにより正しい値を取得できるか", () => {
-            const isLogin = Test.testedGetter("auth/isAuthenticated");
-            expect(isLogin).toBe(false);
-        });
-
-        it("未ログインのとき、usernameゲッターにより正しい値を取得できるか", () => {
-            const username = Test.testedGetter("auth/username");
-            expect(username).toBe("");
+            expect(username).toBe(isAuth ? user.name : "");
         });
     });
 });
