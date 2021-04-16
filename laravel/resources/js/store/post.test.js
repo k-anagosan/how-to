@@ -1,11 +1,5 @@
 import TestUtils from "@/testutils";
-import {
-    randomStr,
-    OK,
-    CREATED,
-    INTERNAL_SERVER_ERROR,
-    UNPROCESSABLE_ENTITY,
-} from "@/utils";
+import { randomStr, OK, CREATED, INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY } from "@/utils";
 
 import post from "@/store/post";
 
@@ -37,17 +31,13 @@ afterEach(() => {
 
 describe("post.js actions", () => {
     describe("API request succeded", () => {
-        const postId = randomStr(20);
-        const postFilename = `${randomStr(20)}.jpg`;
+        const postId = { post_id: randomStr(20) };
+        const postFilename = { filename: `${randomStr(20)}.jpg` };
         const article = {
             id: randomStr(20),
             title: randomStr(30),
             content: randomStr(100),
-            tags: [
-                { name: randomStr(10) },
-                { name: randomStr(10) },
-                { name: randomStr(10) },
-            ],
+            tags: [{ name: randomStr(10) }, { name: randomStr(10) }, { name: randomStr(10) }],
             author: {
                 name: randomStr(10),
             },
@@ -56,44 +46,28 @@ describe("post.js actions", () => {
             data: [article, article, article, article],
         };
 
-        it("postItemアクションにより正しいIDが取得できるか", async done => {
-            const post = () => ({
-                data: { post_id: postId },
-                status: CREATED,
-            });
-            Test.mockAxios(null, post);
-            await Test.testApiResponse("post/postItem", postId);
-            done();
-        });
+        it.each([
+            ["postItem", "ID", postId, CREATED],
+            ["postPhoto", "ファイル名", postFilename, CREATED],
+            ["getArticle", "記事データ", article, OK],
+            ["getArticleList", "記事リスト", articleList, OK],
+        ])("%sにより正しい%sが取得できるか", async (action, _, data, status) => {
+            let [get, post] = [null, null];
+            if (action === "postItem" || action === "postPhoto") {
+                post = () => ({ data, status });
+            } else {
+                get = () => ({ data, status });
+            }
 
-        it("postPhotoアクションにより正しいファイル名が取得できるか*", async done => {
-            const post = () => ({
-                data: { filename: postFilename },
-                status: CREATED,
-            });
-            Test.mockAxios(null, post);
-            await Test.testApiResponse("post/postPhoto", postFilename);
-            done();
-        });
+            Test.mockAxios(get, post);
 
-        it("getArticleアクションにより記事データが取得できるか*", async done => {
-            const get = () => ({
-                data: article,
-                status: OK,
-            });
-            Test.mockAxios(get, null);
-            await Test.testApiResponse("post/getArticle", article);
-            done();
-        });
-
-        it("getArticleListアクションにより記事データが取得できるか*", async done => {
-            const get = () => ({
-                data: articleList,
-                status: OK,
-            });
-            Test.mockAxios(get, null);
-            await Test.testApiResponse("post/getArticleList", articleList);
-            done();
+            if (action === "postItem") {
+                await Test.testApiResponse(`post/${action}`, data.post_id);
+            } else if (action === "postPhoto") {
+                await Test.testApiResponse(`post/${action}`, data.filename);
+            } else {
+                await Test.testApiResponse(`post/${action}`, data);
+            }
         });
     });
 
@@ -104,10 +78,8 @@ describe("post.js actions", () => {
         });
 
         const setErrorCodeTest = async action => {
-            await TestUtils.checkSpyIsCalled(
-                setErrorCode,
-                [{}, INTERNAL_SERVER_ERROR],
-                () => Test.testedAction(`post/${action}`)
+            await TestUtils.checkSpyIsCalled(setErrorCode, [{}, INTERNAL_SERVER_ERROR], () =>
+                Test.testedAction(`post/${action}`)
             );
         };
 
@@ -119,39 +91,20 @@ describe("post.js actions", () => {
             Test.clearSpysCalledTimes();
         });
 
-        describe("postItem アクションでリクエストに失敗", () => {
-            it("apiIsSuccessに正しく値が保存されるか", async done => {
-                await Test.testApiResult("post/postItem", false);
-                done();
-            });
+        describe.each([["postItem"], ["postPhoto"], ["getArticle"], ["getArticleList"]])(
+            "%sアクションでリクエストに失敗",
+            action => {
+                it("apiIsSuccessに正しく値が保存されるか", async done => {
+                    await Test.testApiResult(`post/${action}`, false);
+                    done();
+                });
 
-            it("errorストアのsetErrorCodeが呼び出されるか", async done => {
-                await setErrorCodeTest("postItem");
-                done();
-            });
-        });
-        describe("postPhoto アクションでリクエストに失敗", () => {
-            it("apiIsSuccessに正しく値が保存されるか", async done => {
-                await Test.testApiResult("post/postPhoto", false);
-                done();
-            });
-
-            it("errorストアのsetErrorCodeが呼び出されるか", async done => {
-                await setErrorCodeTest("postPhoto");
-                done();
-            });
-        });
-        describe("getArticle アクションでリクエストに失敗", () => {
-            it("apiIsSuccessに正しく値が保存されるか", async done => {
-                await Test.testApiResult("post/getArticle", false);
-                done();
-            });
-
-            it("errorストアのsetErrorCodeが呼び出されるか", async done => {
-                await setErrorCodeTest("getArticle");
-                done();
-            });
-        });
+                it("errorストアのsetErrorCodeが呼び出されるか", async done => {
+                    await setErrorCodeTest(action);
+                    done();
+                });
+            }
+        );
     });
 
     describe("API request failed with status code 422", () => {
@@ -172,28 +125,23 @@ describe("post.js actions", () => {
             expect(store.state.post[postOrPhoto]).toBe(message);
         };
 
-        it("postItemアクションに422エラーで失敗した時、postValidationMessageに正しく値が保存されるか", async done => {
-            delete message.photo;
+        it.each([
+            ["postItem", "postValidationMessage"],
+            ["postPhoto", "photoValidationMessage"],
+        ])("%sアクションに422エラーで失敗した時、%sに正しく値が保存されるか", async (action, target) => {
+            if (action === "postItem") {
+                delete message.photo;
+            } else {
+                delete message.title;
+                delete message.content;
+            }
+
             const post = () => ({
                 data: { errors: message },
                 status: UNPROCESSABLE_ENTITY,
             });
             Test.mockAxios(null, post);
-            await validationTest("postItem", "postValidationMessage");
-            done();
-        });
-
-        it("postPhotoアクションに422エラーで失敗した時、photoValidationMessageに正しく値が保存されるか", async done => {
-            delete message.title;
-            delete message.content;
-            const post = () => ({
-                data: { errors: message },
-                status: UNPROCESSABLE_ENTITY,
-            });
-            Test.mockAxios(null, post);
-
-            await validationTest("postPhoto", "photoValidationMessage");
-            done();
+            await validationTest(action, `${target}`);
         });
     });
 });
