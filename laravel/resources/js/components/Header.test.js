@@ -41,42 +41,31 @@ describe("Header.vue のRouterLink", () => {
         expect(wrapper.vm.$route.path).toBe(to);
     };
 
-    it("'Login / Register'をクリックしたら'/login'にアクセスされる", async done => {
-        setVuex(false);
+    it.each([
+        ["'Login / Register'", "/login", false, "a.login-link"],
+        ["'Edit Button'", "/edit", true, "a.edit-button"],
+    ])("%sをクリックしたら'%s'にアクセスされる", async (_, path, isAuth, target) => {
+        setVuex(isAuth);
         wrapper = Test.wrapperFactory();
-        await checkIsAccessedByClick("/login", "a.login-link");
-        done();
-    });
-
-    it("'Edit Button'をクリックしたら'/edit'にアクセスされる", async done => {
-        setVuex(true);
-        wrapper = Test.wrapperFactory();
-        await checkIsAccessedByClick("/edit", "a.edit-button");
-        done();
+        await checkIsAccessedByClick(path, target);
     });
 });
 
 describe("Header.vueのナビゲーション", () => {
-    it("ログインしてないときはログイン/登録リンクのみを表示", () => {
-        setVuex(false);
+    it.each([
+        ["ログインしてないとき", "ログイン/登録リンク", false, false],
+        ["ログイン中", "ユーザー名とEditボタン", true, false],
+        ["ログイン中", "ナビゲーションに正しいユーザー名", true, true],
+    ])("%sは$sが表示される", (_, __, isAuth, checkNavi) => {
+        setVuex(isAuth);
         wrapper = Test.wrapperFactory();
-        expect(wrapper.find(".submit-button").exists()).toBe(false);
-        expect(wrapper.find(".header-username").exists()).toBe(false);
-        expect(wrapper.find(".login-link").exists()).toBe(true);
-    });
-
-    it("ログイン中はユーザー名とEditボタンを表示", () => {
-        setVuex(true);
-        wrapper = Test.wrapperFactory();
-        expect(wrapper.find(".submit-button").exists()).toBe(true);
-        expect(wrapper.find(".header-username").exists()).toBe(true);
-        expect(wrapper.find(".login-link").exists()).toBe(false);
-    });
-
-    it("ナビゲーションに正しいユーザー名が表示される", () => {
-        setVuex(true);
-        wrapper = Test.wrapperFactory();
-        expect(wrapper.find(".header-username").exists()).toBe(true);
-        expect(wrapper.find(".header-username").text()).toBe("testuser");
+        if (checkNavi) {
+            expect(wrapper.find(".header-username").exists()).toBe(true);
+            expect(wrapper.find(".header-username").text()).toBe("testuser");
+        } else {
+            expect(wrapper.find(".submit-button").exists()).toBe(isAuth);
+            expect(wrapper.find(".header-username").exists()).toBe(isAuth);
+            expect(wrapper.find(".login-link").exists()).toBe(!isAuth);
+        }
     });
 });

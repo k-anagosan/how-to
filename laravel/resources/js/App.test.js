@@ -53,68 +53,39 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+    wrapper.vm.$store.commit("auth/setUser", null);
     wrapper.vm.$router.push("/").catch(() => {});
     wrapper.destroy();
     wrapper = null;
 });
 
 describe("アクセス結果", () => {
-    it("/にアクセスしたらCardListを表示する", async done => {
-        await Test.testRoutingWithComponent("/", null, CardList);
-        done();
-    });
-
-    it("/loginにアクセスしたらLoginを表示する", async done => {
-        await Test.testRoutingWithComponent("/", "/login", Login);
-        done();
-    });
-
-    it("ログイン中に/editにアクセスしたらEditを表示する", async done => {
-        wrapper.vm.$store.commit("auth/setUser", true);
-        await Test.testRoutingWithComponent("/", "/edit", Edit);
-        done();
-    });
-
-    it("/article/xxxにアクセスしたらArticleDetailを表示する", async done => {
-        await Test.testRoutingWithComponent(
-            "/",
-            `/article/${randomStr(20)}`,
-            ArticleDetail
-        );
-        done();
-    });
-
-    it("設定していないルートにアクセスしたらNotFoundを表示する", async done => {
-        await Test.testRoutingWithComponent("/", `/${randomStr(10)}`, NotFound);
-        done();
+    it.each([
+        ["/にアクセスしたらCardListを表示する", "/", CardList],
+        ["/loginにアクセスしたらLoginを表示する", "/login", Login],
+        ["ログイン中に/editにアクセスしたらEditを表示する", "/edit", Edit],
+        ["/article/xxxにアクセスしたらArticleDetailを表示する", "/article/xxx", ArticleDetail],
+        ["設定していないルートにアクセスしたらNotFoundを表示する", `/${randomStr(10)}`, NotFound],
+    ])("%s", async (_, path, Component) => {
+        if (path === "/edit") wrapper.vm.$store.commit("auth/setUser", true);
+        await Test.testRoutingWithComponent("/", path, Component);
     });
 });
 
 describe("リダイレクト", () => {
-    it("ログイン中に/loginにアクセスしたら/にリダイレクトされる", async done => {
-        wrapper.vm.$store.commit("auth/setUser", true);
-        await Test.testRedirect("/", "/login", "/");
-        done();
+    it.each([
+        ["ログイン中に/loginにアクセスしたら/にリダイレクトされる", "/login", "/"],
+        ["未認証中に/editにアクセスしたら/にリダイレクトされる", "/edit", "/"],
+    ])("%s", async (_, to, redirectPath) => {
+        if (to === "/login") wrapper.vm.$store.commit("auth/setUser", true);
+        await Test.testRedirect("/", to, redirectPath);
     });
 
-    it("未認証中に/editにアクセスしたら/にリダイレクトされる", async done => {
-        wrapper.vm.$store.commit("auth/setUser", null);
-        await Test.testRedirect("/", "/edit", "/");
-        done();
-    });
-
-    it("ステータスコード404が確認されたら/not-foundにリダイレクト", async done => {
-        await wrapper.vm.$store.commit("error/setErrorCode", NOT_FOUND);
-        await Test.testRoutingWithComponent("/not-found", null, NotFound);
-        done();
-    });
-
-    it("ステータスコード500が確認されたら/500にリダイレクト", async done => {
-        await wrapper.vm.$store.commit(
-            "error/setErrorCode",
-            INTERNAL_SERVER_ERROR
-        );
-        await Test.testRoutingWithComponent("/500", null, InternalServerError);
-        done();
+    it.each([
+        ["404が確認されたら/not-foundにリダイレクト", NOT_FOUND, "/not-found", NotFound],
+        ["500が確認されたら/500にリダイレクト", INTERNAL_SERVER_ERROR, "/500", InternalServerError],
+    ])("%s", async (_, status, path, Component) => {
+        await wrapper.vm.$store.commit("error/setErrorCode", status);
+        await Test.testRoutingWithComponent(path, null, Component);
     });
 });

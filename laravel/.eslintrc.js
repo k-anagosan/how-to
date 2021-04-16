@@ -3,12 +3,7 @@ module.exports = {
         es6: true,
         node: true,
     },
-    extends: [
-        "eslint:all",
-        "plugin:vue/recommended",
-        "prettier",
-        "prettier/vue",
-    ],
+    extends: ["eslint:all", "plugin:vue/recommended", "prettier", "prettier/vue"],
     globals: {
         document: true,
         window: true,
@@ -53,5 +48,6 @@ module.exports = {
         "func-names": "off",
         "vue/no-v-html": "off",
         "id-length": "off",
+        "max-params": "off",
     },
 };

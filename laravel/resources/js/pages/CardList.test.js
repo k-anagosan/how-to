@@ -12,11 +12,7 @@ const article = () => ({
     id: randomStr(20),
     title: randomStr(30),
     content: randomStr(100),
-    tags: [
-        { name: randomStr(10) },
-        { name: randomStr(10) },
-        { name: randomStr(10) },
-    ],
+    tags: [{ name: randomStr(10) }, { name: randomStr(10) }, { name: randomStr(10) }],
     author: {
         name: randomStr(10),
     },
@@ -72,6 +68,7 @@ describe("表示関連", () => {
     beforeEach(() => {
         expect(spyFetchArticleList).not.toHaveBeenCalled();
         wrapper = factory(options);
+        expect(spyFetchArticleList).toHaveBeenCalled();
     });
 
     afterEach(() => {
@@ -80,7 +77,6 @@ describe("表示関連", () => {
     });
 
     it("ページアクセスしたらdataに記事一覧情報が保存される", () => {
-        expect(spyFetchArticleList).toHaveBeenCalled();
         expect(wrapper.vm.$data.list).toEqual(response.data);
     });
     it("ページアクセスしたらdataにページネーション情報が保存される", () => {

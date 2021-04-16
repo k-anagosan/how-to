@@ -123,15 +123,13 @@ describe("Footer.vue v-if", () => {
             },
         });
     });
-    it("ログインしてないときはログイン/登録リンクのみが表示", () => {
-        setVuex(false);
-        wrapper = Test.shallowWrapperFactory();
-        testShowing(false);
-    });
 
-    it("ログイン中はログアウトボタンのみが表示", () => {
-        setVuex(true);
+    it.each([
+        ["ログインしてないときはログイン/登録リンクのみが表示", false],
+        ["ログイン中はログアウトボタンのみが表示", true],
+    ])("%s", (_, isAuth) => {
+        setVuex(isAuth);
         wrapper = Test.shallowWrapperFactory();
-        testShowing(true);
+        testShowing(isAuth);
     });
 });
