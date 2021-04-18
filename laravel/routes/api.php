@@ -19,6 +19,7 @@ Route::get('/user', fn () => Auth::check() ? Auth::user() : [])->name('user');
 
 Route::post('/post', App\Http\Actions\PostAction::class)->name('post.create');
 Route::get('/post/{id}', App\Http\Actions\GetArticleAction::class)->name('post.show');
+Route::put('/post/{id}/like', App\Http\Actions\LikeAction::class)->name('post.like');
 
 Route::get('/posts', App\Http\Actions\GetArticleListAction::class)->name('posts');
 
