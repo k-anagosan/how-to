@@ -16,12 +16,22 @@ class LikeService
     }
 
     /**
-     * いいね操作を行ったユーザーのIDをもとにLoginUserEntityインスタンスを作成。
+     * LikeEntityをもとにいいねを付与する。。
      *
      * @param LikeEntity $likeEntity
      */
     public function putLike(LikeEntity $likeEntity): PostId
     {
         return $this->postRepository->putLike($likeEntity->getPostId(), $likeEntity->getUserId());
+    }
+
+    /**
+     * LikeEntityをもとにいいねを削除する。
+     *
+     * @param LikeEntity $likeEntity
+     */
+    public function deleteLike(LikeEntity $likeEntity): PostId
+    {
+        return $this->postRepository->deleteLike($likeEntity->getPostId(), $likeEntity->getUserId());
     }
 }
