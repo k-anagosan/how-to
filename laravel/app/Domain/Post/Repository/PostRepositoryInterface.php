@@ -48,4 +48,11 @@ interface PostRepositoryInterface
      * @param UserAccountId $userId
      */
     public function putLike(PostId $postId, UserAccountId $userId);
+
+    /**
+     * 引数の情報をもとにLikesストアから削除.
+     * @param PostId        $postId
+     * @param UserAccountId $userId
+     */
+    public function deleteLike(PostId $postId, UserAccountId $userId);
 }

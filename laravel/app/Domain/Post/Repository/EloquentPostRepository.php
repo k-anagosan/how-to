@@ -103,4 +103,13 @@ class EloquentPostRepository implements PostRepository
 
         return $postId;
     }
+
+    public function deleteLike(PostId $postId, UserAccountId $userId): PostId
+    {
+        $post = Post::where('id', $postId->toString())->with(['likes'])->first();
+
+        $post->likes()->detach($userId->toInt());
+
+        return $postId;
+    }
 }
