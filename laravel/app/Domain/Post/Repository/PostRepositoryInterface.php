@@ -41,4 +41,11 @@ interface PostRepositoryInterface
      * @return array
      */
     public function retrieve();
+
+    /**
+     * 引数の情報をLikesストアに保存.
+     * @param PostId        $postId
+     * @param UserAccountId $userId
+     */
+    public function putLike(PostId $postId, UserAccountId $userId);
 }

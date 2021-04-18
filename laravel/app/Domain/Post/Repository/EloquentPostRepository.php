@@ -93,4 +93,14 @@ class EloquentPostRepository implements PostRepository
 
         return $posts;
     }
+
+    public function putLike(PostId $postId, UserAccountId $userId): PostId
+    {
+        $post = Post::where('id', $postId->toString())->with(['likes'])->first();
+
+        $post->likes()->detach($userId->toInt());
+        $post->likes()->attach($userId->toInt());
+
+        return $postId;
+    }
 }
