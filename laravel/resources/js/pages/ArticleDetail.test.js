@@ -66,6 +66,15 @@ describe("表示、入力関連", () => {
     it("記事データを取得したらIconListへarticle.tagsを渡せる", () => {
         expect(wrapper.find("iconlist-stub").props().icons).toEqual(response.tags);
     });
+
+    it.each([
+        [true, "される"],
+        [false, "されない"],
+    ])("loadingが%sのときはSpinnerが表示%s", async isShown => {
+        await wrapper.setData({ loading: isShown });
+        expect(wrapper.find("spinner-stub").exists()).toBe(isShown);
+        expect(wrapper.find("#article-detail").exists()).toBe(!isShown);
+    });
 });
 
 describe("Vuex", () => {

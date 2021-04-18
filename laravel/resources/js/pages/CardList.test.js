@@ -76,6 +76,15 @@ describe("表示関連", () => {
     it("dataに記事一覧情報が保存されたら記事一覧が表示される", () => {
         expect(wrapper.findAll("card-stub").length).toBe(per_page);
     });
+
+    it.each([
+        [true, "される"],
+        [false, "されない"],
+    ])("loadingが%sのときはSpinnerが表示%s", async isShown => {
+        await wrapper.setData({ loading: isShown });
+        expect(wrapper.find("spinner-stub").exists()).toBe(isShown);
+        expect(wrapper.find("#cardlist").exists()).toBe(!isShown);
+    });
 });
 
 describe("Vuex", () => {

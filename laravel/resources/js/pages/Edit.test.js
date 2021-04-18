@@ -81,6 +81,15 @@ describe("表示、入力関連", () => {
             expect(wrapper.vm.$data.postForm[name]).toBe(inputData);
         }
     });
+
+    it.each([
+        [true, "される"],
+        [false, "されない"],
+    ])("loadingが%sのときはSpinnerが表示%s", async isShown => {
+        await wrapper.setData({ loading: isShown });
+        expect(wrapper.find("spinner-stub").exists()).toBe(isShown);
+        expect(wrapper.find("#edit-form").exists()).toBe(!isShown);
+    });
 });
 
 describe("Vuex", () => {
