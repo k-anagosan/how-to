@@ -72,6 +72,19 @@ describe("表示、入力関連", () => {
             expect(wrapper.vm.$data[form][props[index]]).toBe(datas[index]);
         });
     });
+
+    it.each([
+        [true, "される"],
+        [false, "されない"],
+    ])("loadingが%sのときはSpinnerが表示%s", isShown => {
+        if (isShown) {
+            auth.state.apiIsSuccess = null;
+            Test.setVuex({ auth });
+            wrapper = Test.shallowWrapperFactory();
+        }
+        expect(wrapper.find("spinner-stub").exists()).toBe(isShown);
+        expect(wrapper.find("#login").exists()).toBe(!isShown);
+    });
 });
 
 describe("Vuex", () => {

@@ -2,7 +2,7 @@
   <div class="edit">
     <form id="edit" @submit.prevent="post">
       <Spinner v-if="loading" class="pagetop-offset" />
-      <div v-if="!loading">
+      <div v-if="!loading" id="edit-form">
         <div class="flex flex-col main-height pagetop-offset">
           <input
             v-model="postForm.title"

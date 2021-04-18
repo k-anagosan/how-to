@@ -1,7 +1,7 @@
 <template>
   <div>
     <Spinner v-if="loading" class="pagetop-offset" />
-    <div v-if="!loading" class="relative">
+    <div v-if="!loading" id="article-detail" class="relative">
       <div v-if="article" class="lg:hidden sticky z-50 top-0 bg-white border-b border-blue-100 shadow">
         <div class="container flex justify-between items-center mx-auto sm:px-8 px-5">
           <div class="py-4">
