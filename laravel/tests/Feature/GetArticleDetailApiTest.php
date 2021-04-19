@@ -35,7 +35,7 @@ class GetArticleDetailApiTest extends TestCase
             });
         });
 
-        $post = Post::with(['author', 'tags'])->first();
+        $post = Post::with(['author', 'tags', "likes"])->first();
 
         $file = UploadedFile::fake()->createWithContent($post->filename, $this->faker->text(2000));
         Storage::cloud()->putFileAs('contents', $file, $post->filename, 'public');
@@ -70,7 +70,7 @@ class GetArticleDetailApiTest extends TestCase
     {
         factory(Post::class)->create();
 
-        $post = Post::with(['author', 'tags'])->first();
+        $post = Post::with(['author', 'tags', 'likes'])->first();
 
         $file = UploadedFile::fake()->createWithContent($post->filename, $this->faker->text(2000));
         Storage::cloud()->putFileAs('contents', $file, $post->filename, 'public');

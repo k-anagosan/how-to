@@ -12,13 +12,14 @@ class CreateLikesTable extends Migration
     public function up(): void
     {
         Schema::create('likes', function (Blueprint $table): void {
-            $table->bigIncrements('id');
             $table->string('post_id');
             $table->unsignedBigInteger('user_id');
             $table->timestamps();
 
             $table->foreign('post_id')->references('id')->on('posts');
             $table->foreign('user_id')->references('id')->on('users');
+
+            $table->primary(['post_id', 'user_id']);
         });
     }
 

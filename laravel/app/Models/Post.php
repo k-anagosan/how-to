@@ -56,7 +56,7 @@ class Post extends Model
         }
 
         return $this->likes->contains(
-            fn ($user) => $user->id === $userRepository->getLoginUserId()
+            fn ($user) => $user->id === $userRepository->getLoginUserId()->toInt()
         );
     }
 }

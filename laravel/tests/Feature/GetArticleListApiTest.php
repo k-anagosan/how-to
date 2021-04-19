@@ -42,7 +42,7 @@ class GetArticleListApiTest extends TestCase
 
         $response = $this->getJson(route('posts'));
 
-        $posts = Post::with(['author', 'tags.tagName'])
+        $posts = Post::with(['author', 'tags.tagName', 'likes'])
             ->orderBy(Post::CREATED_AT, 'desc')
             ->limit($this->perPage)
             ->get();
@@ -82,7 +82,7 @@ class GetArticleListApiTest extends TestCase
 
         $response = $this->getJson(route('posts', ['page' => $page]));
 
-        $posts = Post::with(['author', 'tags.tagName'])
+        $posts = Post::with(['author', 'tags.tagName', 'likes'])
             ->orderBy(Post::CREATED_AT, 'desc')
             ->limit($this->perPage)
             ->offset(($page - 1) * $this->perPage)
