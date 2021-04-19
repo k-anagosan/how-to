@@ -30,6 +30,11 @@ class Post extends Model
         return $this->hasMany(Tag::class);
     }
 
+    public function likes()
+    {
+        return $this->belongsToMany(User::class, 'likes')->withTimestamps();
+    }
+
     public function getContentAttribute()
     {
         return resolve(CloudContentRepository::class)
