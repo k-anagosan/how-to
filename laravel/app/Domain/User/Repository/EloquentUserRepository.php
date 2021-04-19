@@ -12,4 +12,9 @@ class EloquentUserRepository implements UserRepository
     {
         return UserAccountId::create(Auth::id());
     }
+
+    public function isGuest(): bool
+    {
+        return Auth::guest();
+    }
 }
