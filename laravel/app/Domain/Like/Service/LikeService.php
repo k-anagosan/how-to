@@ -19,8 +19,9 @@ class LikeService
      * LikeEntityをもとにいいねを付与する。。
      *
      * @param LikeEntity $likeEntity
+     * @return null|PostId
      */
-    public function putLike(LikeEntity $likeEntity): PostId
+    public function putLike(LikeEntity $likeEntity)
     {
         return $this->postRepository->putLike($likeEntity->getPostId(), $likeEntity->getUserId());
     }
@@ -29,8 +30,9 @@ class LikeService
      * LikeEntityをもとにいいねを削除する。
      *
      * @param LikeEntity $likeEntity
+     * @return null|PostId
      */
-    public function deleteLike(LikeEntity $likeEntity): PostId
+    public function deleteLike(LikeEntity $likeEntity)
     {
         return $this->postRepository->deleteLike($likeEntity->getPostId(), $likeEntity->getUserId());
     }
