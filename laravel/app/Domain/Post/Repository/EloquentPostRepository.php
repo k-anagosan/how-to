@@ -101,8 +101,17 @@ class EloquentPostRepository implements PostRepository
         if (!$post) {
             return;
         }
-        $post->likes()->detach($userId->toInt());
-        $post->likes()->attach($userId->toInt());
+
+        DB::beginTransaction();
+
+        try {
+            $post->likes()->detach($userId->toInt());
+            $post->likes()->attach($userId->toInt());
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
 
         return $postId;
     }
@@ -115,7 +124,15 @@ class EloquentPostRepository implements PostRepository
             return;
         }
 
-        $post->likes()->detach($userId->toInt());
+        DB::beginTransaction();
+
+        try {
+            $post->likes()->detach($userId->toInt());
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
 
         return $postId;
     }
