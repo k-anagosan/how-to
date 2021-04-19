@@ -46,6 +46,7 @@ interface PostRepositoryInterface
      * 引数の情報をLikesストアに保存.
      * @param PostId        $postId
      * @param UserAccountId $userId
+     * @return null|PostId
      */
     public function putLike(PostId $postId, UserAccountId $userId);
 
@@ -53,6 +54,7 @@ interface PostRepositoryInterface
      * 引数の情報をもとにLikesストアから削除.
      * @param PostId        $postId
      * @param UserAccountId $userId
+     * @return null|PostId
      */
     public function deleteLike(PostId $postId, UserAccountId $userId);
 }
