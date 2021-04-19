@@ -61,4 +61,15 @@ class UnlikeApiTest extends TestCase
 
         $this->assertEquals(0, $this->post->likes()->count());
     }
+
+    /**
+     * @test
+     */
+    public function should_いいねを削除する対象が存在しなければ404エラーを返す(): void
+    {
+        $this->post->delete();
+        $response = $this->actingAs($this->user)->deleteJson(route('post.unlike', ['id' => $this->post->id]));
+
+        $response->assertStatus(404);
+    }
 }

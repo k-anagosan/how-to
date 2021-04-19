@@ -59,4 +59,15 @@ class LikeApiTest extends TestCase
 
         $this->assertEquals(1, $this->post->likes()->count());
     }
+
+    /**
+     * @test
+     */
+    public function should_いいねを送る対象が存在しなければ404エラーを返す(): void
+    {
+        $this->post->delete();
+        $response = $this->actingAs($this->user)->putJson(route('post.like', ['id' => $this->post->id]));
+
+        $response->assertStatus(404);
+    }
 }
