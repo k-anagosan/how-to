@@ -57,6 +57,8 @@ class GetArticleListApiTest extends TestCase
                 'author' => [
                     'name' => $post->author->name,
                 ],
+                'likes_count' => $post->likes_count,
+                'liked_by_me' => $post->liked_by_me,
             ];
         })->toArray();
 
@@ -96,6 +98,8 @@ class GetArticleListApiTest extends TestCase
                 'author' => [
                     'name' => $post->author->name,
                 ],
+                'likes_count' => $post->likes_count,
+                'liked_by_me' => $post->liked_by_me,
             ];
         })->toArray();
 

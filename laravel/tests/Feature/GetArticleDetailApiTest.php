@@ -56,6 +56,8 @@ class GetArticleDetailApiTest extends TestCase
                 'author' => [
                     'name' => $post->author->name,
                 ],
+                'likes_count' => $post->likes_count,
+                'liked_by_me' => $post->liked_by_me,
             ]);
 
         $this->assertEquals(Storage::cloud()->get('contents/' . $post->filename), $post->content);
@@ -87,6 +89,8 @@ class GetArticleDetailApiTest extends TestCase
                 'author' => [
                     'name' => $post->author->name,
                 ],
+                'likes_count' => $post->likes_count,
+                'liked_by_me' => $post->liked_by_me,
             ]);
 
         $this->assertEquals(Storage::cloud()->get('contents/' . $post->filename), $post->content);
