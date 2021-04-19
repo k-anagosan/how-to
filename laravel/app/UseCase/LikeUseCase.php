@@ -14,7 +14,11 @@ final class LikeUseCase
         $this->userService = $userService;
     }
 
-    public function execute(PostId $postId): PostId
+    /**
+     * @param PostId $postId
+     * @return null|PostId
+     */
+    public function execute(PostId $postId)
     {
         $user = $this->userService->getLoginUser();
 
