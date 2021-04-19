@@ -12,4 +12,9 @@ interface UserRepositoryInterface
      * @return UserAccountId
      */
     public function getLoginUserId(): UserAccountId;
+
+    /**
+     * 未ログイン状態であるかを取得.
+     */
+    public function isGuest(): bool;
 }
