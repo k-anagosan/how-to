@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 
 $factory->define(TagName::class, function (Faker $faker) {
     return [
-        'name' => Str::random(20),
+        'name' => Str::random(10),
         'created_at' => $faker->dateTime(),
         'updated_at' => $faker->dateTime(),
     ];
