@@ -88,21 +88,14 @@ describe("Footer.vueのauthストア", () => {
         done();
     });
 
-    it("'auth/logout'アクションが実行された後、'/'へリダイレクト", async done => {
+    it("'auth/logout'アクションが実行された後、'/redirect'へリダイレクト", async done => {
         expect(logout).not.toHaveBeenCalled();
-        await checkIsAccessedByClick("/", "button");
+        await checkIsAccessedByClick("/redirect", "button");
         expect(logout).toHaveBeenCalled();
         done();
     });
 
-    it("'auth/logout'アクションが実行された場所が'/'であれば$router.push('/')が実行されない", async done => {
-        await wrapper.vm.$router.push("/");
-        expect(wrapper.vm.$route.path).toBe("/");
-        await checkSpyIsCalled("/", "button");
-        done();
-    });
-
-    it("'auth/logout'アクションが失敗したら$router.push('/')が実行されない", async done => {
+    it("'auth/logout'アクションが失敗したら$router.push('/redirect')が実行されない", async done => {
         wrapper.vm.$store.commit("auth/setApiIsSuccess", false);
         expect(wrapper.vm.$store.state.auth.apiIsSuccess).toBe(false);
         await checkSpyIsCalled("/login", "button");

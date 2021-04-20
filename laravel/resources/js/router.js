@@ -7,6 +7,7 @@ import CardList from "./pages/CardList.vue";
 import Login from "./pages/Login.vue";
 import Edit from "./pages/Edit.vue";
 import ArticleDetail from "./pages/ArticleDetail.vue";
+import Logout from "./pages/Logout.vue";
 import InternalServerError from "./pages/errors/InternalServerError.vue";
 import NotFound from "./pages/errors/NotFound.vue";
 
@@ -62,6 +63,10 @@ const routes = [
                 next("/");
             }
         },
+    },
+    {
+        path: "/redirect",
+        component: Logout,
     },
     {
         path: "*",
