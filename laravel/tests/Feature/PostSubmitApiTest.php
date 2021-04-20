@@ -28,7 +28,7 @@ class PostSubmitApiTest extends TestCase
         $this->data = [
             'title' => $this->faker->sentence,
             'content' => $this->faker->text(2000),
-            'tags' => $this->faker->unique()->words(3),
+            'tags' => [Str::random(10), Str::random(10), Str::random(10)],
         ];
     }
 
@@ -285,5 +285,23 @@ class PostSubmitApiTest extends TestCase
         // 今回のアップロードではDBにレコードが保存されなかったか
         $this->assertEquals(0, $this->user->posts()->count());
         $this->assertEmpty(TagName::all());
+    }
+
+    /**
+     * @test
+     */
+    public function should_未ログイン状態で記事を投稿したら401エラーが返ってくる(): void
+    {
+        // アップロードを行う
+        $response = $this->postJson(route('post.create'), $this->data);
+
+        $response->assertStatus(401)->assertExactJson(['message' => 'Unauthenticated.']);
+
+        // 今回のアップロードではDBにレコードが保存されなかったか
+        $this->assertEquals(0, $this->user->posts()->count());
+        $this->assertEmpty(TagName::all());
+
+        // 今回のアップロードではS3に本文が保存されなかったか
+        $this->assertCount(0, Storage::cloud()->files('contents/'));
     }
 }
