@@ -84,6 +84,10 @@ class EloquentPostRepository implements PostRepository
             throw $e;
         }
 
+        if (count($posts['data']) === 0) {
+            return [];
+        }
+
         $posts['data'] = collect($posts['data'])->map(function ($post) {
             $post['tags'] = collect($post['tags'])->map(function ($tag) {
                 return $tag['tag_name'];

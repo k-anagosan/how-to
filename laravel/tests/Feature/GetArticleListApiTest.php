@@ -16,7 +16,7 @@ class GetArticleListApiTest extends TestCase
 
     private const ARTICLE_SIZE = 300;
 
-    private $perPage = 15;
+    private $perPage = 18;
 
     private $maxPage = 20;
 
@@ -106,5 +106,15 @@ class GetArticleListApiTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonCount($this->perPage, 'data')
             ->assertJsonFragment(['data' => $expect]);
+    }
+
+    /**
+     * @test
+     */
+    public function should_アイテムが存在しないページならば404エラーが返ってくる(): void
+    {
+        $response = $this->getJson(route('posts'));
+
+        $response->assertStatus(404);
     }
 }
