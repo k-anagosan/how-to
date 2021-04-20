@@ -8,13 +8,8 @@ const state = {
 
 const getters = {
     allErrors: state => {
-        const titleMessage = hasProperty(state.postValidationMessage, "title")
-            ? state.postValidationMessage.title
-            : [];
-        const contentMessage = hasProperty(
-            state.postValidationMessage,
-            "content"
-        )
+        const titleMessage = hasProperty(state.postValidationMessage, "title") ? state.postValidationMessage.title : [];
+        const contentMessage = hasProperty(state.postValidationMessage, "content")
             ? state.postValidationMessage.content
             : [];
         const photoMessage = hasProperty(state.photoValidationMessage, "photo")
@@ -100,6 +95,35 @@ const actions = {
         if (response.status === OK) {
             context.commit("setApiIsSuccess", true);
             return response.data;
+        }
+
+        context.commit("error/setErrorCode", response.status, { root: true });
+        context.commit("setApiIsSuccess", false);
+        return null;
+    },
+    async putLike(context, data) {
+        context.commit("setApiIsSuccess", null);
+
+        const response = await window.axios.put(`/api/post/${data}/like`);
+
+        if (response.status === OK) {
+            context.commit("setApiIsSuccess", true);
+            return response.data.post_id;
+        }
+
+        context.commit("error/setErrorCode", response.status, { root: true });
+        context.commit("setApiIsSuccess", false);
+        return null;
+    },
+
+    async deleteLike(context, data) {
+        context.commit("setApiIsSuccess", null);
+
+        const response = await window.axios.delete(`/api/post/${data}/unlike`);
+
+        if (response.status === OK) {
+            context.commit("setApiIsSuccess", true);
+            return response.data.post_id;
         }
 
         context.commit("error/setErrorCode", response.status, { root: true });
