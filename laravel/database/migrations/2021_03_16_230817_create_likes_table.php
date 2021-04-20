@@ -19,7 +19,7 @@ class CreateLikesTable extends Migration
             $table->foreign('post_id')->references('id')->on('posts');
             $table->foreign('user_id')->references('id')->on('users');
 
-            $table->primary(['post_id', 'user_id']);
+            $table->unique(['post_id', 'user_id']);
         });
     }
 
