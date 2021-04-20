@@ -6,7 +6,7 @@
         <div
           class="absolute right-2 bottom-2 z-50 flex justify-between items-center rounded-2xl bg-gray-50 bg-opacity-80"
         >
-          <span class="pr-2 pl-3">{{ article.likes_count }}</span>
+          <span class="pr-2 pl-3 likes-count">{{ article.likes_count }}</span>
           <LikeButton :is-liked="article.liked_by_me" @like="onChangeLike" />
         </div>
       </figure>
