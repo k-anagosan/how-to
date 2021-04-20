@@ -4,9 +4,7 @@
     <main
       class="min-main-height flex-auto z-0"
       :class="{
-        'container mx-auto sm:px-8 md:px-16': !$route.path.match(
-          /^\/article\/[a-zA-Z0-9]{20}$/g
-        ),
+        'container mx-auto sm:px-8 md:px-16': !$route.path.match(/^\/article\/[a-zA-Z0-9]{20}$/g),
       }"
     >
       <RouterView />
@@ -18,7 +16,7 @@
 <script>
 import Header from "./components/Header.vue";
 import Footer from "./components/Footer.vue";
-import { INTERNAL_SERVER_ERROR, NOT_FOUND } from "./utils";
+import { INTERNAL_SERVER_ERROR, NOT_FOUND, UNAUTHENTICATED } from "./utils";
 
 export default {
   components: {
@@ -35,6 +33,9 @@ export default {
       handler(errorCode) {
         if (errorCode === INTERNAL_SERVER_ERROR) {
           this.$router.push("/500");
+        } else if (errorCode === UNAUTHENTICATED) {
+          this.$store.commit("auth/setUser", null);
+          this.$router.push("/login");
         } else if (errorCode === NOT_FOUND) {
           this.$router.push("/not-found");
         }
