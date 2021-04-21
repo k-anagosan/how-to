@@ -7,13 +7,14 @@
           <div class="py-4">
             <Icon :icon="article.author" />
           </div>
-          <button type="button" class="rounded-full bg-gray-100 flex justify-center items-center h-8 w-8 outline-none">
-            <ion-icon name="heart-outline"></ion-icon>
-          </button>
+          <div class="flex justify-between items-center rounded-2xl bg-gray-200 bg-opacity-80">
+            <span class="pr-2 pl-3 likes-count">{{ article.likes_count }}</span>
+            <LikeButton :is-liked="article.liked_by_me" @like="onChangeLike" />
+          </div>
         </div>
       </div>
       <div class="container mx-auto flex flex-col lg:px-32 sm:p-8 sm:pb-16 pagetop-offset">
-        <div class="title-area sm:h-8 m-8 text-center">
+        <div class="title-area m-8 text-center">
           <h1 v-if="article" class="text-2xl">{{ article.title }}</h1>
         </div>
         <div class="flex">
@@ -42,6 +43,7 @@ import MarkdownPreview from "../components/MarkdownPreview.vue";
 import Icon from "../components/Icon.vue";
 import IconList from "../components/IconList.vue";
 import Spinner from "../components/Spinner.vue";
+import LikeButton from "../components/LikeButton.vue";
 
 export default {
   components: {
@@ -49,6 +51,7 @@ export default {
     Icon,
     IconList,
     Spinner,
+    LikeButton,
   },
   props: {
     id: {
@@ -77,6 +80,17 @@ export default {
       const article = await this.$store.dispatch("post/getArticle", this.id);
       if (!article) return;
       this.article = article;
+    },
+    async onChangeLike(e) {
+      if (e.isLiked) {
+        await this.$store.dispatch("post/putLike", this.article.id);
+        this.article.likes_count += 1;
+        this.article.liked_by_me = true;
+      } else {
+        await this.$store.dispatch("post/deleteLike", this.article.id);
+        this.article.likes_count -= 1;
+        this.article.liked_by_me = false;
+      }
     },
   },
 };
