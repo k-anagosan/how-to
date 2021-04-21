@@ -8,6 +8,7 @@ use App\Domain\ValueObject\PostTitle;
 use App\Domain\ValueObject\UserAccountId;
 use App\Models\Post;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Request;
 
 class EloquentPostRepository implements PostRepository
 {
@@ -75,9 +76,18 @@ class EloquentPostRepository implements PostRepository
 
     public function retrieve()
     {
+        $posts = null;
+
         try {
-            $posts = Post::with(['author', 'tags.tagName'])
-                ->orderBy(Post::CREATED_AT, 'desc')
+            $posts = Post::with(['author', 'tags.tagName', 'likes']);
+
+            if (Request::hasAny('tag') && Request::input('tag') !== null) {
+                $posts = $posts->whereHas('tags.tagName', function ($query): void {
+                    $query->where('name', 'like', Request::input('tag'));
+                });
+            }
+
+            $posts = $posts->orderBy(Post::CREATED_AT, 'desc')
                 ->paginate((new Post)->getPerPage())
                 ->toArray();
         } catch (\Exception $e) {
