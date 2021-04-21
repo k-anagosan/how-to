@@ -46,9 +46,7 @@ const actions = {
         if (response.status === UNPROCESSABLE_ENTITY) {
             context.commit("setPostValidationMessage", response.data.errors);
         } else {
-            context.commit("error/setErrorCode", response.status, {
-                root: true,
-            });
+            context.commit("error/setErrorCode", response.status, { root: true });
         }
         context.commit("setApiIsSuccess", false);
         return null;
@@ -66,9 +64,7 @@ const actions = {
         if (response.status === UNPROCESSABLE_ENTITY) {
             context.commit("setPhotoValidationMessage", response.data.errors);
         } else {
-            context.commit("error/setErrorCode", response.status, {
-                root: true,
-            });
+            context.commit("error/setErrorCode", response.status, { root: true });
         }
         context.commit("setApiIsSuccess", false);
         return null;

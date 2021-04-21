@@ -98,12 +98,12 @@ class TestUtils {
      * @param {*} get
      * @param {*} post
      */
-    mockAxios(get, post) {
+    mockAxios(get, post, put = () => null, _delete = () => null) {
         const originalWindow = { ...window };
         this.windowSpy = jest.spyOn(global, "window", "get");
         this.windowSpy.mockImplementation(() => ({
             ...originalWindow,
-            axios: { get, post },
+            axios: { get, post, put, delete: _delete },
         }));
     }
 
@@ -223,16 +223,14 @@ class TestUtils {
     async testRoutingWithComponent(from, to, Component) {
         if (!this.wrapper) return;
         expect(this.wrapper.vm.$route.path).toBe(from);
-        if (!to || from !== to)
-            await this.wrapper.vm.$router.push(to).catch(() => {});
+        if (!to || from !== to) await this.wrapper.vm.$router.push(to).catch(() => {});
         expect(this.wrapper.findComponent(Component).exists()).toBe(true);
     }
 
     async testRedirect(from, to, redirectPath) {
         if (!this.wrapper) return;
         expect(this.wrapper.vm.$route.path).toBe(from);
-        if (!to || from !== to)
-            await this.wrapper.vm.$router.push(to).catch(() => {});
+        if (!to || from !== to) await this.wrapper.vm.$router.push(to).catch(() => {});
         expect(this.wrapper.vm.$route.path).toBe(redirectPath);
     }
 

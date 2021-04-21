@@ -12,16 +12,8 @@ const initialState = { ...post.state };
 let store = null;
 beforeEach(() => {
     store = Test.createVuexStore({
-        error: {
-            namespaced: true,
-            mutations: {
-                setErrorCode,
-            },
-        },
-        post: {
-            ...post,
-            state: { ...initialState },
-        },
+        error: { namespaced: true, mutations: { setErrorCode } },
+        post: { ...post, state: { ...initialState } },
     });
 });
 
@@ -38,30 +30,34 @@ describe("post.js actions", () => {
             title: randomStr(30),
             content: randomStr(100),
             tags: [{ name: randomStr(10) }, { name: randomStr(10) }, { name: randomStr(10) }],
-            author: {
-                name: randomStr(10),
-            },
+            author: { name: randomStr(10) },
         };
         const articleList = {
             data: [article, article, article, article],
         };
 
         it.each([
-            ["postItem", "ID", postId, CREATED],
-            ["postPhoto", "ファイル名", postFilename, CREATED],
-            ["getArticle", "記事データ", article, OK],
-            ["getArticleList", "記事リスト", articleList, OK],
-        ])("%sにより正しい%sが取得できるか", async (action, _, data, status) => {
-            let [get, post] = [null, null];
+            ["postItem", "IDが取得できるか", postId, CREATED],
+            ["postPhoto", "ファイル名が取得できるか", postFilename, CREATED],
+            ["getArticle", "記事データが取得できるか", article, OK],
+            ["getArticleList", "記事リストが取得できるか", articleList, OK],
+            ["putLike", "いいねを付加できるか", postId, OK],
+            ["deleteLike", "いいねを削除できるか", postId, OK],
+        ])("%sにより正しく%s", async (action, _, data, status) => {
+            let [get, post, put, _delete] = [null, null, null, null];
             if (action === "postItem" || action === "postPhoto") {
                 post = () => ({ data, status });
+            } else if (action === "putLike") {
+                put = () => ({ data, status });
+            } else if (action === "deleteLike") {
+                _delete = () => ({ data, status });
             } else {
                 get = () => ({ data, status });
             }
 
-            Test.mockAxios(get, post);
+            Test.mockAxios(get, post, put, _delete);
 
-            if (action === "postItem") {
+            if (action === "postItem" || action === "putLike" || action === "deleteLike") {
                 await Test.testApiResponse(`post/${action}`, data.post_id);
             } else if (action === "postPhoto") {
                 await Test.testApiResponse(`post/${action}`, data.filename);
@@ -71,7 +67,7 @@ describe("post.js actions", () => {
         });
     });
 
-    describe("API request failed with status code 500 or 404", () => {
+    describe("API request failed with status code 500 , 404 or 401", () => {
         const res = () => ({
             data: null,
             status: INTERNAL_SERVER_ERROR,
@@ -84,14 +80,14 @@ describe("post.js actions", () => {
         };
 
         beforeEach(() => {
-            Test.mockAxios(res, res);
+            Test.mockAxios(res, res, res, res);
         });
 
         afterEach(() => {
             Test.clearSpysCalledTimes();
         });
 
-        describe.each([["postItem"], ["postPhoto"], ["getArticle"], ["getArticleList"]])(
+        describe.each([["postItem"], ["postPhoto"], ["getArticle"], ["getArticleList"], ["putLike"], ["deleteLike"]])(
             "%sアクションでリクエストに失敗",
             action => {
                 it("apiIsSuccessに正しく値が保存されるか", async done => {
