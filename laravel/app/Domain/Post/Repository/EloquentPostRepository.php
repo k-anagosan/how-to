@@ -79,7 +79,7 @@ class EloquentPostRepository implements PostRepository
         $posts = null;
 
         try {
-            $posts = Post::with(['author', 'tags.tagName', 'like']);
+            $posts = Post::with(['author', 'tags.tagName', 'likes']);
 
             if (Request::hasAny('tag') && Request::input('tag') !== null) {
                 $posts = $posts->whereHas('tags.tagName', function ($query): void {
