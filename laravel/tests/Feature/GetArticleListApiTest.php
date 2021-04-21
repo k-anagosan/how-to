@@ -65,6 +65,8 @@ class GetArticleListApiTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonCount($this->perPage, 'data')
             ->assertJsonFragment(['data' => $expect]);
+
+        $this->assertEquals(self::ARTICLE_SIZE, $response->json('total'));
     }
 
     /**
@@ -106,6 +108,53 @@ class GetArticleListApiTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonCount($this->perPage, 'data')
             ->assertJsonFragment(['data' => $expect]);
+
+        $this->assertEquals(self::ARTICLE_SIZE, $response->json('total'));
+    }
+
+    /**
+     * @test
+     */
+    public function should_タグのクエリストリングがある場合に正しい構造のJSONが返却される(): void
+    {
+        factory(TagName::class, 3)->create()->map(function ($tag): void {
+            factory(Post::class, self::ARTICLE_SIZE)->create()->map(function ($post) use ($tag): void {
+                factory(Tag::class)->create(['post_id' => $post->id, 'tag_name_id' => $tag->id]);
+            });
+        });
+
+        $queryTag = TagName::first()->name;
+
+        $response = $this->getJson(route('posts', ['tag' => $queryTag]));
+
+        $posts = Post::with(['author', 'tags.tagName', 'likes'])
+            ->whereHas('tags.tagName', function ($query) use ($queryTag): void {
+                $query->where('name', 'like', $queryTag);
+            })
+            ->orderBy(Post::CREATED_AT, 'desc')
+            ->limit($this->perPage)
+            ->get();
+
+        $expect = $posts->map(function ($post) {
+            return [
+                'id' => $post->id,
+                'title' => $post->title,
+                'tags' => $post->tags->map(function ($tag) {
+                    return $tag->tagName;
+                })->toArray(),
+                'author' => [
+                    'name' => $post->author->name,
+                ],
+                'likes_count' => $post->likes_count,
+                'liked_by_me' => $post->liked_by_me,
+            ];
+        })->toArray();
+
+        $response->assertStatus(200)
+            ->assertJsonCount($this->perPage, 'data')
+            ->assertJsonFragment(['data' => $expect]);
+
+        $this->assertEquals(self::ARTICLE_SIZE, $response->json('total'));
     }
 
     /**
