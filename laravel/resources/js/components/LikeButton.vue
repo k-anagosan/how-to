@@ -5,8 +5,8 @@
     :class="`icon-size-${size}`"
     @click.stop="onClick"
   >
-    <ion-icon v-if="!isLiked" name="heart-outline"></ion-icon>
-    <ion-icon v-if="isLiked" name="heart"></ion-icon>
+    <ion-icon v-if="!isLiked" :class="{ 'text-xl': size === 'lg' }" name="heart-outline"></ion-icon>
+    <ion-icon v-if="isLiked" :class="{ 'text-xl': size === 'lg' }" name="heart"></ion-icon>
   </button>
 </template>
 

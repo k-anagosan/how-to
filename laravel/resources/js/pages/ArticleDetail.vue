@@ -17,7 +17,15 @@
         <div class="title-area m-8 text-center">
           <h1 v-if="article" class="text-2xl">{{ article.title }}</h1>
         </div>
-        <div class="flex">
+        <div class="flex relative">
+          <div class="left-column absolute lg:block hidden -left-16 top-2 h-full w-12">
+            <ul class="sticky top-40 flex flex-col">
+              <li class="mx-auto">
+                <LikeButton :is-liked="article.liked_by_me" size="lg" @like="onChangeLike" />
+              </li>
+              <li class="likes-count mx-auto text-xs text-gray-500">{{ article.likes_count }}</li>
+            </ul>
+          </div>
           <article class="min-main-height sm:shadow-md sm:p-10 p-5 pb-8 sm:rounded-lg bg-white lg:w-2/3 w-full">
             <MarkdownPreview v-if="article" :text="article.content" />
           </article>

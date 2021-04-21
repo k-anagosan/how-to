@@ -65,7 +65,9 @@ describe("表示、入力関連", () => {
     });
 
     it("いいね数が表示される", () => {
-        expect(wrapper.find(".likes-count").text()).toBe(String(response.likes_count));
+        wrapper.findAll(".likes-count").wrappers.forEach(wrapper => {
+            expect(wrapper.text()).toBe(String(response.likes_count));
+        });
     });
 
     it.each([
@@ -84,10 +86,13 @@ describe("いいね関連", () => {
         Test.setSpys({ spyOnChangeLike });
     });
 
-    it("likeイベントが発火されtらonChangeLike()が実行される", async () => {
-        expect(spyOnChangeLike).not.toHaveBeenCalled();
-        await wrapper.find("likebutton-stub").vm.$emit("like", { isLiked: true });
-        expect(spyOnChangeLike).toHaveBeenCalled();
+    it("likeイベントが発火されたらonChangeLike()が実行される", async () => {
+        await wrapper.findAll("likebutton-stub").wrappers.forEach(wrapper => {
+            expect(spyOnChangeLike).not.toHaveBeenCalled();
+            wrapper.vm.$emit("like", { isLiked: true });
+            expect(spyOnChangeLike).toHaveBeenCalled();
+            Test.clearSpysCalledTimes();
+        });
     });
 
     it.each([
