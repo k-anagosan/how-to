@@ -19,14 +19,28 @@ afterEach(() => {
 });
 
 describe("表示関連", () => {
-    it.each([
-        ["sm", "sm"],
-        ["md", "md"],
-        ["lg", "lg"],
-    ])("propsのsize=%sによりicon-size-%sクラスが付加される", async size => {
-        await wrapper.setProps({ size });
-        expect(wrapper.props().size).toBe(size);
-        expect(wrapper.classes()).toContain(`icon-size-${size}`);
+    describe.each([
+        ["sm", "付加されない"],
+        ["md", "付加されない"],
+        ["lg", "付加される"],
+    ])("ion-icon関連", (size, isAdded) => {
+        it(`propsのsize=${size}により.icon-size-${size}が付加される`, async () => {
+            await wrapper.setProps({ size });
+            expect(wrapper.props().size).toBe(size);
+            expect(wrapper.classes()).toContain(`icon-size-${size}`);
+        });
+
+        it.each([
+            [true, "ion-icon[name='heaert']", "ion-icon-stub[name='heart']"],
+            [false, "icon-icon[name='heart-outline']", "ion-icon-stub[name='heart-outline']"],
+        ])(`isLiked=%sの時、propsのsizeが${size}であるなら%sに.text-xlが${isAdded}`, async (isLiked, _, stubs) => {
+            await wrapper.setProps({ size, isLiked });
+            if (size === "lg") {
+                expect(wrapper.find(stubs).classes()).toContain("text-xl");
+            } else {
+                expect(wrapper.find(stubs).classes()).toEqual([]);
+            }
+        });
     });
 
     it("propsのsizeが無ければ.icon-size-mdクラスが付加される", () => {
