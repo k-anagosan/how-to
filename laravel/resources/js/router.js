@@ -3,7 +3,7 @@ import VueRouter from "vue-router";
 
 import store from "./store/index";
 
-import CardList from "./pages/CardList.vue";
+import ArticleList from "./pages/ArticleList.vue";
 import TaggedArticleList from "./pages/TaggedArticleList.vue";
 import Login from "./pages/Login.vue";
 import Edit from "./pages/Edit.vue";
@@ -21,7 +21,7 @@ const pageRegex = page => (/^[1-9][0-9]*$/.test(page) ? parseInt(page, 10) : 1);
 const routes = [
     {
         path: "/",
-        component: CardList,
+        component: ArticleList,
         props: route => {
             const page = route.query.page;
             return {

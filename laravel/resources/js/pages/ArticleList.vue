@@ -58,7 +58,7 @@ export default {
   },
   methods: {
     async fetchArticleList() {
-      const response = await this.$store.dispatch("post/getArticleList", this.page);
+      const response = await this.$store.dispatch("post/getArticleList", { page: this.page });
       if (!response) return;
       this.list = response.data;
       delete response.data;

@@ -1,9 +1,9 @@
 import TestUtils from "@/testutils";
-import CardList from "@/pages/CardList.vue";
+import ArticleList from "@/pages/ArticleList.vue";
 import { randomStr } from "../utils";
 
 const Test = new TestUtils();
-const spyFetchArticleList = jest.spyOn(CardList.methods, "fetchArticleList");
+const spyFetchArticleList = jest.spyOn(ArticleList.methods, "fetchArticleList");
 Test.setSpys({ spyFetchArticleList });
 
 const article = () => ({
@@ -64,7 +64,7 @@ const options = {
 let wrapper = null;
 beforeEach(() => {
     Test.checkSpysHaveNotBeenCalled();
-    Test.setMountOption(CardList, options);
+    Test.setMountOption(ArticleList, options);
     wrapper = Test.shallowWrapperFactory();
     expect(spyFetchArticleList).toHaveBeenCalled();
     expect(post.actions.getArticleList).toHaveBeenCalled();
@@ -102,8 +102,8 @@ describe("いいね関連", () => {
     let [spyOnChangeLike, spyClearLike] = [null, null];
 
     beforeEach(() => {
-        spyOnChangeLike = jest.spyOn(CardList.methods, "onChangeLike");
-        spyClearLike = jest.spyOn(CardList.methods, "clearLike");
+        spyOnChangeLike = jest.spyOn(ArticleList.methods, "onChangeLike");
+        spyClearLike = jest.spyOn(ArticleList.methods, "clearLike");
         Test.setSpys({ spyOnChangeLike, spyClearLike });
         wrapper = Test.shallowWrapperFactory();
     });
@@ -145,7 +145,7 @@ describe("いいね関連", () => {
 
     it("ログアウト時にclearLike()が実行される", async () => {
         auth.getters.isAuthenticated = state => Boolean(state.user);
-        const spyClearLike = jest.spyOn(CardList.methods, "clearLike").mockImplementation(() => {});
+        const spyClearLike = jest.spyOn(ArticleList.methods, "clearLike").mockImplementation(() => {});
         Test.setVuex({ post, auth });
         wrapper = Test.shallowWrapperFactory();
 
