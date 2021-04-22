@@ -4,6 +4,7 @@ import VueRouter from "vue-router";
 import store from "./store/index";
 
 import CardList from "./pages/CardList.vue";
+import TaggedArticleList from "./pages/TaggedArticleList.vue";
 import Login from "./pages/Login.vue";
 import Edit from "./pages/Edit.vue";
 import ArticleDetail from "./pages/ArticleDetail.vue";
@@ -15,6 +16,8 @@ import { INTERNAL_SERVER_ERROR } from "./utils";
 
 Vue.use(VueRouter);
 
+const pageRegex = page => (/^[1-9][0-9]*$/.test(page) ? parseInt(page, 10) : 1);
+
 const routes = [
     {
         path: "/",
@@ -22,7 +25,18 @@ const routes = [
         props: route => {
             const page = route.query.page;
             return {
-                page: /^[1-9][0-9]*$/.test(page) ? parseInt(page, 10) : 1,
+                page: pageRegex(page),
+            };
+        },
+    },
+    {
+        path: "/tag/:tag",
+        component: TaggedArticleList,
+        props: route => {
+            const page = route.query.page;
+            return {
+                page: pageRegex(page),
+                tag: route.params.tag,
             };
         },
     },
