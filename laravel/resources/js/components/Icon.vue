@@ -1,10 +1,9 @@
 <template>
-  <div class="flex justify-start items-center">
-    <div
-      class="icon rounded-full bg-black mr-2"
-      :class="`icon-size-${size}`"
-    ></div>
-    <span> {{ icon.name }}</span>
+  <div class="inline-block cursor-pointer">
+    <div class="flex justify-start items-center">
+      <div class="icon inline-block rounded-full bg-black mr-2" :class="`icon-size-${size}`"></div>
+      <span> {{ icon.name }}</span>
+    </div>
   </div>
 </template>
 
