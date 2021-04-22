@@ -8,7 +8,7 @@
       >
         <Card v-for="article in list" :key="article.id" :article="article" @changeLike="onChangeLike" />
       </ul>
-      <Pagination v-if="pagination" :pagination="pagination" />
+      <Pagination v-if="pagination" :pagination="pagination" to="/" />
     </div>
   </div>
 </template>

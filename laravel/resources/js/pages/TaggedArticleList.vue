@@ -11,7 +11,7 @@
           <Card v-for="article in list" :key="article.id" :article="article" @changeLike="onChangeLike" />
         </ul>
       </div>
-      <Pagination v-if="pagination" :pagination="pagination" />
+      <Pagination v-if="pagination" :pagination="pagination" :to="`/tag/${tag}`" />
     </div>
   </div>
 </template>
