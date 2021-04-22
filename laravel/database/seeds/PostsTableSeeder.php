@@ -12,10 +12,13 @@ class PostsTableSeeder extends Seeder
      */
     public function run(): void
     {
-        factory(Post::class, 50)->create()->each(function ($post): void {
-            factory(TagName::class, 3)->create()->each(function ($tagName) use ($post): void {
-                factory(Tag::class)->create(['post_id' => $post->id, 'tag_name_id' => $tagName->id]);
+        for ($i = 0; $i < 5; $i++) {
+            $tagNames = factory(TagName::class, 3)->create();
+            factory(Post::class, 10)->create()->each(function ($post) use ($tagNames): void {
+                $tagNames->each(function ($tagName) use ($post): void {
+                    factory(Tag::class)->create(['post_id' => $post->id, 'tag_name_id' => $tagName->id]);
+                });
             });
-        });
+        }
     }
 }

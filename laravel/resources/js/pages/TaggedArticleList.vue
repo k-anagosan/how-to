@@ -2,24 +2,20 @@
   <div>
     <Spinner v-if="loading" class="pagetop-offset" />
     <div v-if="!loading" id="cardlist" class="pagetop-offset">
-      <ul
-        v-if="list"
-        class="cardlist xl:mx-40 mx-4 grid lg:grid-rows-6 lg:grid-cols-3 sm:grid-rows-9 sm:grid-cols-2 sm:gap-6 gap-y-6"
-      >
-        <Card v-for="article in list" :key="article.id" :article="article" @changeLike="onChangeLike" />
-      </ul>
-      <Pagination v-if="pagination" :pagination="pagination" />
+      <CardList :list="list" @changeLike="onChangeLike">
+        <h1 class="text-4xl mb-4">{{ tag }}</h1>
+      </CardList>
+      <Pagination v-if="pagination" :pagination="pagination" :to="`/tag/${tag}`" />
     </div>
   </div>
 </template>
 <script>
-import Card from "../components/Card.vue";
+import CardList from "../components/CardList.vue";
 import Pagination from "../components/Pagination.vue";
 import Spinner from "../components/Spinner.vue";
-
 export default {
   components: {
-    Card,
+    CardList,
     Pagination,
     Spinner,
   },
@@ -28,6 +24,10 @@ export default {
       type: Number,
       required: false,
       default: 1,
+    },
+    tag: {
+      type: String,
+      required: true,
     },
   },
   data() {
@@ -58,7 +58,8 @@ export default {
   },
   methods: {
     async fetchArticleList() {
-      const response = await this.$store.dispatch("post/getArticleList", this.page);
+      const data = { page: this.page, tag: this.tag };
+      const response = await this.$store.dispatch("post/getArticleList", data);
       if (!response) return;
       this.list = response.data;
       delete response.data;

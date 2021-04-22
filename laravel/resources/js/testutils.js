@@ -242,7 +242,7 @@ class TestUtils {
     async testApiResult(moduleAndAction, result) {
         const [module] = moduleAndAction.split("/");
         expect(this.store.state[module].apiIsSuccess).toBe(null);
-        const receive = await this.testedAction(`${moduleAndAction}`);
+        const receive = await this.testedAction(`${moduleAndAction}`, {});
         expect(this.store.state[module].apiIsSuccess).toBe(result);
         return receive;
     }

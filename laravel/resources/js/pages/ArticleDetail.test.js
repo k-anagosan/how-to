@@ -71,6 +71,20 @@ describe("表示、入力関連", () => {
     });
 
     it.each([
+        ["Icon", "author.name", "icon-stub"],
+        ["IconList", "/tag", "iconlist-stub"],
+    ])("%sのtoに%sを渡せる", (_, url, stub) => {
+        if (stub === "iconlist-stub") {
+            expect(wrapper.find(stub).props().to).toBe(url);
+        } else {
+            const url = `/${response.author.name}`;
+            wrapper.findAll(stub).wrappers.forEach(wrapper => {
+                expect(wrapper.props().to).toBe(url);
+            });
+        }
+    });
+
+    it.each([
         [true, "される"],
         [false, "されない"],
     ])("loadingが%sのときはSpinnerが表示%s", async isShown => {

@@ -19,6 +19,7 @@ const paginationFactory = (current_page, per_page, last_page) => ({
 const options = {
     propsData: {
         pagination: paginationFactory(current_page, per_page, last_page),
+        to: "/",
     },
     stubs: {
         RouterLink: RouterLinkStub,

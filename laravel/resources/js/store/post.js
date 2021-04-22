@@ -86,7 +86,10 @@ const actions = {
     async getArticleList(context, data) {
         context.commit("setApiIsSuccess", null);
 
-        const response = await window.axios.get(`/api/posts/?page=${data}`);
+        let path = `/api/posts/?page=${data.page}`;
+        if (data.tag) path += `&tag=${data.tag}`;
+
+        const response = await window.axios.get(path);
 
         if (response.status === OK) {
             context.commit("setApiIsSuccess", true);

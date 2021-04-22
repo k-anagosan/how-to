@@ -3,7 +3,7 @@ import router from "@/router";
 import store from "@/store/index";
 
 import App from "@/App.vue";
-import CardList from "@/pages/CardList.vue";
+import ArticleList from "@/pages/ArticleList.vue";
 import Login from "@/pages/Login.vue";
 import Edit from "@/pages/Edit.vue";
 import ArticleDetail from "@/pages/ArticleDetail.vue";
@@ -12,9 +12,9 @@ import NotFound from "@/pages/errors/NotFound.vue";
 
 import { randomStr, INTERNAL_SERVER_ERROR, NOT_FOUND } from "./utils";
 
-jest.mock("@/pages/CardList.vue", () => ({
-    name: "CardList",
-    render: h => h("h1", "CardList"),
+jest.mock("@/pages/ArticleList.vue", () => ({
+    name: "ArticleList",
+    render: h => h("h1", "ArticleList"),
 }));
 jest.mock("@/pages/Login.vue", () => ({
     name: "Login",
@@ -61,7 +61,7 @@ afterEach(() => {
 
 describe("アクセス結果", () => {
     it.each([
-        ["/にアクセスしたらCardListを表示する", "/", CardList],
+        ["/にアクセスしたらArticleListを表示する", "/", ArticleList],
         ["/loginにアクセスしたらLoginを表示する", "/login", Login],
         ["ログイン中に/editにアクセスしたらEditを表示する", "/edit", Edit],
         ["/article/xxxにアクセスしたらArticleDetailを表示する", "/article/xxx", ArticleDetail],

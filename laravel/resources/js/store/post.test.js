@@ -75,7 +75,7 @@ describe("post.js actions", () => {
 
         const setErrorCodeTest = async action => {
             await TestUtils.checkSpyIsCalled(setErrorCode, [{}, INTERNAL_SERVER_ERROR], () =>
-                Test.testedAction(`post/${action}`)
+                Test.testedAction(`post/${action}`, {})
             );
         };
 
