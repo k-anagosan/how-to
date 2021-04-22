@@ -84,8 +84,8 @@ describe("表示関連", () => {
         expect(wrapper.vm.$data.pagination).toEqual(pagination);
     });
 
-    it("dataに記事一覧情報が保存されたら記事一覧が表示される", () => {
-        expect(wrapper.findAll("card-stub").length).toBe(per_page);
+    it("dataにlistが保存されたら記事一覧が表示される", () => {
+        expect(wrapper.find("cardlist-stub").props().list).toEqual(response.data);
     });
 
     it.each([
@@ -110,10 +110,7 @@ describe("いいね関連", () => {
 
     it("changeLikeイベントが発火されたらonChangeLike()が実行される", () => {
         expect(spyOnChangeLike).not.toHaveBeenCalled();
-        wrapper
-            .findAll("card-stub")
-            .at(0)
-            .vm.$emit("changeLike", { id: randomStr(20), isLiked: true });
+        wrapper.find("cardlist-stub").vm.$emit("changeLike", { id: randomStr(20), isLiked: true });
         expect(spyOnChangeLike).toHaveBeenCalled();
     });
 

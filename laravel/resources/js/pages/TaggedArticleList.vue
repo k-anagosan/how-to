@@ -2,26 +2,20 @@
   <div>
     <Spinner v-if="loading" class="pagetop-offset" />
     <div v-if="!loading" id="cardlist" class="pagetop-offset">
-      <div class="xl:mx-40 mx-4">
+      <CardList :list="list" @changeLike="onChangeLike">
         <h1 class="text-4xl mb-4">{{ tag }}</h1>
-        <ul
-          v-if="list"
-          class="cardlist grid lg:grid-rows-6 lg:grid-cols-3 sm:grid-rows-9 sm:grid-cols-2 sm:gap-6 gap-y-6"
-        >
-          <Card v-for="article in list" :key="article.id" :article="article" @changeLike="onChangeLike" />
-        </ul>
-      </div>
+      </CardList>
       <Pagination v-if="pagination" :pagination="pagination" :to="`/tag/${tag}`" />
     </div>
   </div>
 </template>
 <script>
-import Card from "../components/Card.vue";
+import CardList from "../components/CardList.vue";
 import Pagination from "../components/Pagination.vue";
 import Spinner from "../components/Spinner.vue";
 export default {
   components: {
-    Card,
+    CardList,
     Pagination,
     Spinner,
   },
