@@ -4,9 +4,13 @@ namespace App\Domain\Post\Repository;
 
 use App\Domain\Post\Repository\PostRepositoryInterface as PostRepository;
 use App\Domain\ValueObject\PostId;
+use App\Domain\ValueObject\PostTag;
+use App\Domain\ValueObject\PostTags;
 use App\Domain\ValueObject\PostTitle;
+use App\Domain\ValueObject\TagNameId;
 use App\Domain\ValueObject\UserAccountId;
 use App\Models\Post;
+use App\Models\TagName;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 
@@ -14,21 +18,20 @@ class EloquentPostRepository implements PostRepository
 {
     public function save(PostId $postId, UserAccountId $userId, PostTitle $title): PostId
     {
-        $postOrm = new Post();
-
-        $postOrm->id = $postId->toString();
-        $postOrm->user_id = $userId->toInt();
-        $postOrm->title = $title->toString();
-        $postOrm->filename = $postId->getFilename();
-
         DB::beginTransaction();
 
         try {
+            $postOrm = new Post();
+
+            $postOrm->id = $postId->toString();
+            $postOrm->user_id = $userId->toInt();
+            $postOrm->title = $title->toString();
+            $postOrm->filename = $postId->getFilename();
             $postOrm->save();
             DB::commit();
         } catch (\Exception $e) {
             DB::rollback();
-            throw new $e;
+            throw $e;
         }
 
         return $postId;
@@ -53,7 +56,7 @@ class EloquentPostRepository implements PostRepository
     {
         try {
             $post = Post::where('id', $postId->toString())
-                ->with(['author', 'tags.tagName'])
+                ->with(['author', 'tagName'])
                 ->first();
         } catch (\Exception $e) {
             throw $e;
@@ -79,10 +82,10 @@ class EloquentPostRepository implements PostRepository
         $posts = null;
 
         try {
-            $posts = Post::with(['author', 'tags.tagName', 'likes']);
+            $posts = Post::with(['author', 'tagName', 'likes']);
 
             if (Request::hasAny('tag') && Request::input('tag') !== null) {
-                $posts = $posts->whereHas('tags.tagName', function ($query): void {
+                $posts = $posts->whereHas('tagName', function ($query): void {
                     $query->where('name', 'like', Request::input('tag'));
                 });
             }
@@ -106,6 +109,37 @@ class EloquentPostRepository implements PostRepository
         });
 
         return $posts;
+    }
+
+    public function addTags(PostId $postId, PostTags $tags): void
+    {
+        DB::beginTransaction();
+
+        try {
+            $post = Post::where('id', 'like', $postId->toString())->with(['tagNames'])->first();
+            $tagNameIds = collect($tags->toArray())->map(function ($tag) {
+                return $this->findOrCraeteTagName($tag)->toInt();
+            })->all();
+            $post->tagNames()->attach($tagNameIds);
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+    }
+
+    public function findOrCraeteTagName(PostTag $postTag): TagNameId
+    {
+        DB::beginTransaction();
+
+        try {
+            $tagNameId = TagName::firstOrCreate(['name' => $postTag->toString()])->id;
+            DB::commit();
+            return TagNameId::create($tagNameId);
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
     }
 
     public function putLike(PostId $postId, UserAccountId $userId)
