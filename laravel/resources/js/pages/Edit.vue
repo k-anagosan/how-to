@@ -12,14 +12,14 @@
             placeholder="タイトル"
           />
           <input v-model="tagsString" type="text" name="tags" class="block w-full border px-2" placeholder="タグ" />
-          <ul class="flex sm:justify-start justify-between items-center ml-2 h-8 mt-1">
+          <ul class="flex sm:justify-start justify-between items-center ml-2 mt-1">
             <li class="flex justify-start h-full">
               <ul class="flex justify-start h-full items-center">
                 <li class="h-full mr-2 relative">
                   <button
                     id="write-tab"
                     :class="{ 'text-gray-900 font-bold': tab === 1 }"
-                    class="flex justify-center items-center h-full px-4 text-gray-500 outline-none focus:outline-none"
+                    class="flex justify-center items-center h-8 px-4 text-gray-500 outline-none focus:outline-none"
                     type="button"
                     @click="tab = 1"
                   >
@@ -31,7 +31,7 @@
                   <button
                     id="preview-tab"
                     :class="{ 'text-gray-900 font-bold': tab === 2 }"
-                    class="flex justify-center items-center h-full px-4 text-gray-500 outline-none focus:outline-none"
+                    class="flex justify-center items-center h-8 px-4 text-gray-500 outline-none focus:outline-none"
                     type="button"
                     @click="tab = 2"
                   >
@@ -59,8 +59,8 @@
                 placeholder="共有したい知識をMarkdown記法で書いて投稿しましょう"
               ></textarea>
             </div>
-            <div v-show="tab === 2" class="preview-content w-full">
-              <MarkdownPreview :text="postForm.content" class="sm:p-10 p-4 break-words" />
+            <div v-show="tab === 2" class="preview-content flex flex-col w-full h-full">
+              <MarkdownPreview :text="postForm.content" class="flex-auto sm:p-10 p-4 break-words" />
             </div>
           </div>
         </div>
