@@ -87,18 +87,17 @@ class PostSubmitApiTest extends TestCase
         Storage::cloud()->assertExists('contents/' . $post->filename);
         $this->assertEquals(Storage::cloud()->get('contents/' . $post->filename), $this->data['content']);
 
-        // Tagモデルのコレクションを取得
-        $tags = $post->tags;
+        // 中間テーブルTagをpivotに含めたTagNameモデルへのリレーションを取得
+        $tagNames = $post->tags;
 
-        foreach ($tags->all() as $tag) {
+        foreach ($tagNames->all() as $tagName) {
             // 記事に添付されたタグ名がTagテーブルに保存されたか
-            $this->assertDatabaseHas($tag->getTable(), [
-                'post_id' => $tag->post_id,
-                'tag_name_id' => $tag->tag_name_id,
+            $this->assertDatabaseHas($tagName->pivot->getTable(), [
+                'post_id' => $tagName->pivot->post_id,
+                'tag_name_id' => $tagName->pivot->tag_name_id,
             ]);
 
             // タグ名がTagNameテーブルに新規登録されたか
-            $tagName = $tag->tagName;
             $this->assertDatabaseHas($tagName->getTable(), [
                 'id' => $tagName->id,
                 'name' => $tagName->name,
@@ -231,14 +230,14 @@ class PostSubmitApiTest extends TestCase
         Storage::cloud()->assertExists('contents/' . $post->filename);
         $this->assertEquals(Storage::cloud()->get('contents/' . $post->filename), $this->data['content']);
 
-        // Tagモデルのコレクションを取得
-        $tags = $post->tags;
+        // 中間テーブルTagをpivotに含めたTagNameモデルへのリレーションを取得
+        $tagNames = $post->tags;
 
-        foreach ($tags->all() as $tag) {
+        foreach ($tagNames->all() as $tagName) {
             // 記事に添付されたタグ名がTagテーブルに保存されたか
-            $this->assertDatabaseHas($tag->getTable(), [
-                'post_id' => $tag->post_id,
-                'tag_name_id' => $tag->tag_name_id,
+            $this->assertDatabaseHas($tagName->pivot->getTable(), [
+                'post_id' => $tagName->pivot->post_id,
+                'tag_name_id' => $tagName->pivot->tag_name_id,
             ]);
         }
 
@@ -252,7 +251,7 @@ class PostSubmitApiTest extends TestCase
     public function should_DBエラーの場合はファイルを保存しない(): void
     {
         // 無理やりDBエラーを起こす
-        Schema::drop('tags');
+        Schema::drop('posts');
 
         // アップロードを行う
         $response = $this->actingAs($this->user)->postJson(route('post.create'), $this->data);
@@ -260,7 +259,6 @@ class PostSubmitApiTest extends TestCase
         $response->assertStatus(500);
 
         // 今回のアップロードではDBにレコードが保存されなかったか
-        $this->assertEquals(0, $this->user->posts()->count());
         $this->assertEmpty(TagName::all());
 
         // 今回のアップロードではS3に本文が保存されなかったか
