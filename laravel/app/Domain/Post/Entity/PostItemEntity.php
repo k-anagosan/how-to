@@ -2,7 +2,6 @@
 
 namespace App\Domain\Post\Entity;
 
-use App\Domain\Tag\Entity\TagEntity;
 use App\Domain\ValueObject\PostContent;
 use App\Domain\ValueObject\PostId;
 use App\Domain\ValueObject\PostTags;
@@ -19,6 +18,8 @@ class PostItemEntity
 
     private $content;
 
+    private $tags;
+
     private function __construct()
     {
     }
@@ -28,36 +29,21 @@ class PostItemEntity
      * @param UserAccountId $userId
      * @param PostTitle     $title
      * @param PostContent   $content
+     * @param PostTags      $tags
      */
     public static function createByAuthor(
         UserAccountId $userId,
         PostTitle $title,
-        PostContent $content
+        PostContent $content,
+        PostTags $tags
     ): self {
         $postItem = new self();
         $postItem->postId = PostId::create();
         $postItem->userId = $userId;
         $postItem->title = $title;
         $postItem->content = $content;
+        $postItem->tags = $tags;
         return $postItem;
-    }
-
-    /**
-     * 永続化の対象となるPhotoTagの配列を生成する.
-     *
-     * @param PostTags $tags
-     * @return array
-     */
-    public function postTags(PostTags $tags): array
-    {
-        $tagEntities = [];
-
-        if ($tags->toArray() !== null) {
-            foreach ($tags->toArray() as $tag) {
-                $tagEntities[] = TagEntity::createByPostItem($this->postId, $tag);
-            }
-        }
-        return $tagEntities;
     }
 
     /**
@@ -98,5 +84,15 @@ class PostItemEntity
     public function getContent(): PostContent
     {
         return $this->content;
+    }
+
+    /**
+     * 保持しているPostTagsを取得.
+     *
+     * @return PostTags
+     */
+    public function getTags(): PostTags
+    {
+        return $this->tags;
     }
 }

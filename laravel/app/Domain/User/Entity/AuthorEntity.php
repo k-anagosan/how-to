@@ -2,10 +2,11 @@
 
 namespace App\Domain\User\Entity;
 
-use App\Domain\Post\Entity\PostItemEntity;
 use App\Domain\Photo\Entity\PhotoEntity;
+use App\Domain\Post\Entity\PostItemEntity;
 use App\Domain\ValueObject\PostContent;
 use App\Domain\ValueObject\PostPhoto;
+use App\Domain\ValueObject\PostTags;
 use App\Domain\ValueObject\PostTitle;
 use App\Domain\ValueObject\UserAccountId;
 
@@ -36,13 +37,15 @@ class AuthorEntity
      *
      * @param PostTitle   $title
      * @param PostContent $content
+     * @param PostTags    $tags
      * @return PostItemEntity
      */
     public function postItem(
         PostTitle $title,
-        PostContent $content
+        PostContent $content,
+        PostTags $tags
     ): PostItemEntity {
-        return PostItemEntity::createByAuthor($this->userId, $title, $content);
+        return PostItemEntity::createByAuthor($this->userId, $title, $content, $tags);
     }
 
     /**
