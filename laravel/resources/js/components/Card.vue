@@ -22,7 +22,7 @@
             class="article-tag inline-block px-1 mr-1 mb-1 border text-sm"
             @click.stop
           >
-            <RouterLink to="/" class="tag">
+            <RouterLink :to="`/tag/${tag.name}`" class="tag">
               {{ tag.name }}
             </RouterLink>
           </li>

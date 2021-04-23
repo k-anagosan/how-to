@@ -135,10 +135,10 @@ describe("Vue Router 関連", () => {
         expect(spyPush).toHaveBeenCalled();
         done();
     });
-    it("タグRouterLinkのtoにタグページ（未実装）へのurl（仮では'/'）が設定される", () => {
+    it("タグを表すRouterLinkのtoにタグページへのurlが設定される", () => {
         const tags = wrapper.findAll(".tag");
-        tags.wrappers.forEach(tag => {
-            expect(tag.props().to).toBe("/");
+        tags.wrappers.forEach((tag, index) => {
+            expect(tag.props().to).toBe(`/tag/${article.tags[index].name}`);
         });
     });
     it("タグををクリックしたら指定したページ（仮では'/'）に飛ぶ", async done => {
