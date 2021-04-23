@@ -11,10 +11,6 @@ use App\Domain\Post\Repository\EloquentPostRepository;
 use App\Domain\Post\Repository\PostRepositoryInterface;
 use App\Domain\Post\Repository\S3ContentRepository;
 use App\Domain\Post\Repository\TestCloudContentRepository;
-use App\Domain\Tag\Repository\EloquentTagNameRepository;
-use App\Domain\Tag\Repository\EloquentTagRepository;
-use App\Domain\Tag\Repository\TagNameRepositoryInterface;
-use App\Domain\Tag\Repository\TagRepositoryInterface;
 use App\Domain\User\Repository\EloquentUserRepository;
 use App\Domain\User\Repository\UserRepositoryInterface;
 use Illuminate\Contracts\Support\DeferrableProvider;
@@ -27,8 +23,6 @@ class RepositoryServiceProvider extends ServiceProvider implements DeferrablePro
         PostRepositoryInterface::class => EloquentPostRepository::class,
         PhotoRepositoryInterface::class => EloquentPhotoRepository::class,
         CloudPhotoRepositoryInterface::class => S3PhotoRepository::class,
-        TagNameRepositoryInterface::class => EloquentTagNameRepository::class,
-        TagRepositoryInterface::class => EloquentTagRepository::class,
     ];
 
     public function register(): void
@@ -47,8 +41,6 @@ class RepositoryServiceProvider extends ServiceProvider implements DeferrablePro
             CloudContentRepositoryInterface::class,
             PhotoRepositoryInterface::class,
             CloudPhotoRepositoryInterface::class,
-            TagNameRepositoryInterface::class,
-            TagRepositoryInterface::class,
         ];
     }
 }

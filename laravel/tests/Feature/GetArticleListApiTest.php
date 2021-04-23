@@ -42,7 +42,7 @@ class GetArticleListApiTest extends TestCase
 
         $response = $this->getJson(route('posts'));
 
-        $posts = Post::with(['author', 'tags.tagName', 'likes'])
+        $posts = Post::with(['author', 'tags', 'likes'])
             ->orderBy(Post::CREATED_AT, 'desc')
             ->limit($this->perPage)
             ->get();
@@ -51,9 +51,7 @@ class GetArticleListApiTest extends TestCase
             return [
                 'id' => $post->id,
                 'title' => $post->title,
-                'tags' => $post->tags->map(function ($tag) {
-                    return $tag->tagName;
-                })->toArray(),
+                'tags' => $post->tags->toArray(),
                 'author' => [
                     'name' => $post->author->name,
                 ],
@@ -84,7 +82,7 @@ class GetArticleListApiTest extends TestCase
 
         $response = $this->getJson(route('posts', ['page' => $page]));
 
-        $posts = Post::with(['author', 'tags.tagName', 'likes'])
+        $posts = Post::with(['author', 'tags', 'likes'])
             ->orderBy(Post::CREATED_AT, 'desc')
             ->limit($this->perPage)
             ->offset(($page - 1) * $this->perPage)
@@ -94,9 +92,7 @@ class GetArticleListApiTest extends TestCase
             return [
                 'id' => $post->id,
                 'title' => $post->title,
-                'tags' => $post->tags->map(function ($tag) {
-                    return $tag->tagName;
-                })->toArray(),
+                'tags' => $post->tags->toArray(),
                 'author' => [
                     'name' => $post->author->name,
                 ],
@@ -127,8 +123,8 @@ class GetArticleListApiTest extends TestCase
 
         $response = $this->getJson(route('posts', ['tag' => $queryTag]));
 
-        $posts = Post::with(['author', 'tags.tagName', 'likes'])
-            ->whereHas('tags.tagName', function ($query) use ($queryTag): void {
+        $posts = Post::with(['author', 'tags', 'likes'])
+            ->whereHas('tags', function ($query) use ($queryTag): void {
                 $query->where('name', 'like', $queryTag);
             })
             ->orderBy(Post::CREATED_AT, 'desc')
@@ -139,9 +135,7 @@ class GetArticleListApiTest extends TestCase
             return [
                 'id' => $post->id,
                 'title' => $post->title,
-                'tags' => $post->tags->map(function ($tag) {
-                    return $tag->tagName;
-                })->toArray(),
+                'tags' => $post->tags->toArray(),
                 'author' => [
                     'name' => $post->author->name,
                 ],

@@ -3,7 +3,10 @@
 namespace App\Domain\Post\Repository;
 
 use App\Domain\ValueObject\PostId;
+use App\Domain\ValueObject\PostTag;
+use App\Domain\ValueObject\PostTags;
 use App\Domain\ValueObject\PostTitle;
+use App\Domain\ValueObject\TagNameId;
 use App\Domain\ValueObject\UserAccountId;
 
 interface PostRepositoryInterface
@@ -41,6 +44,23 @@ interface PostRepositoryInterface
      * @return array
      */
     public function retrieve();
+
+    /*
+    * 引数の情報をTagストアに保存.
+    *
+    * @param PostId   $postId
+    * @param PostTags $tags
+    */
+    public function addTags(PostId $postId, PostTags $tags): void;
+
+    /*
+    * TagNameストアに引数のPostTagがあればそのIDを返す。
+    * 無ければ新たにそのPostTagを保存し、新規登録したIDを返す。
+    *
+    * @param PostTag $postTag
+    * @return TagNameId
+    */
+    public function findOrCraeteTagName(PostTag $postTag): TagNameId;
 
     /**
      * 引数の情報をLikesストアに保存.

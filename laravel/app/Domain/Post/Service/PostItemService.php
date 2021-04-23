@@ -6,6 +6,7 @@ use App\Domain\Post\Entity\PostItemEntity;
 use App\Domain\Post\Repository\CloudContentRepositoryInterface as CloudContentRepository;
 use App\Domain\Post\Repository\PostRepositoryInterface as PostRepository;
 use App\Domain\ValueObject\PostId;
+use Illuminate\Support\Facades\DB;
 
 class PostItemService
 {
@@ -27,13 +28,28 @@ class PostItemService
      */
     public function saveItem(PostItemEntity $postItemEntity): PostId
     {
-        $this->cloudContentRepository->save($postItemEntity->getId(), $postItemEntity->getContent());
+        $postId = null;
 
-        return $this->postRepository->save(
-            $postItemEntity->getId(),
-            $postItemEntity->getUserId(),
-            $postItemEntity->getTitle()
-        );
+        DB::beginTransaction();
+
+        try {
+            $this->cloudContentRepository->save($postItemEntity->getId(), $postItemEntity->getContent());
+
+            $postId = $this->postRepository->save(
+                $postItemEntity->getId(),
+                $postItemEntity->getUserId(),
+                $postItemEntity->getTitle(),
+            );
+
+            $this->postRepository->addTags($postItemEntity->getId(), $postItemEntity->getTags());
+            DB::commit();
+        } catch (\Exception $e) {
+            $this->cloudContentRepository->delete($postItemEntity->getId());
+            DB::rollback();
+            throw $e;
+        }
+
+        return $postId;
     }
 
     /**
