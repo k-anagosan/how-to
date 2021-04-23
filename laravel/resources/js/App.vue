@@ -37,7 +37,7 @@ export default {
           this.$store.commit("auth/setUser", null);
           this.$router.push("/login");
         } else if (errorCode === NOT_FOUND) {
-          this.$router.push("/not-found");
+          this.$router.replace("/not-found");
         }
       },
       immediate: true,
