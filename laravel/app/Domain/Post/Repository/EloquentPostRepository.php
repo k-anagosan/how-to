@@ -56,7 +56,7 @@ class EloquentPostRepository implements PostRepository
     {
         try {
             $post = Post::where('id', $postId->toString())
-                ->with(['author', 'tagName'])
+                ->with(['author', 'tags'])
                 ->first();
         } catch (\Exception $e) {
             throw $e;
@@ -65,14 +65,7 @@ class EloquentPostRepository implements PostRepository
         if ($post === null) {
             return [];
         }
-
         $post = $post->makeVisible('content')->toArray();
-
-        if ($post['tags'] !== null) {
-            $post['tags'] = collect($post['tags'])->map(function ($tag) {
-                return $tag['tag_name'];
-            })->toArray();
-        }
 
         return $post;
     }
@@ -82,10 +75,10 @@ class EloquentPostRepository implements PostRepository
         $posts = null;
 
         try {
-            $posts = Post::with(['author', 'tagName', 'likes']);
+            $posts = Post::with(['author', 'tags', 'likes']);
 
             if (Request::hasAny('tag') && Request::input('tag') !== null) {
-                $posts = $posts->whereHas('tagName', function ($query): void {
+                $posts = $posts->whereHas('tags', function ($query): void {
                     $query->where('name', 'like', Request::input('tag'));
                 });
             }
@@ -101,13 +94,6 @@ class EloquentPostRepository implements PostRepository
             return [];
         }
 
-        $posts['data'] = collect($posts['data'])->map(function ($post) {
-            $post['tags'] = collect($post['tags'])->map(function ($tag) {
-                return $tag['tag_name'];
-            })->toArray();
-            return $post;
-        });
-
         return $posts;
     }
 
@@ -116,11 +102,11 @@ class EloquentPostRepository implements PostRepository
         DB::beginTransaction();
 
         try {
-            $post = Post::where('id', 'like', $postId->toString())->with(['tagNames'])->first();
+            $post = Post::where('id', 'like', $postId->toString())->with(['tags'])->first();
             $tagNameIds = collect($tags->toArray())->map(function ($tag) {
                 return $this->findOrCraeteTagName($tag)->toInt();
             })->all();
-            $post->tagNames()->attach($tagNameIds);
+            $post->tags()->attach($tagNameIds);
             DB::commit();
         } catch (\Exception $e) {
             DB::rollback();
