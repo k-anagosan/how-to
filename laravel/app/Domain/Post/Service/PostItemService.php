@@ -3,7 +3,6 @@
 namespace App\Domain\Post\Service;
 
 use App\Domain\Post\Entity\PostItemEntity;
-use App\Domain\Post\Repository\CloudContentRepositoryInterface as CloudContentRepository;
 use App\Domain\Post\Repository\PostRepositoryInterface as PostRepository;
 use App\Domain\ValueObject\PostId;
 use Illuminate\Support\Facades\DB;
@@ -15,10 +14,8 @@ class PostItemService
     private $postRepository;
 
     public function __construct(
-        CloudContentRepository $cloudContentRepository,
         PostRepository $postRepository
     ) {
-        $this->cloudContentRepository = $cloudContentRepository;
         $this->postRepository = $postRepository;
     }
 
@@ -33,18 +30,16 @@ class PostItemService
         DB::beginTransaction();
 
         try {
-            $this->cloudContentRepository->save($postItemEntity->getId(), $postItemEntity->getContent());
-
             $postId = $this->postRepository->save(
                 $postItemEntity->getId(),
                 $postItemEntity->getUserId(),
                 $postItemEntity->getTitle(),
+                $postItemEntity->getContent()
             );
 
             $this->postRepository->addTags($postItemEntity->getId(), $postItemEntity->getTags());
             DB::commit();
         } catch (\Exception $e) {
-            $this->cloudContentRepository->delete($postItemEntity->getId());
             DB::rollback();
             throw $e;
         }
@@ -58,8 +53,6 @@ class PostItemService
      */
     public function deleteItem(PostId $postId): void
     {
-        $this->cloudContentRepository->delete($postId);
-
         $this->postRepository->delete($postId);
     }
 
