@@ -2,9 +2,7 @@
 
 namespace App\Models;
 
-use App\Domain\Post\Repository\CloudContentRepositoryInterface as CloudContentRepository;
 use App\Domain\User\Repository\UserRepositoryInterface as UserRepository;
-use App\Domain\ValueObject\PostFilename;
 use Illuminate\Database\Eloquent\Model;
 
 class Post extends Model
@@ -13,7 +11,7 @@ class Post extends Model
 
     protected $keyType = 'string';
 
-    protected $appends = ['content', 'likes_count', 'liked_by_me'];
+    protected $appends = ['likes_count', 'liked_by_me'];
 
     protected $visible = [
         'id', 'title', 'author', 'tags', 'likes_count', 'liked_by_me',
@@ -34,12 +32,6 @@ class Post extends Model
     public function likes()
     {
         return $this->belongsToMany(User::class, 'likes')->withTimestamps();
-    }
-
-    public function getContentAttribute()
-    {
-        return resolve(CloudContentRepository::class)
-            ->read(PostFilename::create($this->attributes['filename']))->toString();
     }
 
     public function getLikesCountAttribute()
