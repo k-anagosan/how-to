@@ -3,6 +3,7 @@
 namespace App\Domain\Post\Repository;
 
 use App\Domain\Post\Repository\PostRepositoryInterface as PostRepository;
+use App\Domain\ValueObject\PostContent;
 use App\Domain\ValueObject\PostId;
 use App\Domain\ValueObject\PostTag;
 use App\Domain\ValueObject\PostTags;
@@ -16,7 +17,7 @@ use Illuminate\Support\Facades\Request;
 
 class EloquentPostRepository implements PostRepository
 {
-    public function save(PostId $postId, UserAccountId $userId, PostTitle $title): PostId
+    public function save(PostId $postId, UserAccountId $userId, PostTitle $title, PostContent $content): PostId
     {
         DB::beginTransaction();
 
@@ -26,7 +27,7 @@ class EloquentPostRepository implements PostRepository
             $postOrm->id = $postId->toString();
             $postOrm->user_id = $userId->toInt();
             $postOrm->title = $title->toString();
-            $postOrm->filename = $postId->getFilename();
+            $postOrm->content = $content->toString();
             $postOrm->save();
             DB::commit();
         } catch (\Exception $e) {
@@ -56,7 +57,7 @@ class EloquentPostRepository implements PostRepository
     {
         try {
             $post = Post::where('id', $postId->toString())
-                ->with(['author', 'tags'])
+                ->with(['author', 'tags', 'likes'])
                 ->first();
         } catch (\Exception $e) {
             throw $e;
