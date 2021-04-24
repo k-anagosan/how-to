@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Post;
 use App\Models\TagName;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -52,13 +53,9 @@ class PostSubmitApiTest extends TestCase
         $this->assertMatchesRegularExpression('/^[0-9a-zA-Z]{20}$/', $post->id);
         $this->assertDatabaseHas($post->getTable(), [
             'title' => $this->data['title'],
-            'filename' => $post->filename,
+            'content' => $this->data['content'],
             'user_id' => $this->user->id,
         ]);
-
-        // S3に本文がファイルとして保存されているか
-        Storage::cloud()->assertExists('contents/' . $post->filename);
-        $this->assertEquals(Storage::cloud()->get('contents/' . $post->filename), $this->data['content']);
     }
 
     /**
@@ -79,13 +76,9 @@ class PostSubmitApiTest extends TestCase
         $this->assertMatchesRegularExpression('/^[0-9a-zA-Z]{20}$/', $post->id);
         $this->assertDatabaseHas($post->getTable(), [
             'title' => $this->data['title'],
-            'filename' => $post->filename,
+            'content' => $this->data['content'],
             'user_id' => $this->user->id,
         ]);
-
-        // S3に本文がファイルとして保存されているか
-        Storage::cloud()->assertExists('contents/' . $post->filename);
-        $this->assertEquals(Storage::cloud()->get('contents/' . $post->filename), $this->data['content']);
 
         // 中間テーブルTagをpivotに含めたTagNameモデルへのリレーションを取得
         $tagNames = $post->tags;
@@ -131,9 +124,6 @@ class PostSubmitApiTest extends TestCase
         // 今回のアップロードではDBにレコードが保存されなかったか
         $this->assertEquals(0, $this->user->posts()->count());
         $this->assertEmpty(TagName::all());
-
-        // 今回のアップロードではS3に本文が保存されなかったか
-        $this->assertCount(0, Storage::cloud()->files('contents/'));
     }
 
     /**
@@ -162,9 +152,6 @@ class PostSubmitApiTest extends TestCase
         // 今回のアップロードではDBにレコードが保存されなかったか
         $this->assertEquals(0, $this->user->posts()->count());
         $this->assertEmpty(TagName::all());
-
-        // 今回のアップロードではS3に本文が保存されなかったか
-        $this->assertCount(0, Storage::cloud()->files('contents/'));
     }
 
     /**
@@ -193,9 +180,6 @@ class PostSubmitApiTest extends TestCase
         // 今回のアップロードではDBにレコードが保存されなかったか
         $this->assertEquals(0, $this->user->posts()->count());
         $this->assertEmpty(TagName::all());
-
-        // 今回のアップロードでS3に本文が保存されなかったか
-        $this->assertCount(0, Storage::cloud()->files('contents/'));
     }
 
     /**
@@ -222,13 +206,9 @@ class PostSubmitApiTest extends TestCase
         $this->assertMatchesRegularExpression('/^[0-9a-zA-Z]{20}$/', $post->id);
         $this->assertDatabaseHas($post->getTable(), [
             'title' => $this->data['title'],
-            'filename' => $post->filename,
+            'content' => $this->data['content'],
             'user_id' => $this->user->id,
         ]);
-
-        // S3に本文がファイルとして保存されているか
-        Storage::cloud()->assertExists('contents/' . $post->filename);
-        $this->assertEquals(Storage::cloud()->get('contents/' . $post->filename), $this->data['content']);
 
         // 中間テーブルTagをpivotに含めたTagNameモデルへのリレーションを取得
         $tagNames = $post->tags;
@@ -251,7 +231,7 @@ class PostSubmitApiTest extends TestCase
     public function should_DBエラーの場合はファイルを保存しない(): void
     {
         // 無理やりDBエラーを起こす
-        Schema::drop('posts');
+        Schema::drop('tags');
 
         // アップロードを行う
         $response = $this->actingAs($this->user)->postJson(route('post.create'), $this->data);
@@ -259,29 +239,7 @@ class PostSubmitApiTest extends TestCase
         $response->assertStatus(500);
 
         // 今回のアップロードではDBにレコードが保存されなかったか
-        $this->assertEmpty(TagName::all());
-
-        // 今回のアップロードではS3に本文が保存されなかったか
-        $this->assertCount(0, Storage::cloud()->files('contents/'));
-    }
-
-    /**
-     * @test
-     */
-    public function should_ファイル保存エラーの場合はDBにレコードを挿入しない(): void
-    {
-        // ストレージをモックして保存時にエラーを起こさせる
-        Storage::shouldReceive('disk')
-            ->once()
-            ->andReturnNull();
-
-        // アップロードを行う
-        $response = $this->actingAs($this->user)->postJson(route('post.create'), $this->data);
-
-        $response->assertStatus(500);
-
-        // 今回のアップロードではDBにレコードが保存されなかったか
-        $this->assertEquals(0, $this->user->posts()->count());
+        $this->assertEmpty(Post::all());
         $this->assertEmpty(TagName::all());
     }
 
@@ -298,8 +256,5 @@ class PostSubmitApiTest extends TestCase
         // 今回のアップロードではDBにレコードが保存されなかったか
         $this->assertEquals(0, $this->user->posts()->count());
         $this->assertEmpty(TagName::all());
-
-        // 今回のアップロードではS3に本文が保存されなかったか
-        $this->assertCount(0, Storage::cloud()->files('contents/'));
     }
 }
