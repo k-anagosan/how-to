@@ -9,6 +9,7 @@ use App\Domain\ValueObject\PostTags;
 use App\Domain\ValueObject\PostTitle;
 use App\Domain\ValueObject\TagNameId;
 use App\Domain\ValueObject\UserAccountId;
+use App\Domain\ValueObject\Username;
 
 interface PostRepositoryInterface
 {
@@ -46,6 +47,13 @@ interface PostRepositoryInterface
      * @return array
      */
     public function retrieve();
+
+    /**
+     * ユーザーネームをもとに記事一覧を取得.
+     * @param Username $username
+     * @return array
+     */
+    public function retrieveByUsername(Username $username);
 
     /*
     * 引数の情報をTagストアに保存.
