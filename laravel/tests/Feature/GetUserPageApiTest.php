@@ -51,7 +51,6 @@ class GetUserPageApiTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonCount($this->perPage, 'data')
             ->assertJsonFragment(['data' => $expect]);
-        $this->assertEquals($response->json('username'), $this->user->name);
     }
 
     /**
@@ -65,7 +64,6 @@ class GetUserPageApiTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonCount(0, 'data')
             ->assertJsonFragment(['data' => []]);
-        $this->assertEquals($response->json('username'), $user->name);
     }
 
     /**

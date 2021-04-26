@@ -115,8 +115,6 @@ class EloquentPostRepository implements PostRepository
             throw $e;
         }
 
-        $posts['username'] = $username->toString();
-
         return $posts;
     }
 
