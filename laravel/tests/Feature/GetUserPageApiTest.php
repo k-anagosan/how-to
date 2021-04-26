@@ -18,7 +18,7 @@ class GetUserPageApiTest extends TestCase
     {
         parent::setUp();
 
-        $this->perPage = (new Post)->getPerPage();
+        $this->perPage = 10;
 
         for ($i = 0; $i < 3; $i++) {
             $user = factory(User::class)->create();

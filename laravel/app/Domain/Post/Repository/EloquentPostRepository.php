@@ -109,7 +109,7 @@ class EloquentPostRepository implements PostRepository
                     $query->where('name', 'like', $username->toString());
                 })
                 ->orderBy(Post::CREATED_AT, 'desc')
-                ->paginate((new Post)->getPerPage())
+                ->paginate(10)
                 ->toArray();
         } catch (\Exception $e) {
             throw $e;
