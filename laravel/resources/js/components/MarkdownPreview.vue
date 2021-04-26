@@ -1,5 +1,7 @@
 <template>
-  <div class="md-preview-area" v-html="formattedContent"></div>
+  <div>
+    <div class="md-preview-area" v-html="formattedContent"></div>
+  </div>
 </template>
 
 <script>
@@ -17,8 +19,11 @@ export default {
   },
   methods: {
     format(val) {
-      const sanitizedContent = this.$dompurify.sanitize(val);
-      return this.$marked(sanitizedContent);
+      const config = {
+        FORBID_TAGS: ["button", "form", "input", "style"],
+        KEEP_CONTENT: true,
+      };
+      return this.$dompurify.sanitize(this.$marked(val), config);
     },
   },
 };
