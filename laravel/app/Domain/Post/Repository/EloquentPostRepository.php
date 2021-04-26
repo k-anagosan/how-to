@@ -10,6 +10,7 @@ use App\Domain\ValueObject\PostTags;
 use App\Domain\ValueObject\PostTitle;
 use App\Domain\ValueObject\TagNameId;
 use App\Domain\ValueObject\UserAccountId;
+use App\Domain\ValueObject\Username;
 use App\Models\Post;
 use App\Models\TagName;
 use Illuminate\Support\Facades\DB;
@@ -93,6 +94,25 @@ class EloquentPostRepository implements PostRepository
 
         if (count($posts['data']) === 0) {
             return [];
+        }
+
+        return $posts;
+    }
+
+    public function retrieveByUsername(Username $username)
+    {
+        $posts = null;
+
+        try {
+            $posts = Post::with(['author', 'tags', 'likes'])
+                ->whereHas('author', function ($query) use ($username): void {
+                    $query->where('name', 'like', $username->toString());
+                })
+                ->orderBy(Post::CREATED_AT, 'desc')
+                ->paginate(10)
+                ->toArray();
+        } catch (\Exception $e) {
+            throw $e;
         }
 
         return $posts;

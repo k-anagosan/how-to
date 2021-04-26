@@ -3,6 +3,7 @@
 namespace App\Domain\User\Repository;
 
 use App\Domain\ValueObject\UserAccountId;
+use App\Domain\ValueObject\Username;
 
 interface UserRepositoryInterface
 {
@@ -15,6 +16,15 @@ interface UserRepositoryInterface
 
     /**
      * 未ログイン状態であるかを取得.
+     *
+     * @return bool
      */
     public function isGuest(): bool;
+
+    /**
+     * 引数のUsernameがUserテーブルに存在するか真偽値で返す.
+     * @param Usrename $username
+     * @return bool
+     */
+    public function existsByUsername(Username $username);
 }

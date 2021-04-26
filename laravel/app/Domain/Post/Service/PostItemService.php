@@ -5,12 +5,11 @@ namespace App\Domain\Post\Service;
 use App\Domain\Post\Entity\PostItemEntity;
 use App\Domain\Post\Repository\PostRepositoryInterface as PostRepository;
 use App\Domain\ValueObject\PostId;
+use App\Domain\ValueObject\Username;
 use Illuminate\Support\Facades\DB;
 
 class PostItemService
 {
-    private $cloudContentRepository;
-
     private $postRepository;
 
     public function __construct(
@@ -71,5 +70,14 @@ class PostItemService
     public function getArticleList(): array
     {
         return $this->postRepository->retrieve();
+    }
+
+    /**
+     * ユーザーごとの記事一覧データを取得する.
+     * @param Username $username
+     */
+    public function getArticleListByUsername(Username $username): array
+    {
+        return $this->postRepository->retrieveByUsername($username);
     }
 }
