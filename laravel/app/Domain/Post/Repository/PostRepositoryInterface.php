@@ -2,6 +2,7 @@
 
 namespace App\Domain\Post\Repository;
 
+use App\Domain\ValueObject\PostContent;
 use App\Domain\ValueObject\PostId;
 use App\Domain\ValueObject\PostTag;
 use App\Domain\ValueObject\PostTags;
@@ -17,10 +18,11 @@ interface PostRepositoryInterface
      * @param PostId        $postId
      * @param UserAccountId $userId
      * @param PostTitle     $title
+     * @param PostContent   $content
      *
      * @return PostId
      */
-    public function save(PostId $postId, UserAccountId $userId, PostTitle $title): PostId;
+    public function save(PostId $postId, UserAccountId $userId, PostTitle $title, PostContent $content): PostId;
 
     /**
      * 引数IDのレコードをPostストアから削除.

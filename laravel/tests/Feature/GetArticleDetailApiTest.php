@@ -7,8 +7,6 @@ use App\Models\Tag;
 use App\Models\TagName;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -16,13 +14,6 @@ class GetArticleDetailApiTest extends TestCase
 {
     use RefreshDatabase,
         WithFaker;
-
-    public function setUp(): void
-    {
-        parent::setUp();
-
-        Storage::fake('s3');
-    }
 
     /**
      * @test
@@ -36,12 +27,6 @@ class GetArticleDetailApiTest extends TestCase
         });
 
         $post = Post::with(['author', 'tags', 'likes'])->first();
-
-        $file = UploadedFile::fake()->createWithContent($post->filename, $this->faker->text(2000));
-        Storage::cloud()->putFileAs('contents', $file, $post->filename, 'public');
-
-        // 前準備としてS3に$fileが保存されたか
-        Storage::cloud()->assertExists('contents/' . $post->filename);
 
         $response = $this->getJson(route('post.show', ['id' => $post->id]));
 
@@ -57,8 +42,6 @@ class GetArticleDetailApiTest extends TestCase
                 'likes_count' => $post->likes_count,
                 'liked_by_me' => $post->liked_by_me,
             ]);
-
-        $this->assertEquals(Storage::cloud()->get('contents/' . $post->filename), $post->content);
     }
 
     /**
@@ -69,12 +52,6 @@ class GetArticleDetailApiTest extends TestCase
         factory(Post::class)->create();
 
         $post = Post::with(['author', 'tags', 'likes'])->first();
-
-        $file = UploadedFile::fake()->createWithContent($post->filename, $this->faker->text(2000));
-        Storage::cloud()->putFileAs('contents', $file, $post->filename, 'public');
-
-        // 前準備としてS3に$fileが保存されたか
-        Storage::cloud()->assertExists('contents/' . $post->filename);
 
         $response = $this->getJson(route('post.show', ['id' => $post->id]));
 
@@ -90,8 +67,6 @@ class GetArticleDetailApiTest extends TestCase
                 'likes_count' => $post->likes_count,
                 'liked_by_me' => $post->liked_by_me,
             ]);
-
-        $this->assertEquals(Storage::cloud()->get('contents/' . $post->filename), $post->content);
     }
 
     /**
@@ -102,16 +77,5 @@ class GetArticleDetailApiTest extends TestCase
         $response = $this->getJson(route('post.show', ['id' => Str::random(20)]));
 
         $response->assertStatus(404);
-    }
-
-    /**
-     * @test
-     */
-    public function should_IDはあるがファイルが無い場合、500エラーが返される(): void
-    {
-        $post = factory(Post::class)->create();
-        $response = $this->getJson(route('post.show', ['id' => $post->id]));
-
-        $response->assertStatus(500);
     }
 }

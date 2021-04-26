@@ -11,11 +11,6 @@ class PostId
      */
     private const ID_LENGTH = 20;
 
-    /**
-     * ファイル名生成時の拡張子.
-     */
-    private const EXTENSION = '.md';
-
     private $id;
 
     private function __construct()
@@ -52,15 +47,5 @@ class PostId
     public function toString(): string
     {
         return $this->id;
-    }
-
-    /**
-     * 保持している記事IDをもとに、拡張子を伴うファイル名を生成.
-     *
-     * @return string
-     */
-    public function getFilename(): string
-    {
-        return $this->id . self::EXTENSION;
     }
 }
