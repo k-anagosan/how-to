@@ -1,5 +1,5 @@
 <template>
-  <li class="shadow-md">
+  <li class="shadow-md hover:shadow-xl transition-shadow">
     <div class="card cursor-pointer" @click="push">
       <figure class="relative article-card-image">
         <img alt="" />
@@ -11,7 +11,9 @@
         </div>
       </figure>
       <div class="flex flex-col bg-white sm:p-6 p-4 min-card-height">
-        <Icon :icon="article.author" size="sm" class="mb-2" />
+        <div @click.stop>
+          <Icon :icon="article.author" size="sm" class="mb-2" :to="`/user/${article.author.name}`" />
+        </div>
         <h2 class="article-title mb-4 flex-auto font-bold">
           {{ article.title }}
         </h2>
