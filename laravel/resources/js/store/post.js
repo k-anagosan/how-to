@@ -100,6 +100,20 @@ const actions = {
         context.commit("setApiIsSuccess", false);
         return null;
     },
+    async getUserPage(context, data) {
+        context.commit("setApiIsSuccess", null);
+
+        const response = await window.axios.get(`/api/user/${data.name}?page=${data.page}`);
+
+        if (response.status === OK) {
+            context.commit("setApiIsSuccess", true);
+            return response.data;
+        }
+
+        context.commit("error/setErrorCode", response.status, { root: true });
+        context.commit("setApiIsSuccess", false);
+        return null;
+    },
     async putLike(context, data) {
         context.commit("setApiIsSuccess", null);
 
