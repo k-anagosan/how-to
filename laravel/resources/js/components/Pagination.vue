@@ -1,8 +1,10 @@
 <template>
-  <ul v-if="pagination" class="pagination relative xl:mx-40 mx-4 my-12 h-12">
+  <ul v-if="pagination" class="pagination relative my-12 h-12">
     <li v-if="pagination.current_page > 1" class="absolute top-1/2 left-0 -translate-y-1/2 transform">
       <RouterLink :to="`${to}?page=${pagination.current_page - 1}`" class="left-button">
-        <div class="flex items-center p-2 pl-0">
+        <div
+          class="flex items-center py-2 px-3 border border-gray-400 hover:bg-gray-900 hover:text-white transition-colors"
+        >
           <ion-icon name="arrow-back-outline"></ion-icon>
           <span class="ml-2">{{ left }}</span>
         </div>
@@ -16,7 +18,9 @@
       class="absolute top-1/2 right-0 -translate-y-1/2 transform"
     >
       <RouterLink :to="`${to}?page=${pagination.current_page + 1}`" class="right-button">
-        <div class="flex items-center p-2 pr-0">
+        <div
+          class="flex items-center py-2 px-3 border border-gray-400 hover:bg-gray-900 hover:text-white transition-colors"
+        >
           <span class="mr-2">{{ right }}</span>
           <ion-icon name="arrow-forward-outline"></ion-icon>
         </div>

@@ -5,7 +5,7 @@
       <div v-if="article" class="lg:hidden sticky z-50 top-0 bg-white border-b border-blue-100 shadow">
         <div class="container flex justify-between items-center mx-auto sm:px-8 px-5">
           <div class="py-4">
-            <Icon :icon="article.author" :to="`/${article.author.name}`" />
+            <Icon :icon="article.author" :to="`/user/${article.author.name}`" />
           </div>
           <div class="flex justify-between items-center rounded-2xl bg-gray-200 bg-opacity-80">
             <span class="pr-2 pl-3 likes-count">{{ article.likes_count }}</span>
@@ -35,7 +35,7 @@
             </div>
             <div class="w-full sticky top-8">
               <div class="shadow-md bg-white p-4 mb-8 rounded-lg">
-                <Icon :icon="article.author" :to="`/${article.author.name}`" />
+                <Icon :icon="article.author" :to="`/user/${article.author.name}`" />
               </div>
               <div class="index shadow-md bg-white p-4 rounded-lg h-20"></div>
             </div>
