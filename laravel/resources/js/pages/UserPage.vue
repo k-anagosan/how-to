@@ -39,19 +39,25 @@
             <div class="relative h-full">
               <h2>{{ article.title }}</h2>
               <ul v-if="article.tags.length > 0" class="absolute bottom-0 left-0 flex flex-row">
-                <li
-                  v-for="tag in article.tags"
-                  :key="tag.name"
-                  class="inline-block p-2 mr-1 text-sm text-gray-900 border border-gray-200 hover:border-gray-600 transition-colors"
-                  @click.stop
-                >
-                  <RouterLink :to="`/tag/${tag.name}`">{{ tag.name }}</RouterLink>
+                <li v-for="tag in article.tags" :key="tag.name" class="inline-block" @click.stop>
+                  <RouterLink :to="`/tag/${tag.name}`">
+                    <div
+                      class="p-2 mr-1 text-xs text-gray-900 border border-gray-200 hover:border-gray-600 transition-colors"
+                    >
+                      {{ tag.name }}
+                    </div>
+                  </RouterLink>
                 </li>
               </ul>
             </div>
           </div>
         </ul>
-        <Pagination v-if="pagination && pageData.length > 0" :pagination="pagination" :to="`/user/${name}`" />
+        <Pagination
+          v-if="pagination && pageData.length > 0"
+          class="sm:mx-0 mx-2"
+          :pagination="pagination"
+          :to="`/user/${name}`"
+        />
       </div>
     </div>
   </div>
