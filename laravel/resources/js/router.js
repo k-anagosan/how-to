@@ -8,6 +8,7 @@ import TaggedArticleList from "./pages/TaggedArticleList.vue";
 import Login from "./pages/Login.vue";
 import Edit from "./pages/Edit.vue";
 import ArticleDetail from "./pages/ArticleDetail.vue";
+import UserPage from "./pages/UserPage.vue";
 import Logout from "./pages/Logout.vue";
 import InternalServerError from "./pages/errors/InternalServerError.vue";
 import NotFound from "./pages/errors/NotFound.vue";
@@ -76,6 +77,17 @@ const routes = [
             } else {
                 next("/");
             }
+        },
+    },
+    {
+        path: "/user/:name",
+        component: UserPage,
+        props: route => {
+            const page = route.query.page;
+            return {
+                page: pageRegex(page),
+                name: route.params.name,
+            };
         },
     },
     {
