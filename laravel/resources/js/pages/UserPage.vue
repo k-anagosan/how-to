@@ -1,13 +1,17 @@
 <template>
   <div>
     <Spinner v-if="loading" class="pagetop-offset" />
-    <div v-if="!loading" class="container mx-auto flex lg:flex-row flex-col lg:px-32 sm:p-8 pagetop-offset">
+    <div
+      v-if="!loading"
+      id="userpage"
+      class="container mx-auto flex lg:flex-row flex-col lg:px-32 sm:p-8 pagetop-offset"
+    >
       <aside class="lg:m-0 mb-4 xl:w-1/4 lg:w-1/3 w-full">
         <div class="bg-white p-4 shadow-md">
           <figure class="flex justify-center items-center h-24">
             <div class="h-20 w-20 bg-black rounded-full"></div>
           </figure>
-          <h2 class="text-center text-xl text-gray-600">@{{ name }}</h2>
+          <h2 id="username" class="text-center text-xl text-gray-600">@{{ name }}</h2>
           <ul class="mt-4 p-4 grid gap-y-2 grid-cols-1">
             <li class="text-xl flex items-center">
               <RouterLink to="/"><ion-icon name="document-text-outline" class="mr-2"></ion-icon>Articles</RouterLink>
@@ -29,7 +33,7 @@
           <div
             v-for="article in pageData"
             :key="article.id"
-            class="h-32 bg-white p-4 cursor-pointer sm:shadow-md sm:hover:shadow-xl transition-shadow"
+            class="article h-32 bg-white p-4 cursor-pointer sm:shadow-md sm:hover:shadow-xl transition-shadow"
             @click="() => push(article.id)"
           >
             <div class="relative h-full">
@@ -38,7 +42,7 @@
                 <li
                   v-for="tag in article.tags"
                   :key="tag.name"
-                  class="inline-block px-1 mr-1 text-sm border border-gray-400 hover:bg-gray-900 hover:text-white transition-colors"
+                  class="inline-block p-2 mr-1 text-sm text-gray-900 border border-gray-200 hover:border-gray-600 transition-colors"
                   @click.stop
                 >
                   <RouterLink :to="`/tag/${tag.name}`">{{ tag.name }}</RouterLink>
@@ -47,7 +51,7 @@
             </div>
           </div>
         </ul>
-        <Pagination v-if="pagination" :pagination="pagination" :to="`/user/${name}`" />
+        <Pagination v-if="pagination && pageData.length > 0" :pagination="pagination" :to="`/user/${name}`" />
       </div>
     </div>
   </div>

@@ -71,13 +71,13 @@ describe("表示、入力関連", () => {
     });
 
     it.each([
-        ["Icon", "author.name", "icon-stub"],
+        ["Icon", "/user/{author.name}", "icon-stub"],
         ["IconList", "/tag", "iconlist-stub"],
     ])("%sのtoに%sを渡せる", (_, url, stub) => {
         if (stub === "iconlist-stub") {
             expect(wrapper.find(stub).props().to).toBe(url);
         } else {
-            const url = `/${response.author.name}`;
+            const url = `/user/${response.author.name}`;
             wrapper.findAll(stub).wrappers.forEach(wrapper => {
                 expect(wrapper.props().to).toBe(url);
             });

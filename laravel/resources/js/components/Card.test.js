@@ -37,6 +37,11 @@ describe("表示関連", () => {
         ["author", "Icon", "icon-stub", "icon"],
         ["liked_by_me", "LikeButton", "likebutton-stub", "isLiked"],
     ])("article.%sを%sに渡せる", (data, _, stub, props) => {
+        if (stub === "icon-stub") {
+            wrapper.findAll(stub).wrappers.forEach(wrapper => {
+                expect(wrapper.props()[props]).toEqual(article[data]);
+            });
+        }
         expect(wrapper.find(stub).props()[props]).toEqual(article[data]);
     });
 
