@@ -3,7 +3,7 @@
     <Spinner v-if="loading" class="pagetop-offset" />
     <div v-if="!loading" id="cardlist" class="pagetop-offset">
       <CardList :list="list" @changeLike="onChangeLike" />
-      <Pagination v-if="pagination" :pagination="pagination" to="/" />
+      <Pagination v-if="pagination" class="xl:mx-40 mx-4" :pagination="pagination" to="/" />
     </div>
   </div>
 </template>

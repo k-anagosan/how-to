@@ -5,7 +5,7 @@
       <CardList :list="list" @changeLike="onChangeLike">
         <h1 class="text-4xl mb-4">{{ tag }}</h1>
       </CardList>
-      <Pagination v-if="pagination" :pagination="pagination" :to="`/tag/${tag}`" />
+      <Pagination v-if="pagination" class="xl:mx-40 mx-4" :pagination="pagination" :to="`/tag/${tag}`" />
     </div>
   </div>
 </template>
