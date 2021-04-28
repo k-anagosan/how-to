@@ -13,17 +13,25 @@
           </figure>
           <h2 id="username" class="text-center text-xl text-gray-600">@{{ name }}</h2>
           <ul class="mt-4 p-4 grid gap-y-2 grid-cols-1">
-            <li class="text-xl flex items-center">
-              <RouterLink to="/"><ion-icon name="document-text-outline" class="mr-2"></ion-icon>Articles</RouterLink>
+            <li class="text-xl">
+              <RouterLink to="/" class="flex items-center"
+                ><ion-icon name="document-text-outline" class="mr-2"></ion-icon>Articles</RouterLink
+              >
             </li>
-            <li class="text-xl flex items-center">
-              <RouterLink to="/"><ion-icon name="archive-outline" class="mr-2"></ion-icon>Archives</RouterLink>
+            <li class="text-xl">
+              <RouterLink to="/" class="flex items-center"
+                ><ion-icon name="archive-outline" class="mr-2"></ion-icon>Archives</RouterLink
+              >
             </li>
-            <li class="text-xl flex items-center">
-              <RouterLink to="/"><ion-icon name="thumbs-up-outline" class="mr-2"></ion-icon>Likes</RouterLink>
+            <li class="text-xl">
+              <RouterLink to="/" class="flex items-center"
+                ><ion-icon name="thumbs-up-outline" class="mr-2"></ion-icon>Likes</RouterLink
+              >
             </li>
-            <li class="text-xl flex items-center">
-              <RouterLink to="/"><ion-icon name="person-outline" class="mr-2"></ion-icon>Followers</RouterLink>
+            <li class="text-xl">
+              <RouterLink to="/" class="flex items-center"
+                ><ion-icon name="person-outline" class="mr-2"></ion-icon>Followers</RouterLink
+              >
             </li>
           </ul>
         </div>
