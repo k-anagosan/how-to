@@ -15,12 +15,14 @@ ENV TZ=UTC \
   DB_HOST=db \
   DB_DATABASE=laravel_local \
   DB_USERNAME=phper \
-  DB_PASSWORD=secret
+  DB_PASSWORD=secret \
+  REDIS_HOST=redis 
+
 
 COPY --from=composer:2.0 /usr/bin/composer /usr/bin/composer
 
-RUN apt-get update && \
-  apt-get -y install \
+RUN apt update && \
+  apt -y install \
   libicu-dev \
   libonig-dev \
   libzip-dev \
@@ -30,12 +32,13 @@ RUN apt-get update && \
   libpng-dev \
   libjpeg62-turbo-dev \
   libfreetype6-dev &&\
-  apt-get clean && \
+  apt clean && \
   rm -rf /var/lib/apt/lists/* && \
   locale-gen en_US.UTF-8 && \
   localedef -f UTF-8 -i en_US en_US.UTF-8 && \
   mkdir /var/run/php-fpm && \
   mkdir /var/log/php && \
+  pecl install -o -f redis &&\
   docker-php-ext-configure gd \
   --enable-gd \
   --with-freetype \ 
@@ -46,6 +49,7 @@ RUN apt-get update && \
   pdo_mysql \
   zip \
   bcmath && \
+  docker-php-ext-enable redis && \
   composer config -g process-timeout 3600 && \
   composer config -g repos.packagist composer https://packagist.org
 

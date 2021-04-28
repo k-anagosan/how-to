@@ -18,8 +18,7 @@ class Username
      */
     public static function create(string $primitiveUsername): self
     {
-        // if ($primitiveUsername === null || preg_match('/[\w_]*/', $primitiveUsername) !== 1) {
-        if ($primitiveUsername === null) {
+        if ($primitiveUsername === null || preg_match('/\\W/', $primitiveUsername) === 1) {
             throw new \Exception();
         }
 
