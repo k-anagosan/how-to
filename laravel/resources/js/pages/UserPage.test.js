@@ -23,6 +23,7 @@ const responseFactory = (current_page, per_page, last_page) => ({
     data: [...Array(per_page)].map(article),
     per_page,
     last_page,
+    user_id: 1,
 });
 
 const { current_page, per_page, last_page } = {
@@ -78,7 +79,12 @@ describe("表示関連", () => {
     it("ページアクセスしたらdataにページネーション情報が保存される", () => {
         const pagination = { ...response };
         delete pagination.data;
+        delete pagination.user_id;
         expect(wrapper.vm.$data.pagination).toEqual(pagination);
+    });
+    it("ページアクセスしたらdataにuserIdが保存される", () => {
+        const userId = response.user_id;
+        expect(wrapper.vm.$data.userId).toBe(userId);
     });
 
     it.each([
