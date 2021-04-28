@@ -24,9 +24,16 @@ final class GetUserPageUseCase
      */
     public function execute(Username $username)
     {
-        if (!$this->authorService->usernameExists($username)) {
+        $userId = $this->authorService->getUserIdByUsername($username);
+
+        if ($userId === null) {
             return [];
         }
-        return $this->postItemService->getArticleListByUsername($username);
+
+        $data = $this->postItemService->getArticleListByUsername($username);
+
+        $data['user_id'] = $userId->toInt();
+
+        return $data;
     }
 }
