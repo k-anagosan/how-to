@@ -79,6 +79,7 @@ export default {
   data() {
     return {
       pageData: null,
+      userId: null,
       pagination: null,
       loading: false,
     };
@@ -100,6 +101,8 @@ export default {
       if (!data) return;
       this.pageData = data.data;
       delete data.data;
+      this.userId = data.user_id;
+      delete data.user_id;
       this.pagination = data;
     },
     push(id) {
