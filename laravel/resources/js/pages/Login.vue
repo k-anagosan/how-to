@@ -1,7 +1,8 @@
 <template>
   <div class="max-w-screen-sm pagetop-offset mx-auto">
-    <Spinner v-if="loading" />
-    <div v-if="!loading" id="login">
+    <Spinner v-if="loading" size="sm" class="sm:hidden" />
+    <Spinner v-if="loading" class="sm:block hidden" />
+    <div v-if="!loading" id="login" class="sm:mx-0 mx-4">
       <ul class="flex justify-start items-center h-12">
         <li class="h-full mr-2 relative">
           <button
@@ -28,9 +29,7 @@
       </ul>
       <div v-show="tab === 1" class="pt-4">
         <form id="login-form" @submit.prevent="login">
-          <ValidationMessage :errors="loginErrors" element="email" />
           <Input id="login-email" v-model="loginForm.email" type="text" label="Email" />
-          <ValidationMessage :errors="loginErrors" element="password" />
           <Input id="login-password" v-model="loginForm.password" type="password" label="Password" />
           <div class="flex justify-end">
             <Button id="login-btn" type="submit">login</Button>
@@ -39,11 +38,8 @@
       </div>
       <div v-show="tab === 2" class="pt-4">
         <form id="register-form" @submit.prevent="register">
-          <ValidationMessage :errors="registerErrors" element="name" />
           <Input id="username" v-model="registerForm.name" type="text" label="Username" />
-          <ValidationMessage :errors="registerErrors" element="email" />
           <Input id="email" v-model="registerForm.email" type="text" label="Email" />
-          <ValidationMessage :errors="registerErrors" element="password" />
           <Input id="password" v-model="registerForm.password" type="password" label="Password" />
           <Input
             id="password-confirmation"
@@ -57,21 +53,23 @@
         </form>
       </div>
     </div>
+    <ErrorMessages :errors="loginErrors" @clear="clearMessage" />
+    <ErrorMessages :errors="registerErrors" @clear="clearMessage" />
   </div>
 </template>
 <script>
 import Input from "../components/Input.vue";
 import Button from "../components/SubmitButton.vue";
-import ValidationMessage from "../components/ValidationMessage.vue";
+import ErrorMessages from "../components/ErrorMessages.vue";
 import Spinner from "../components/Spinner.vue";
-import { mapState } from "vuex";
+import { mapState, mapGetters } from "vuex";
 
 export default {
   components: {
     Input,
     Button,
-    ValidationMessage,
     Spinner,
+    ErrorMessages,
   },
   data() {
     return {
@@ -86,14 +84,17 @@ export default {
         password: "",
         password_confirmation: "",
       },
+      timerId: null,
     };
   },
 
   computed: {
     ...mapState({
       apiIsSuccess: state => state.auth.apiIsSuccess,
-      loginErrors: state => state.auth.loginValidationMessage,
-      registerErrors: state => state.auth.registerValidationMessage,
+    }),
+    ...mapGetters({
+      registerErrors: "auth/registerErrors",
+      loginErrors: "auth/loginErrors",
     }),
     loading() {
       return this.apiIsSuccess === null;
@@ -109,16 +110,30 @@ export default {
   },
   methods: {
     async login() {
+      this.clearTimer();
+      this.clearMessage();
       await this.$store.dispatch("auth/login", this.loginForm);
       if (this.apiIsSuccess) {
         this.$router.push("/");
       }
+      this.setTimer();
     },
     async register() {
+      this.clearTimer();
+      this.clearMessage();
       await this.$store.dispatch("auth/register", this.registerForm);
       if (this.apiIsSuccess) {
         this.$router.push("/");
       }
+      this.setTimer();
+    },
+    clearTimer() {
+      clearTimeout(this.timerId);
+    },
+    setTimer() {
+      this.timerId = setTimeout(() => {
+        this.clearMessage();
+      }, 5000);
     },
     clearMessage() {
       this.$store.commit("auth/setLoginValidationMessage", null);
