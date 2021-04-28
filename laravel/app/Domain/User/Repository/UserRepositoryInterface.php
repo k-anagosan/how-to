@@ -22,9 +22,9 @@ interface UserRepositoryInterface
     public function isGuest(): bool;
 
     /**
-     * 引数のUsernameがUserテーブルに存在するか真偽値で返す.
+     * 引数のUsernameでUserテーブルからUserAccountIdを取得する.
      * @param Usrename $username
-     * @return bool
+     * @return null|UserAccountId
      */
-    public function existsByUsername(Username $username);
+    public function getUserIdByUsername(Username $username);
 }
