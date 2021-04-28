@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class RegisterApiTest extends TestCase
@@ -45,28 +46,25 @@ class RegisterApiTest extends TestCase
      */
     public function should_名前が空の場合はユーザーを作成しない(): void
     {
-        // 名前がないので登録できない
-        $this->data['name'] = '';
+        $this->nameCheck('', 'ユーザー名 は必須です');
+    }
 
-        $response = $this->postJson(route('register'), $this->data);
+    /**
+     * @test
+     */
+    public function should_名前に空白が使われていたらユーザーを作成しない(): void
+    {
+        $name = Str::random() . ' ' . Str::random();
+        $this->nameCheck($name, 'ユーザー名 は英数字と_（アンダーバー）のみが使えます');
+    }
 
-        // DBに保存されていないか
-        $this->assertDatabaseMissing((new User())->getTable(), [
-            'name' => '',
-            'email' => $this->data['email'],
-        ]);
-
-        $expected = [
-            'message' => 'The given data was invalid.',
-            'errors' => [
-                'name' => [
-                    'ユーザー名 は必須です',
-                ],
-            ],
-        ];
-
-        // バリデーションエラーを示すステータスコードと正しいバリデーションメッセージが返ってくるか
-        $response->assertStatus(422)->assertExactJson($expected);
+    /**
+     * @test
+     */
+    public function should_名前に英数字と_以外が使われていたらユーザーを作成しない(): void
+    {
+        $name = preg_replace('/( |　)/', '', $this->faker->name);
+        $this->nameCheck($name, 'ユーザー名 は英数字と_（アンダーバー）のみが使えます');
     }
 
     /**
@@ -201,7 +199,7 @@ class RegisterApiTest extends TestCase
     {
         $password = $this->faker->password(8);
         return [
-            'name' => $this->faker->userName(),
+            'name' => Str::random(10),
             'email' => $this->faker->unique()->email(),
             'password' => $password,
             'password_confirmation' => $password,
@@ -216,5 +214,28 @@ class RegisterApiTest extends TestCase
     private function createRegisteredUser()
     {
         return factory(User::class)->create();
+    }
+
+    private function nameCheck($name, $message): void
+    {
+        $this->data['name'] = $name;
+
+        $response = $this->postJson(route('register'), $this->data);
+
+        // DBに保存されていないか
+        $this->assertDatabaseMissing((new User())->getTable(), [
+            'name' => '',
+            'email' => $this->data['email'],
+        ]);
+
+        $expected = [
+            'message' => 'The given data was invalid.',
+            'errors' => [
+                'name' => [$message],
+            ],
+        ];
+
+        // バリデーションエラーを示すステータスコードと正しいバリデーションメッセージが返ってくるか
+        $response->assertStatus(422)->assertExactJson($expected);
     }
 }

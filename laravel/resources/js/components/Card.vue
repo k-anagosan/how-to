@@ -18,14 +18,13 @@
           {{ article.title }}
         </h2>
         <ul v-if="article.tags" class="flex flex-wrap">
-          <li
-            v-for="tag in article.tags"
-            :key="tag.name"
-            class="article-tag inline-block px-1 mr-1 mb-1 border text-sm"
-            @click.stop
-          >
+          <li v-for="tag in article.tags" :key="tag.name" class="article-tag" @click.stop>
             <RouterLink :to="`/tag/${tag.name}`" class="tag">
-              {{ tag.name }}
+              <div
+                class="inline-block lg:p-2 p-1 mr-1 mb-1 text-xs text-gray-900 border border-gray-200 hover:border-gray-600 transition-colors"
+              >
+                {{ tag.name }}
+              </div>
             </RouterLink>
           </li>
         </ul>
