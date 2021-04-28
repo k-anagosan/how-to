@@ -13,17 +13,25 @@
           </figure>
           <h2 id="username" class="text-center text-xl text-gray-600">@{{ name }}</h2>
           <ul class="mt-4 p-4 grid gap-y-2 grid-cols-1">
-            <li class="text-xl flex items-center">
-              <RouterLink to="/"><ion-icon name="document-text-outline" class="mr-2"></ion-icon>Articles</RouterLink>
+            <li class="text-xl">
+              <RouterLink to="/" class="flex items-center"
+                ><ion-icon name="document-text-outline" class="mr-2"></ion-icon>Articles</RouterLink
+              >
             </li>
-            <li class="text-xl flex items-center">
-              <RouterLink to="/"><ion-icon name="archive-outline" class="mr-2"></ion-icon>Archives</RouterLink>
+            <li class="text-xl">
+              <RouterLink to="/" class="flex items-center"
+                ><ion-icon name="archive-outline" class="mr-2"></ion-icon>Archives</RouterLink
+              >
             </li>
-            <li class="text-xl flex items-center">
-              <RouterLink to="/"><ion-icon name="thumbs-up-outline" class="mr-2"></ion-icon>Likes</RouterLink>
+            <li class="text-xl">
+              <RouterLink to="/" class="flex items-center"
+                ><ion-icon name="thumbs-up-outline" class="mr-2"></ion-icon>Likes</RouterLink
+              >
             </li>
-            <li class="text-xl flex items-center">
-              <RouterLink to="/"><ion-icon name="person-outline" class="mr-2"></ion-icon>Followers</RouterLink>
+            <li class="text-xl">
+              <RouterLink to="/" class="flex items-center"
+                ><ion-icon name="person-outline" class="mr-2"></ion-icon>Followers</RouterLink
+              >
             </li>
           </ul>
         </div>
@@ -39,19 +47,25 @@
             <div class="relative h-full">
               <h2>{{ article.title }}</h2>
               <ul v-if="article.tags.length > 0" class="absolute bottom-0 left-0 flex flex-row">
-                <li
-                  v-for="tag in article.tags"
-                  :key="tag.name"
-                  class="inline-block p-2 mr-1 text-sm text-gray-900 border border-gray-200 hover:border-gray-600 transition-colors"
-                  @click.stop
-                >
-                  <RouterLink :to="`/tag/${tag.name}`">{{ tag.name }}</RouterLink>
+                <li v-for="tag in article.tags" :key="tag.name" class="inline-block" @click.stop>
+                  <RouterLink :to="`/tag/${tag.name}`">
+                    <div
+                      class="p-2 mr-1 text-xs text-gray-900 border border-gray-200 hover:border-gray-600 transition-colors"
+                    >
+                      {{ tag.name }}
+                    </div>
+                  </RouterLink>
                 </li>
               </ul>
             </div>
           </div>
         </ul>
-        <Pagination v-if="pagination && pageData.length > 0" :pagination="pagination" :to="`/user/${name}`" />
+        <Pagination
+          v-if="pagination && pageData.length > 0"
+          class="sm:mx-0 mx-2"
+          :pagination="pagination"
+          :to="`/user/${name}`"
+        />
       </div>
     </div>
   </div>
