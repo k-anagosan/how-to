@@ -2,16 +2,30 @@
 
 namespace App\UseCase;
 
+use App\Domain\Follow\Service\FollowService;
+use App\Domain\User\Service\UserService;
 use App\Domain\ValueObject\UserAccountId;
 
 final class FollowUserUseCase
 {
-    public function __construct()
+    private $userService;
+
+    private $followService;
+
+    public function __construct(FollowService $followService, UserService $userService)
     {
+        $this->userService = $userService;
+        $this->followService = $followService;
     }
 
-    public function execute(UserAccountId $userId)
+    /**
+     * @param UserAccountId $followId
+     * @return null|UserAccountId
+     */
+    public function execute(UserAccountId $followId)
     {
-        return $userId;
+        $user = $this->userService->getLoginUser();
+        $followedUser = $user->followUser($followId);
+        return $this->followService->putFollow($followedUser);
     }
 }
