@@ -18,6 +18,8 @@ Route::post('/logout', 'App\Http\Controllers\Auth\LoginController@logout')->name
 Route::get('/user', fn () => Auth::check() ? Auth::user() : [])->name('user');
 Route::get('/user/{name}', App\Http\Actions\GetUserPageAction::class)->name('user.show');
 
+Route::put('/user/follow/{id}', App\Http\Actions\FollowUserAction::class)->name('user.follow');
+
 Route::post('/post', App\Http\Actions\PostAction::class)->name('post.create');
 Route::get('/post/{id}', App\Http\Actions\GetArticleAction::class)->name('post.show');
 Route::put('/post/{id}/like', App\Http\Actions\LikeAction::class)->name('post.like');
