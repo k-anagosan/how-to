@@ -24,6 +24,9 @@ final class FollowUserUseCase
      */
     public function execute(UserAccountId $followId)
     {
+        if (!$this->userService->existsUser($followId)) {
+            return;
+        }
         $user = $this->userService->getLoginUser();
         $followedUser = $user->followUser($followId);
         return $this->followService->putFollow($followedUser);
