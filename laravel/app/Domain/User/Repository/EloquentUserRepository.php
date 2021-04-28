@@ -20,8 +20,14 @@ class EloquentUserRepository implements UserRepository
         return Auth::guest();
     }
 
-    public function existsByUsername(Username $username)
+    public function getUserIdByUsername(Username $username)
     {
-        return User::where('name', 'like', $username->toString())->exists();
+        $user = User::where('name', 'like', $username->toString());
+
+        if (!$user->exists()) {
+            return;
+        }
+
+        return UserAccountId::create($user->first()->id);
     }
 }
