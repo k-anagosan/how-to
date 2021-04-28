@@ -4,6 +4,7 @@ namespace App\Domain\User\Service;
 
 use App\Domain\User\Entity\AuthorEntity;
 use App\Domain\User\Repository\UserRepositoryInterface as UserRepository;
+use App\Domain\ValueObject\UserAccountId;
 use App\Domain\ValueObject\Username;
 
 class AuthorService
@@ -28,13 +29,13 @@ class AuthorService
     }
 
     /**
-     * 引数のUsernameが存在するか真偽値で返す.
+     * 引数のUsernameからUserAccountIdを返す.
      *
      * @param Username $username
-     * @return bool
+     * @return null|UserAccountId
      */
-    public function usernameExists(Username $username): bool
+    public function getUserIdByUsername(Username $username)
     {
-        return $this->userRepository->existsByUsername($username);
+        return $this->userRepository->getUserIdByUsername($username);
     }
 }
