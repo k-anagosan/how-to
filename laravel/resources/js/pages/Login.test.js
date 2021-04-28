@@ -12,6 +12,10 @@ beforeEach(() => {
         namespaced: true,
         state: { apiIsSuccess: true, loginValidationMessage: {}, registerValidationMessage: {} },
         actions: { register: jest.fn(), login: jest.fn() },
+        getters: {
+            registerErrors: jest.fn().mockImplementation(() => []),
+            loginErrors: jest.fn().mockImplementation(() => []),
+        },
         mutations: {
             setLoginValidationMessage: jest.fn().mockImplementation(state => {
                 state.loginValidationMessage = null;
@@ -24,6 +28,8 @@ beforeEach(() => {
     Test.setSpys({
         register: auth.actions.register,
         login: auth.actions.login,
+        registerErrors: auth.getters.registerErrors,
+        loginErrors: auth.getters.loginErrors,
         loginValidation: auth.mutations.setLoginValidationMessage,
         registerValidation: auth.mutations.setRegisterValidationMessage,
     });
@@ -107,9 +113,10 @@ describe("Vuex", () => {
 
     describe("異常終了", () => {
         let store = null;
+        let [loginErrors, registerErrors] = [null, null];
         const spyClearMessage = jest.spyOn(Login.methods, "clearMessage");
         Test.setSpys({ spyClearMessage });
-        beforeEach(async () => {
+        const authFactory = () => {
             auth.state.apiIsSuccess = false;
             auth.state.loginValidationMessage = {
                 email: [randomStr()],
@@ -120,6 +127,19 @@ describe("Vuex", () => {
                 email: [randomStr()],
                 password: [randomStr(), randomStr()],
             };
+            loginErrors = [...auth.state.loginValidationMessage.email, ...auth.state.loginValidationMessage.password];
+            auth.getters.loginErrors = jest.fn().mockImplementation(() => loginErrors);
+            registerErrors = [
+                ...auth.state.registerValidationMessage.name,
+                ...auth.state.registerValidationMessage.email,
+                ...auth.state.registerValidationMessage.password,
+            ];
+            auth.getters.registerErrors = jest.fn().mockImplementation(() => registerErrors);
+            Test.setSpys({ loginErrors: auth.getters.loginErrors, registerErrors: auth.getters.registerErrors });
+            return auth;
+        };
+        beforeEach(async () => {
+            auth = authFactory();
             store = Test.setVuex({ auth });
             wrapper = Test.shallowWrapperFactory();
             await Test.testRouting("/", "/login");
@@ -137,26 +157,13 @@ describe("Vuex", () => {
         });
 
         it.each([
-            ["#login-form", "loginErrors", "loginValidationMessage"],
-            ["register-form", "registerErrors", "registerValidationMessage"],
-        ])("%sのバリデーションエラーを正しく算出している", (_, target, message) => {
+            ["#login-form", "loginErrors"],
+            ["#register-form", "registerErrors"],
+        ])("%sのバリデーションエラーを正しく算出している", (_, target) => {
             const errors = Test.computedValue(target, { $store: store });
-            expect(errors).toEqual(auth.state[message]);
+            expect(errors).toEqual(auth.getters[target]());
         });
 
-        it.each([
-            ["loginValidationMessage", "loginErrors"],
-            ["registerValidationMessage", "registerErrors"],
-        ])("clearMessage()により、auth.state.%sがクリアされる", (message, target) => {
-            let errors = Test.computedValue(target, { $store: store });
-            expect(errors).toEqual(auth.state[message]);
-            Test.clearSpysCalledTimes();
-
-            wrapper.vm.clearMessage();
-            expect(auth.mutations[`set${message.replace(/^\w/, c => c.toUpperCase())}`]);
-            errors = Test.computedValue(target, { $store: store });
-            expect(errors).toEqual(null);
-        });
         it("ページアクセス時にclearMessage()が呼び出されている", () => {
             expect(spyClearMessage).toHaveBeenCalled();
         });
@@ -166,6 +173,16 @@ describe("Vuex", () => {
                 wrapper.setData({ tab: 2 });
             });
             done();
+        });
+        it("タイマーセットしたらclearMessage()が数秒後に実行される", async done => {
+            jest.setTimeout(10000);
+            Test.clearSpysCalledTimes();
+            await wrapper.vm.setTimer();
+            expect(spyClearMessage).not.toHaveBeenCalled();
+            setTimeout(() => {
+                expect(spyClearMessage).toHaveBeenCalled();
+                done();
+            }, 5000);
         });
     });
 });

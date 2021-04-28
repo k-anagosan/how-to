@@ -152,6 +152,26 @@ describe("auth.js getters", () => {
         name: "testuser",
         email: "test@example.com",
     };
+    const loginValidationMessage = {
+        email: [randomStr()],
+        password: [randomStr()],
+    };
+    const loginErrors = [...loginValidationMessage.email, ...loginValidationMessage.password];
+    const registerValidationMessage = {
+        name: [randomStr()],
+        email: [randomStr()],
+        password: [randomStr(), randomStr()],
+    };
+    const registerErrors = [
+        ...registerValidationMessage.name,
+        ...registerValidationMessage.email,
+        ...registerValidationMessage.password,
+    ];
+
+    beforeEach(() => {
+        store.commit("auth/setLoginValidationMessage", loginValidationMessage);
+        store.commit("auth/setRegisterValidationMessage", registerValidationMessage);
+    });
 
     describe.each([
         ["ログイン済み", true],
@@ -170,5 +190,13 @@ describe("auth.js getters", () => {
             const username = Test.testedGetter("auth/username");
             expect(username).toBe(isAuth ? user.name : "");
         });
+    });
+
+    it.each([
+        ["registerErrors", registerErrors],
+        ["loginErrors", loginErrors],
+    ])("%sゲッターにより正しい値を取得できるか", (getter, messages) => {
+        const errors = Test.testedGetter(`auth/${getter}`);
+        expect(errors).toEqual(messages);
     });
 });
