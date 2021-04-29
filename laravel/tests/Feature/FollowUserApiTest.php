@@ -77,7 +77,7 @@ class FollowUserApiTest extends TestCase
             'message' => 'The given data was invalid.',
             'errors' => [
                 'follow_id' => [
-                    '自身はフォローできません',
+                    '自身は指定できません',
                 ],
             ],
         ];
