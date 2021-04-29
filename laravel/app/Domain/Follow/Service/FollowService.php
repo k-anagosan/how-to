@@ -25,4 +25,15 @@ class FollowService
     {
         return $this->userRepository->putFollow($followEntity->getUserId(), $followEntity->getFollowId());
     }
+
+    /**
+     * FollowEntityをもとにフォロー解除する.
+     *
+     * @param FollowEntity $followEntity
+     * @return null|UserAccountId
+     */
+    public function deleteFollow(FollowEntity $followEntity)
+    {
+        return $this->userRepository->deleteFollow($followEntity->getUserId(), $followEntity->getFollowId());
+    }
 }
