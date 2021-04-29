@@ -3,6 +3,7 @@
 namespace App\Domain\Follow\Entity;
 
 use App\Domain\ValueObject\UserAccountId;
+use App\Exceptions\FollowInvalidException;
 
 class FollowEntity
 {
@@ -18,11 +19,15 @@ class FollowEntity
      * LoginUserEntityによってのみこのインスタンスは生成される.
      * @param UserAccountId $userId
      * @param UserAccountId $followId
+     * @return self
      */
     public static function createByLoginUser(
         UserAccountId $userId,
         UserAccountId $followId
-    ): self {
+    ) {
+        if ($userId->toInt() === $followId->toInt()) {
+            throw new FollowInvalidException('follow_id', '自身はフォローできません');
+        }
         $followedUser = new self();
         $followedUser->userId = $userId;
         $followedUser->followId = $followId;
