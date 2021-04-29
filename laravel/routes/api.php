@@ -19,6 +19,7 @@ Route::get('/user', fn () => Auth::check() ? Auth::user() : [])->name('user');
 Route::get('/user/{name}', App\Http\Actions\GetUserPageAction::class)->name('user.show');
 
 Route::put('/user/{id}/follow', App\Http\Actions\FollowUserAction::class)->name('user.follow');
+Route::delete('/user/{id}/follow', App\Http\Actions\UnfollowUserAction::class)->name('user.unfollow');
 
 Route::post('/post', App\Http\Actions\PostAction::class)->name('post.create');
 Route::get('/post/{id}', App\Http\Actions\GetArticleAction::class)->name('post.show');
