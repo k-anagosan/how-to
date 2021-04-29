@@ -2,6 +2,7 @@
 
 namespace App\Domain\User\Entity;
 
+use App\Domain\Follow\Entity\FollowEntity;
 use App\Domain\Like\Entity\LikeEntity;
 use App\Domain\ValueObject\PostId;
 use App\Domain\ValueObject\UserAccountId;
@@ -37,5 +38,16 @@ class LoginUserEntity
     public function likePost(PostId $postId): LikeEntity
     {
         return LikeEntity::createByLoginUser($postId, $this->userId);
+    }
+
+    /**
+     * 永続化の対象となるFollowEntityを生成する.
+     *
+     * @param UserAccountId $followId
+     * @return FollowEntity
+     */
+    public function followUser(UserAccountId $followId): FollowEntity
+    {
+        return FollowEntity::createByLoginUser($this->userId, $followId);
     }
 }
