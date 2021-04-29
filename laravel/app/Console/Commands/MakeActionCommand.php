@@ -59,17 +59,27 @@ class MakeActionCommand extends Command
         namespace App\\Http\\Actions;
 
         use App\\Http\\Controllers\\Controller;
+        use Illuminate\\Http\\JsonResponse;
 
         class ${actionName} extends Controller
         {
-            public function __construct()
+            private \$useCase;
+
+            private \$responder;
+            
+            public function __construct(\$useCase, \$responder)
             {
-                // 
+                \$this->useCase = \$useCase;
+                \$this->responder = \$responder;
             }
 
-            public function __invoke()
+            public function __invoke(): JsonResponse
             {
-                // 
+                return \$this->responder->response(
+                    \$this->useCase->execute(
+                        //
+                    )
+                );
             }
         }
         EOD;
