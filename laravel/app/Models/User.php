@@ -45,4 +45,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Photo::class);
     }
+
+    public function follows()
+    {
+        return $this->belongsToMany(self::class, 'follows', 'user_id', 'follow_id')->withTimestamps();
+    }
+
+    public function followers()
+    {
+        return $this->belongsToMany(self::class, 'follows', 'follow_id', 'user_id')->withTimestamps();
+    }
 }
