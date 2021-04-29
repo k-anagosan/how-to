@@ -9,14 +9,12 @@ interface UserRepositoryInterface
 {
     /**
      * 現在の認証ユーザーのユーザーIDを取得.
-     *
      * @return UserAccountId
      */
     public function getLoginUserId(): UserAccountId;
 
     /**
      * 未ログイン状態であるかを取得.
-     *
      * @return bool
      */
     public function isGuest(): bool;
@@ -36,9 +34,18 @@ interface UserRepositoryInterface
     public function exists(UserAccountId $userId);
 
     /**
+     * 引数の情報をもとにフォロー情報を挿入する.
      * @param UserAccountId $userId
      * @param UserAccountId $followId
      * @return null|UserAccountId
      */
     public function putFollow(UserAccountId $userId, UserAccountId $followId);
+
+    /**
+     * 引数の情報をもとにフォロー情報を削除する.
+     * @param UserAccountId $userId
+     * @param UserAccountId $followId
+     * @return null|UserAccountId
+     */
+    public function deleteFollow(UserAccountId $userId, UserAccountId $followId);
 }

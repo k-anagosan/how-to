@@ -26,7 +26,7 @@ class FollowEntity
         UserAccountId $followId
     ) {
         if ($userId->toInt() === $followId->toInt()) {
-            throw new FollowInvalidException('follow_id', '自身はフォローできません');
+            throw new FollowInvalidException('follow_id', '自身は指定できません');
         }
         $followedUser = new self();
         $followedUser->userId = $userId;

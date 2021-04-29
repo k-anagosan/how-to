@@ -59,4 +59,26 @@ class EloquentUserRepository implements UserRepository
 
         return $followId;
     }
+
+    public function deleteFollow(UserAccountId $userId, UserAccountId $followId)
+    {
+        $user = User::with(['follows'])->find($userId->toInt());
+
+        if (!$user) {
+            return;
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $user->follows()->detach($followId->toInt());
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+
+        return $followId;
+    }
 }
