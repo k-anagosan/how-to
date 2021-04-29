@@ -27,4 +27,18 @@ interface UserRepositoryInterface
      * @return null|UserAccountId
      */
     public function getUserIdByUsername(Username $username);
+
+    /**
+     * 引数のユーザーIDを持つユーザーが存在するか真偽値で返す.
+     * @param UserAccountId $userId
+     * @return bool
+     */
+    public function exists(UserAccountId $userId);
+
+    /**
+     * @param UserAccountId $userId
+     * @param UserAccountId $followId
+     * @return null|UserAccountId
+     */
+    public function putFollow(UserAccountId $userId, UserAccountId $followId);
 }
