@@ -69,6 +69,26 @@ class FollowUserApiTest extends TestCase
     /**
      * @test
      */
+    public function should_自身はフォローできない(): void
+    {
+        $response = $this->actingAs($this->user)->putJson(route('user.follow', $this->user->id));
+
+        $expected = [
+            'message' => 'The given data was invalid.',
+            'errors' => [
+                'follow_id' => [
+                    '自身はフォローできません',
+                ],
+            ],
+        ];
+
+        $response->assertStatus(422)->assertExactJson($expected);
+        $this->assertEquals(0, $this->user->follows()->count());
+    }
+
+    /**
+     * @test
+     */
     public function should_指定のユーザーが存在しなかったら404エラーを返す(): void
     {
         $response = $this->actingAs($this->user)->putJson(route('user.follow', self::USER_NUMBER + 1));
