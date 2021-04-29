@@ -31,7 +31,15 @@ class FollowUserApiTest extends TestCase
     {
         $response = $this->actingAs($this->user)->putJson(route('user.follow', $this->followId));
 
-        $response->assertStatus(200);
+        $response->assertStatus(200)
+            ->assertExactJson(['user_id' => $this->followId]);
+
+        $this->assertDatabaseHas('follows', [
+            'user_id' => $this->user->id,
+            'follow_id' => $this->followId,
+        ]);
+
+        $this->assertEquals(1, $this->user->follows()->count());
     }
 
     /**
@@ -41,7 +49,21 @@ class FollowUserApiTest extends TestCase
     {
         $response = $this->putJson(route('user.follow', $this->followId));
 
-        $response->assertStatus(401);
+        $response->assertStatus(401)->assertExactJson(['message' => 'Unauthenticated.']);
+
+        $this->assertEquals(0, $this->user->follows()->count());
+    }
+
+    /**
+     * @test
+     */
+    public function should_複数回ユーザーをフォローしてもDBに1つしかレコードが挿入されない(): void
+    {
+        $this->actingAs($this->user)->putJson(route('user.follow', $this->followId));
+        $this->actingAs($this->user)->putJson(route('user.follow', $this->followId));
+        $this->actingAs($this->user)->putJson(route('user.follow', $this->followId));
+
+        $this->assertEquals(1, $this->user->follows()->count());
     }
 
     /**
