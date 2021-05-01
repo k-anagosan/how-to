@@ -3,19 +3,19 @@
 namespace App\UseCase;
 
 use App\Domain\Post\Service\PostItemService;
-use App\Domain\User\Service\AuthorService;
+use App\Domain\User\Service\UserService;
 use App\Domain\ValueObject\Username;
 
 final class GetUserPageUseCase
 {
     private $postItemService;
 
-    private $authorService;
+    private $userService;
 
-    public function __construct(PostItemService $postItemService, AuthorService $authorService)
+    public function __construct(PostItemService $postItemService, UserService $userService)
     {
         $this->postItemService = $postItemService;
-        $this->authorService = $authorService;
+        $this->userService = $userService;
     }
 
     /**
@@ -24,15 +24,11 @@ final class GetUserPageUseCase
      */
     public function execute(Username $username)
     {
-        $userId = $this->authorService->getUserIdByUsername($username);
-
-        if ($userId === null) {
+        if (!$this->userService->existsUsername($username)) {
             return [];
         }
 
         $data = $this->postItemService->getArticleListByUsername($username);
-
-        $data['user_id'] = $userId->toInt();
 
         return $data;
     }
