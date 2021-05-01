@@ -16,7 +16,7 @@ Route::post('/login', 'App\Http\Controllers\Auth\LoginController@login')->name('
 Route::post('/logout', 'App\Http\Controllers\Auth\LoginController@logout')->name('logout');
 
 Route::get('/user', fn () => Auth::check() ? Auth::user() : [])->name('user');
-Route::get('/user/{name}', App\Http\Actions\GetUserPageAction::class)->name('user.show');
+Route::get('/user/{name}/articles', App\Http\Actions\GetUserPageAction::class)->name('user.show');
 
 Route::put('/user/{id}/follow', App\Http\Actions\FollowUserAction::class)->name('user.follow');
 Route::delete('/user/{id}/follow', App\Http\Actions\UnfollowUserAction::class)->name('user.unfollow');
