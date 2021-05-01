@@ -47,4 +47,15 @@ class UserService
     {
         return $this->userRepository->existsUsername($username);
     }
+
+    /**
+     * 引数のUsernameからUserAccountIdを返す.
+     *
+     * @param Username $username
+     * @return null|UserAccountId
+     */
+    public function getUserIdByUsername(Username $username)
+    {
+        return $this->userRepository->getUserIdByUsername($username);
+    }
 }
