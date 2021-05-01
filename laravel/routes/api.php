@@ -16,6 +16,7 @@ Route::post('/login', 'App\Http\Controllers\Auth\LoginController@login')->name('
 Route::post('/logout', 'App\Http\Controllers\Auth\LoginController@logout')->name('logout');
 
 Route::get('/user', fn () => Auth::check() ? Auth::user() : [])->name('user');
+Route::get('/user/{name}', App\Http\Actions\GetUserIdAction::class)->name('user.id');
 Route::get('/user/{name}/articles', App\Http\Actions\GetUserPageAction::class)->name('user.show');
 
 Route::put('/user/{id}/follow', App\Http\Actions\FollowUserAction::class)->name('user.follow');
