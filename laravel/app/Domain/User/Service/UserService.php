@@ -5,6 +5,7 @@ namespace App\Domain\User\Service;
 use App\Domain\User\Entity\LoginUserEntity;
 use App\Domain\User\Repository\UserRepositoryInterface as UserRepository;
 use App\Domain\ValueObject\UserAccountId;
+use App\Domain\ValueObject\Username;
 
 class UserService
 {
@@ -35,5 +36,26 @@ class UserService
     public function existsUser(UserAccountId $userId)
     {
         return $this->userRepository->exists($userId);
+    }
+
+    /**
+     * 引数のユーザーネームを持つユーザーが存在するか真偽値で返す.
+     * @param Username $username
+     * @return bool
+     */
+    public function existsUsername(Username $username)
+    {
+        return $this->userRepository->existsUsername($username);
+    }
+
+    /**
+     * 引数のUsernameからUserAccountIdを返す.
+     *
+     * @param Username $username
+     * @return null|UserAccountId
+     */
+    public function getUserIdByUsername(Username $username)
+    {
+        return $this->userRepository->getUserIdByUsername($username);
     }
 }

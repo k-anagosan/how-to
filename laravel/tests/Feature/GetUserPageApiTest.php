@@ -50,8 +50,7 @@ class GetUserPageApiTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonCount($this->perPage, 'data')
-            ->assertJsonFragment(['data' => $expect])
-            ->assertJsonFragment(['user_id' => $this->user->id]);
+            ->assertJsonFragment(['data' => $expect]);
     }
 
     /**
@@ -64,8 +63,7 @@ class GetUserPageApiTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonCount(0, 'data')
-            ->assertJsonFragment(['data' => []])
-            ->assertJsonFragment(['user_id' => $user->id]);
+            ->assertJsonFragment(['data' => []]);
     }
 
     /**
