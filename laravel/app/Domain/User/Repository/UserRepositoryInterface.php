@@ -34,6 +34,13 @@ interface UserRepositoryInterface
     public function exists(UserAccountId $userId);
 
     /**
+     * 引数のユーザーネームを持つユーザーが存在するか真偽値で返す.
+     * @param Username $username
+     * @return bool
+     */
+    public function existsUsername(Username $username);
+
+    /**
      * 引数の情報をもとにフォロー情報を挿入する.
      * @param UserAccountId $userId
      * @param UserAccountId $followId

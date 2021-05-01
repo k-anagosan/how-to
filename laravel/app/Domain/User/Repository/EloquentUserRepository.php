@@ -37,6 +37,11 @@ class EloquentUserRepository implements UserRepository
         return User::where('id', $userId->toInt())->exists();
     }
 
+    public function existsUsername(Username $username)
+    {
+        return User::where('name', $username->toString())->exists();
+    }
+
     public function putFollow(UserAccountId $userId, UserAccountId $followId)
     {
         $user = User::with(['follows'])->find($userId->toInt());
