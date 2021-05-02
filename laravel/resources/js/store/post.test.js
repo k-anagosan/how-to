@@ -41,7 +41,6 @@ describe("post.js actions", () => {
             ["postPhoto", "ファイル名が取得できるか", postFilename, CREATED],
             ["getArticle", "記事データが取得できるか", article, OK],
             ["getArticleList", "記事リストが取得できるか", articleList, OK],
-            ["getUserPage", "ユーザーページデータが取得できるか", articleList, OK],
             ["putLike", "いいねを付加できるか", postId, OK],
             ["deleteLike", "いいねを削除できるか", postId, OK],
         ])("%sにより正しく%s", async (action, _, data, status) => {
@@ -88,25 +87,20 @@ describe("post.js actions", () => {
             Test.clearSpysCalledTimes();
         });
 
-        describe.each([
-            ["postItem"],
-            ["postPhoto"],
-            ["getArticle"],
-            ["getArticleList"],
-            ["getUserPage"],
-            ["putLike"],
-            ["deleteLike"],
-        ])("%sアクションでリクエストに失敗", action => {
-            it("apiIsSuccessに正しく値が保存されるか", async done => {
-                await Test.testApiResult(`post/${action}`, false);
-                done();
-            });
+        describe.each([["postItem"], ["postPhoto"], ["getArticle"], ["getArticleList"], ["putLike"], ["deleteLike"]])(
+            "%sアクションでリクエストに失敗",
+            action => {
+                it("apiIsSuccessに正しく値が保存されるか", async done => {
+                    await Test.testApiResult(`post/${action}`, false);
+                    done();
+                });
 
-            it("errorストアのsetErrorCodeが呼び出されるか", async done => {
-                await setErrorCodeTest(action);
-                done();
-            });
-        });
+                it("errorストアのsetErrorCodeが呼び出されるか", async done => {
+                    await setErrorCodeTest(action);
+                    done();
+                });
+            }
+        );
     });
 
     describe("API request failed with status code 422", () => {
