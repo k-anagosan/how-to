@@ -12,6 +12,10 @@ import UserPage from "./pages/UserPage.vue";
 import Logout from "./pages/Logout.vue";
 import InternalServerError from "./pages/errors/InternalServerError.vue";
 import NotFound from "./pages/errors/NotFound.vue";
+import Articles from "./pages/userPage/Articles.vue";
+import Archives from "./pages/userPage/Archives.vue";
+import Followers from "./pages/userPage/Followers.vue";
+import Likes from "./pages/userPage/Likes.vue";
 
 import { INTERNAL_SERVER_ERROR } from "./utils";
 
@@ -89,6 +93,24 @@ const routes = [
                 name: route.params.name,
             };
         },
+        children: [
+            {
+                path: "",
+                component: Articles,
+            },
+            {
+                path: "archives",
+                component: Archives,
+            },
+            {
+                path: "followers",
+                component: Followers,
+            },
+            {
+                path: "likes",
+                component: Likes,
+            },
+        ],
     },
     {
         path: "/redirect",

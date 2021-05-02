@@ -1,6 +1,7 @@
 import Vue from "vue";
 import Vuex from "vuex";
 
+import userpage from "./userpage";
 import auth from "./auth";
 import error from "./error";
 import post from "./post";
@@ -12,5 +13,6 @@ export default new Vuex.Store({
         auth,
         error,
         post,
+        userpage,
     },
 });
