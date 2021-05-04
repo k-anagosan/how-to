@@ -5,6 +5,7 @@ namespace App\Domain\Post\Service;
 use App\Domain\Post\Entity\PostItemEntity;
 use App\Domain\Post\Repository\PostRepositoryInterface as PostRepository;
 use App\Domain\ValueObject\PostId;
+use App\Domain\ValueObject\UserAccountId;
 use App\Domain\ValueObject\Username;
 use Illuminate\Support\Facades\DB;
 
@@ -79,5 +80,14 @@ class PostItemService
     public function getArticleListByUsername(Username $username): array
     {
         return $this->postRepository->retrieveByUsername($username);
+    }
+
+    /**
+     * ユーザーがいいねした記事一覧データを取得する.
+     * @param UserAccountId $userId
+     */
+    public function getLikedArticleList(UserAccountId $userId): array
+    {
+        return $this->postRepository->retrieveLikedArticles($userId);
     }
 }
