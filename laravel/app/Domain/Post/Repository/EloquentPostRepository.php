@@ -118,6 +118,25 @@ class EloquentPostRepository implements PostRepository
         return $posts;
     }
 
+    public function retrieveLikedArticles(UserAccountId $userId)
+    {
+        $posts = null;
+
+        try {
+            $posts = Post::with(['author', 'tags', 'likes'])
+                ->whereHas('likes', function ($query) use ($userId): void {
+                    $query->where('user_id', $userId->toInt());
+                })
+                ->orderBy(Post::CREATED_AT, 'desc')
+                ->paginate(10)
+                ->toArray();
+        } catch (\Exception $e) {
+            throw $e;
+        }
+
+        return $posts;
+    }
+
     public function addTags(PostId $postId, PostTags $tags): void
     {
         DB::beginTransaction();
