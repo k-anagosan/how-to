@@ -55,6 +55,13 @@ interface PostRepositoryInterface
      */
     public function retrieveByUsername(Username $username);
 
+    /**
+     * ユーザーがいいねした記事一覧を取得.
+     * @param UserAccountId $userId
+     * @return array
+     */
+    public function retrieveLikedArticles(UserAccountId $userId);
+
     /*
     * 引数の情報をTagストアに保存.
     *
