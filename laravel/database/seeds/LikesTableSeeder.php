@@ -13,16 +13,19 @@ class LikesTableSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = factory(User::class)->create();
-        $tagNames = factory(TagName::class, 3)->create();
-        $posts = factory(Post::class, 30)->create(['user_id' => $user->id])->each(function ($post) use ($tagNames): void {
-            $tagNames->each(function ($tagName) use ($post): void {
-                factory(Tag::class)->create(['post_id' => $post->id, 'tag_name_id' => $tagName->id]);
+        for ($i = 0; $i < 5; $i++) {
+            $user = factory(User::class)->create();
+            $tagNames = factory(TagName::class, 1)->create();
+            $posts = factory(Post::class, 10)->create(['user_id' => $user->id])->each(function ($post) use ($tagNames): void {
+                $tagNames->each(function ($tagName) use ($post): void {
+                    factory(Tag::class)->create(['post_id' => $post->id, 'tag_name_id' => $tagName->id]);
+                });
             });
-        });
 
-        $posts->map(function ($post) use ($user): void {
-            $post->likes()->attach($user->id);
-        });
+            $user = factory(User::class)->create();
+            $posts->map(function ($post) use ($user): void {
+                $post->likes()->attach($user->id);
+            });
+        }
     }
 }
