@@ -42,6 +42,10 @@
 import { mapGetters } from "vuex";
 
 export default {
+  beforeRouteLeave(to, from, next) {
+    this.clearUserPage();
+    next();
+  },
   props: {
     name: {
       type: String,
@@ -67,7 +71,7 @@ export default {
     $route: {
       async handler() {
         this.loading = true;
-        await this.fetchUserId();
+        if (!this.userId) await this.fetchUserId();
         this.loading = false;
       },
       immediate: true,
@@ -76,6 +80,12 @@ export default {
   methods: {
     async fetchUserId() {
       this.userId = await this.$store.dispatch("userpage/getUserId", this.name);
+    },
+    clearUserPage() {
+      this.$store.commit("userpage/setArticles", null, { root: true });
+      this.$store.commit("userpage/setArchives", null, { root: true });
+      this.$store.commit("userpage/setLikes", null, { root: true });
+      this.$store.commit("userpage/setFollowers", null, { root: true });
     },
   },
 };

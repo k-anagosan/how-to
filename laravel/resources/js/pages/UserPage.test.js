@@ -26,7 +26,8 @@ jest.mock("@/pages/userPage/Likes.vue", () => ({
 
 const Test = new TestUtils();
 const spyFetchUserId = jest.spyOn(UserPage.methods, "fetchUserId");
-Test.setSpys({ spyFetchUserId });
+const spyClearUserPage = jest.spyOn(UserPage.methods, "clearUserPage");
+Test.setSpys({ spyFetchUserId, spyClearUserPage });
 
 const author = randomStr();
 const user_id = 1;
@@ -49,6 +50,26 @@ beforeEach(() => {
     };
     userpage = {
         namespaced: true,
+        state: {
+            articles: {},
+            archives: {},
+            likes: {},
+            followers: {},
+        },
+        mutations: {
+            setArticles: jest.fn().mockImplementation((state, articles) => {
+                state.articles = articles;
+            }),
+            setArchives: jest.fn().mockImplementation((state, archives) => {
+                state.archives = archives;
+            }),
+            setLikes: jest.fn().mockImplementation((state, likes) => {
+                state.likes = likes;
+            }),
+            setFollowers: jest.fn().mockImplementation((state, followers) => {
+                state.followers = followers;
+            }),
+        },
         actions: { getUserId: jest.fn().mockImplementation(() => user_id) },
     };
 
@@ -93,6 +114,14 @@ describe("表示関連", () => {
 
     it("ユーザーネームが表示される", () => {
         expect(wrapper.find("#username").text()).toBe(`@${author}`);
+    });
+});
+
+describe("メソッド関連", () => {
+    it("dataにuserIdがあればfetchUserId()が実行されない", async () => {
+        Test.clearSpysCalledTimes();
+        await wrapper.vm.$router.push("/user/xxx");
+        expect(spyFetchUserId).not.toHaveBeenCalled();
     });
 });
 
@@ -157,6 +186,7 @@ describe("Vue Router関連", () => {
 describe("Vuex関連", () => {
     it("ページアクセスしたらgetUserIdアクションが実行される", async done => {
         Test.clearSpysCalledTimes();
+        wrapper.setData({ userId: null });
         await wrapper.vm.$router.push(`/user/${randomStr(20)}`);
         expect(userpage.actions.getUserId).toHaveBeenCalled();
         done();
@@ -164,5 +194,15 @@ describe("Vuex関連", () => {
 
     it("usernameを正しく算出している", () => {
         expect(Test.computedValue("username", { $store: wrapper.vm.$store })).toBe(auth.state.user.name);
+    });
+
+    it("clearUserPage()を実行したらuserpageのstateが初期化される", () => {
+        wrapper.vm.clearUserPage();
+        Object.keys(userpage.mutations).forEach(key => {
+            expect(userpage.mutations[key]).toHaveBeenCalled();
+        });
+        Object.keys(wrapper.vm.$store.state.userpage).forEach(key => {
+            expect(wrapper.vm.$store.state.userpage[key]).toBe(null);
+        });
     });
 });
