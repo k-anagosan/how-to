@@ -21,13 +21,48 @@ class GetUserPageDataApiTest extends TestCase
     /**
      * @test
      */
-    public function should_ユーザーネームからユーザーIDを返す(): void
+    public function should_ユーザーネームからユーザーページに必要な情報を返す(): void
     {
         $response = $this->getJson(route('user.data', $this->user->name));
 
         $expected = [
-            'id' => $this->user['id'],
+            'id' => $this->user->id,
             'followed_by_me' => false,
+        ];
+
+        $response->assertStatus(200)->assertJson($expected);
+    }
+
+    /**
+     * @test
+     */
+    public function should_未フォローユーザーのユーザーページ表示に必要な情報を返す(): void
+    {
+        $user = factory(User::class)->create();
+
+        $response = $this->actingAs($user)->getJson(route('user.data', $this->user->name));
+
+        $expected = [
+            'id' => $this->user->id,
+            'followed_by_me' => false,
+        ];
+
+        $response->assertStatus(200)->assertJson($expected);
+    }
+
+    /**
+     * @test
+     */
+    public function should_フォロー済みユーザーのユーザーページ表示に必要な情報を返す(): void
+    {
+        $user = factory(User::class)->create();
+        $user->follows()->attach($this->user->id);
+
+        $response = $this->actingAs($user)->getJson(route('user.data', $this->user->name));
+
+        $expected = [
+            'id' => $this->user->id,
+            'followed_by_me' => true,
         ];
 
         $response->assertStatus(200)->assertJson($expected);
