@@ -14,6 +14,9 @@
             </figure>
             <h2 id="username" class="text-center text-xl text-gray-600">@{{ name }}</h2>
           </div>
+          <div v-if="!loginUser || loginUser.name !== name" class="flex items-center justify-center">
+            <FollowButton class="py-1 px-2 w-40" :is-following="followed_by_me" @follow="onFollow" />
+          </div>
           <ul class="px-4 pb-4 grid gap-y-1 grid-cols-1">
             <li class="articles text-xl">
               <RouterLink :to="`/user/${name}`" class="flex items-center"
@@ -46,11 +49,13 @@
 </template>
 
 <script>
+import FollowButton from "../components/FollowButton.vue";
 import Spinner from "../components/Spinner.vue";
 import { mapState } from "vuex";
 
 export default {
   components: {
+    FollowButton,
     Spinner,
   },
   beforeRouteLeave(to, from, next) {
@@ -78,6 +83,7 @@ export default {
   computed: {
     ...mapState({
       loginUser: state => state.auth.user,
+      apiIsSuccess: state => state.auth.apiIsSuccess,
     }),
   },
   watch: {
@@ -103,6 +109,12 @@ export default {
       this.$store.commit("userpage/setArchives", null, { root: true });
       this.$store.commit("userpage/setLikes", null, { root: true });
       this.$store.commit("userpage/setFollowers", null, { root: true });
+    },
+    async onFollow(e) {
+      await this.$store.dispatch(e.isFollowing ? "auth/putFollow" : "auth/deleteFollow", this.userId);
+      if (this.apiIsSuccess) {
+        this.followed_by_me = e.isFollowing;
+      }
     },
   },
 };
