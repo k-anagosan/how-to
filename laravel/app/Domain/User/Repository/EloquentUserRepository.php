@@ -32,6 +32,15 @@ class EloquentUserRepository implements UserRepository
         return UserAccountId::create($user->first()->id);
     }
 
+    public function getFollowedByMe(UserAccountId $userId)
+    {
+        $user = User::with(['follows'])->find($userId->toInt());
+
+        return $user->makeVisible(['id', 'followed_by_me'])
+            ->makeHidden('name')
+            ->toArray();
+    }
+
     public function exists(UserAccountId $userId)
     {
         return User::where('id', $userId->toInt())->exists();

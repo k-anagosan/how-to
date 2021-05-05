@@ -4,11 +4,14 @@ namespace App\Http\Responders;
 
 use Illuminate\Http\JsonResponse;
 
-class GetUserPageResponder
+class GetUserPageDataResponder
 {
-    public function response(array $data): JsonResponse
+    /**
+     * @param null|array $data
+     */
+    public function response($data): JsonResponse
     {
-        if (count($data) === 0) {
+        if ($data === null) {
             abort(404);
         }
         return response()->json($data, JsonResponse::HTTP_OK);

@@ -22,7 +22,7 @@ afterEach(() => {
 
 describe("userpage.js actions", () => {
     describe("API request succeded", () => {
-        const userId = { user_id: Math.floor(Math.random() * 100) };
+        const pageData = { user_id: Math.floor(Math.random() * 100), followed_by_me: false };
         const article = {
             id: randomStr(20),
             title: randomStr(30),
@@ -35,7 +35,7 @@ describe("userpage.js actions", () => {
         };
 
         it.each([
-            ["getUserId", "IDが取得できるか", userId, OK],
+            ["getUserPageData", "ユーザーページの左カラム表示に必要な情報が取得できるか", pageData, OK],
             ["getArticles", "ユーザーページのArticles表示に必要な情報を取得できるか", articleList, OK],
         ])("%sにより正しく%s", async (action, _, data, status) => {
             const get = () => ({ data, status });
@@ -45,7 +45,7 @@ describe("userpage.js actions", () => {
             if (action === "getArticles") {
                 await Test.testStateWithAction(`userpage/${action}`, "articles", data);
             } else {
-                await Test.testApiResponse(`userpage/${action}`, data.user_id);
+                await Test.testApiResponse(`userpage/${action}`, data);
             }
         });
     });
@@ -70,7 +70,7 @@ describe("userpage.js actions", () => {
             Test.clearSpysCalledTimes();
         });
 
-        describe.each([["getUserId"], ["getArticles"]])("%sアクションでリクエストに失敗", action => {
+        describe.each([["getUserPageData"], ["getArticles"]])("%sアクションでリクエストに失敗", action => {
             it("apiIsSuccessに正しく値が保存されるか", async done => {
                 await Test.testApiResult(`userpage/${action}`, false);
                 done();

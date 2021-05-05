@@ -4,13 +4,13 @@ namespace App\Http\Actions;
 
 use App\Domain\ValueObject\Username;
 use App\Http\Controllers\Controller;
-use App\Http\Responders\GetUserPageResponder;
-use App\UseCase\GetUserPageUseCase;
+use App\Http\Responders\GetUserArticleListResponder;
+use App\UseCase\GetUserArticleListUseCase;
 use Illuminate\Http\JsonResponse;
 
-class GetUserPageAction extends Controller
+class GetUserArticleListAction extends Controller
 {
-    public function __construct(GetUserPageUseCase $useCase, GetUserPageResponder $responder)
+    public function __construct(GetUserArticleListUseCase $useCase, GetUserArticleListResponder $responder)
     {
         $this->useCase = $useCase;
         $this->responder = $responder;

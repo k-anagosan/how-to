@@ -27,14 +27,14 @@ const mutations = {
 };
 
 const actions = {
-    async getUserId(context, name) {
+    async getUserPageData(context, name) {
         context.commit("setApiIsSuccess", null);
 
         const response = await window.axios.get(`/api/user/${name}`);
 
         if (response.status === OK) {
             context.commit("setApiIsSuccess", true);
-            return response.data.user_id;
+            return response.data;
         }
 
         context.commit("error/setErrorCode", response.status, { root: true });

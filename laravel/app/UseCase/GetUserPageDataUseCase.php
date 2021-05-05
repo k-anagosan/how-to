@@ -5,7 +5,7 @@ namespace App\UseCase;
 use App\Domain\User\Service\UserService;
 use App\Domain\ValueObject\Username;
 
-final class GetUserIdUseCase
+final class GetUserPageDataUseCase
 {
     private $userService;
 
@@ -16,6 +16,12 @@ final class GetUserIdUseCase
 
     public function execute(Username $username)
     {
-        return $this->userService->getUserIdByUsername($username);
+        $id = $this->userService->getUserIdByUsername($username);
+
+        if ($id === null) {
+            return;
+        }
+
+        return $this->userService->getFollowedByMe($id);
     }
 }

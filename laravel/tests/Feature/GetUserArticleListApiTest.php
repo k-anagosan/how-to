@@ -10,7 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-class GetUserPageApiTest extends TestCase
+class GetUserArticleListApiTest extends TestCase
 {
     use RefreshDatabase;
 
