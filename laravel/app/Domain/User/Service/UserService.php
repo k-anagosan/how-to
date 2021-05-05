@@ -58,4 +58,15 @@ class UserService
     {
         return $this->userRepository->getUserIdByUsername($username);
     }
+
+    /**
+     * 引数のユーザーIDのユーザーがログインユーザーにフォローされているかを返す.
+     *
+     * @param UserAccountId $userId
+     * @return array
+     */
+    public function getFollowedByMe(UserAccountId $userId)
+    {
+        return $this->userRepository->getFollowedByMe($userId);
+    }
 }
