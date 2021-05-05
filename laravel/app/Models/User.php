@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Domain\User\Repository\UserRepositoryInterface as UserRepository;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -17,6 +18,8 @@ class User extends Authenticatable
     protected $fillable = [
         'name', 'email', 'password',
     ];
+
+    protected $appends = ['followed_by_me'];
 
     /**
      * The attributes that should be hidden for arrays.
@@ -54,5 +57,18 @@ class User extends Authenticatable
     public function followers()
     {
         return $this->belongsToMany(self::class, 'follows', 'follow_id', 'user_id')->withTimestamps();
+    }
+
+    public function getFollowedByMeAttribute()
+    {
+        $userRepository = resolve(UserRepository::class);
+
+        if ($userRepository->isGuest()) {
+            return false;
+        }
+
+        return $this->followers->contains(
+            fn ($user) => $user->id === $userRepository->getLoginUserId()->toInt()
+        );
     }
 }
