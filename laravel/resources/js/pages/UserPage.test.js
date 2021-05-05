@@ -25,13 +25,14 @@ jest.mock("@/pages/userPage/Likes.vue", () => ({
 }));
 
 const Test = new TestUtils();
-const spyFetchUserId = jest.spyOn(UserPage.methods, "fetchUserId");
+const spyFetchUserPageData = jest.spyOn(UserPage.methods, "fetchUserPageData");
 const spyClearUserPage = jest.spyOn(UserPage.methods, "clearUserPage");
-Test.setSpys({ spyFetchUserId, spyClearUserPage });
+Test.setSpys({ spyFetchUserPageData, spyClearUserPage });
 
 const author = randomStr();
 const user_id = 1;
 const current_page = 1;
+const followed_by_me = false;
 
 let [auth, userpage] = [null, null];
 let wrapper = null;
@@ -70,10 +71,10 @@ beforeEach(() => {
                 state.followers = followers;
             }),
         },
-        actions: { getUserId: jest.fn().mockImplementation(() => user_id) },
+        actions: { getUserPageData: jest.fn().mockImplementation(() => ({ id: user_id, followed_by_me })) },
     };
 
-    Test.setSpys({ getUserId: userpage.actions.getUserId });
+    Test.setSpys({ getUserPageData: userpage.actions.getUserPageData });
 
     Test.setVueRouter();
     Test.setVuex({ auth, userpage });
@@ -86,8 +87,8 @@ beforeEach(() => {
     Test.checkSpysHaveNotBeenCalled();
     Test.setMountOption(UserPage, options);
     wrapper = Test.shallowWrapperFactory();
-    expect(spyFetchUserId).toHaveBeenCalled();
-    expect(userpage.actions.getUserId).toHaveBeenCalled();
+    expect(spyFetchUserPageData).toHaveBeenCalled();
+    expect(userpage.actions.getUserPageData).toHaveBeenCalled();
 });
 afterEach(() => {
     Test.clearSpysCalledTimes();
@@ -102,18 +103,35 @@ describe("表示関連", () => {
     it.each([
         [true, "させる"],
         [false, "させない"],
-    ])("name === usernameが%sなら.archivesを表示%s", match => {
-        if (!match) {
+    ])("loginUser.name === nameが%sなら.archivesを表示%s", isShown => {
+        if (!isShown) {
             auth.state.user.name = randomStr();
             Test.setVuex({ auth, userpage });
             wrapper = Test.shallowWrapperFactory();
         }
 
-        expect(wrapper.find(".archives").exists()).toBe(match);
+        expect(wrapper.find(".archives").exists()).toBe(isShown);
+    });
+
+    it("loginUserがnullなら.archivesが表示されない", () => {
+        auth.state.user = null;
+        Test.setVuex({ auth, userpage });
+        wrapper = Test.shallowWrapperFactory();
+
+        expect(wrapper.find(".archives").exists()).toBe(false);
     });
 
     it("ユーザーネームが表示される", () => {
         expect(wrapper.find("#username").text()).toBe(`@${author}`);
+    });
+
+    it.each([
+        [true, "される"],
+        [false, "されない"],
+    ])("loadingが%sのときはSpinnerが表示%s", async isShown => {
+        await wrapper.setData({ loading: isShown });
+        expect(wrapper.find("spinner-stub").exists()).toBe(isShown);
+        expect(wrapper.find("#userpage").exists()).toBe(!isShown);
     });
 });
 
@@ -121,7 +139,7 @@ describe("メソッド関連", () => {
     it("dataにuserIdがあればfetchUserId()が実行されない", async () => {
         Test.clearSpysCalledTimes();
         await wrapper.vm.$router.push("/user/xxx");
-        expect(spyFetchUserId).not.toHaveBeenCalled();
+        expect(spyFetchUserPageData).not.toHaveBeenCalled();
     });
 });
 
@@ -184,16 +202,16 @@ describe("Vue Router関連", () => {
 });
 
 describe("Vuex関連", () => {
-    it("ページアクセスしたらgetUserIdアクションが実行される", async done => {
+    it("ページアクセスしたらgetUserPageDataアクションが実行される", async done => {
         Test.clearSpysCalledTimes();
         wrapper.setData({ userId: null });
         await wrapper.vm.$router.push(`/user/${randomStr(20)}`);
-        expect(userpage.actions.getUserId).toHaveBeenCalled();
+        expect(userpage.actions.getUserPageData).toHaveBeenCalled();
         done();
     });
 
     it("usernameを正しく算出している", () => {
-        expect(Test.computedValue("username", { $store: wrapper.vm.$store })).toBe(auth.state.user.name);
+        expect(Test.computedValue("loginUser", { $store: wrapper.vm.$store })).toBe(auth.state.user);
     });
 
     it("clearUserPage()を実行したらuserpageのstateが初期化される", () => {
