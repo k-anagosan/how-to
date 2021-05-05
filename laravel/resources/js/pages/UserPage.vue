@@ -1,19 +1,26 @@
 <template>
   <div>
-    <div id="userpage" class="container mx-auto flex lg:flex-row flex-col lg:px-32 sm:p-8 pagetop-offset">
+    <Spinner v-if="loading" class="pagetop-offset" />
+    <div
+      v-if="!loading"
+      id="userpage"
+      class="container mx-auto flex lg:flex-row flex-col lg:px-32 sm:p-8 pagetop-offset"
+    >
       <aside class="lg:m-0 mb-4 xl:w-1/4 lg:w-1/3 w-full">
-        <div class="bg-white p-4 shadow-md">
-          <figure class="flex justify-center items-center h-24">
-            <div class="h-20 w-20 bg-black rounded-full"></div>
-          </figure>
-          <h2 id="username" class="text-center text-xl text-gray-600">@{{ name }}</h2>
-          <ul class="mt-4 p-4 grid gap-y-2 grid-cols-1">
+        <div class="grid gap-y-4 bg-white p-4 shadow-md">
+          <div>
+            <figure class="flex justify-center items-center h-24">
+              <div class="h-20 w-20 bg-black rounded-full"></div>
+            </figure>
+            <h2 id="username" class="text-center text-xl text-gray-600">@{{ name }}</h2>
+          </div>
+          <ul class="px-4 pb-4 grid gap-y-1 grid-cols-1">
             <li class="articles text-xl">
               <RouterLink :to="`/user/${name}`" class="flex items-center"
                 ><ion-icon name="document-text-outline" class="mr-2"></ion-icon>Articles</RouterLink
               >
             </li>
-            <li v-if="username === name" class="archives text-xl">
+            <li v-if="loginUser && loginUser.name === name" class="archives text-xl">
               <RouterLink :to="`/user/${name}/archives`" class="flex items-center"
                 ><ion-icon name="archive-outline" class="mr-2"></ion-icon>Archives</RouterLink
               >
@@ -39,9 +46,13 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import Spinner from "../components/Spinner.vue";
+import { mapState } from "vuex";
 
 export default {
+  components: {
+    Spinner,
+  },
   beforeRouteLeave(to, from, next) {
     this.clearUserPage();
     next();
@@ -60,26 +71,32 @@ export default {
   data() {
     return {
       userId: null,
+      followed_by_me: false,
+      loading: false,
     };
   },
   computed: {
-    ...mapGetters({
-      username: "auth/username",
+    ...mapState({
+      loginUser: state => state.auth.user,
     }),
   },
   watch: {
     $route: {
       async handler() {
+        if (this.userId) return;
         this.loading = true;
-        if (!this.userId) await this.fetchUserId();
+        await this.fetchUserPageData();
         this.loading = false;
       },
       immediate: true,
     },
   },
   methods: {
-    async fetchUserId() {
-      this.userId = await this.$store.dispatch("userpage/getUserId", this.name);
+    async fetchUserPageData() {
+      const user = await this.$store.dispatch("userpage/getUserPageData", this.name);
+      if (!user) return;
+      this.userId = user.id;
+      this.followed_by_me = user.followed_by_me;
     },
     clearUserPage() {
       this.$store.commit("userpage/setArticles", null, { root: true });
