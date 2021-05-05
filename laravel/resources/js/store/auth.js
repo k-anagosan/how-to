@@ -124,6 +124,34 @@ const actions = {
         context.commit("error/setErrorCode", response.status, { root: true });
         context.commit("setApiIsSuccess", false);
     },
+
+    async putFollow(context, id) {
+        context.commit("setApiIsSuccess", null);
+
+        const response = await window.axios.put(`/api/user/${id}/follow`);
+
+        if (response.status === OK) {
+            context.commit("setApiIsSuccess", true);
+            return;
+        }
+
+        context.commit("error/setErrorCode", response.status, { root: true });
+        context.commit("setApiIsSuccess", false);
+    },
+
+    async deleteFollow(context, id) {
+        context.commit("setApiIsSuccess", null);
+
+        const response = await window.axios.delete(`/api/user/${id}/follow`);
+
+        if (response.status === OK) {
+            context.commit("setApiIsSuccess", true);
+            return;
+        }
+
+        context.commit("error/setErrorCode", response.status, { root: true });
+        context.commit("setApiIsSuccess", false);
+    },
 };
 
 export default {
