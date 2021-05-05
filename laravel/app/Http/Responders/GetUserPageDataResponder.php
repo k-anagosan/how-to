@@ -5,7 +5,7 @@ namespace App\Http\Responders;
 use App\Domain\ValueObject\UserAccountId;
 use Illuminate\Http\JsonResponse;
 
-class GetUserIdResponder
+class GetUserPageDataResponder
 {
     /**
      * @param null|UserAccountId $userId

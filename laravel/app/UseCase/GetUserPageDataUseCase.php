@@ -5,7 +5,7 @@ namespace App\UseCase;
 use App\Domain\User\Service\UserService;
 use App\Domain\ValueObject\Username;
 
-final class GetUserIdUseCase
+final class GetUserPageDataUseCase
 {
     private $userService;
 

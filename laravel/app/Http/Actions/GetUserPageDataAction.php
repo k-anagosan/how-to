@@ -4,17 +4,17 @@ namespace App\Http\Actions;
 
 use App\Domain\ValueObject\Username;
 use App\Http\Controllers\Controller;
-use App\Http\Responders\GetUserIdResponder;
-use App\UseCase\GetUserIdUseCase;
+use App\Http\Responders\GetUserPageDataResponder;
+use App\UseCase\GetUserPageDataUseCase;
 use Illuminate\Http\JsonResponse;
 
-class GetUserIdAction extends Controller
+class GetUserPageDataAction extends Controller
 {
     private $useCase;
 
     private $responder;
 
-    public function __construct(GetUserIdUseCase $useCase, GetUserIdResponder $responder)
+    public function __construct(GetUserPageDataUseCase $useCase, GetUserPageDataResponder $responder)
     {
         $this->useCase = $useCase;
         $this->responder = $responder;

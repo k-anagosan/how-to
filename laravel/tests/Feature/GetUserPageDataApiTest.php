@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-class GetUserIdApiTest extends TestCase
+class GetUserPageDataApiTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -23,10 +23,11 @@ class GetUserIdApiTest extends TestCase
      */
     public function should_ユーザーネームからユーザーIDを返す(): void
     {
-        $response = $this->getJson(route('user.id', $this->user->name));
+        $response = $this->getJson(route('user.data', $this->user->name));
 
         $expected = [
-            'user_id' => $this->user['id'],
+            'id' => $this->user['id'],
+            'followed_by_me' => false,
         ];
 
         $response->assertStatus(200)->assertJson($expected);
@@ -37,7 +38,7 @@ class GetUserIdApiTest extends TestCase
      */
     public function should_ユーザーネームがなければ404エラーを返す(): void
     {
-        $response = $this->getJson(route('user.id', Str::random()));
+        $response = $this->getJson(route('user.data', Str::random()));
 
         $response->assertStatus(404);
     }
