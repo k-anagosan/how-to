@@ -21,11 +21,11 @@ class FollowUserAction extends Controller
         $this->middleware('auth');
     }
 
-    public function __invoke(int $id): JsonResponse
+    public function __invoke(string $id): JsonResponse
     {
         return $this->responder->response(
             $this->useCase->execute(
-                UserAccountId::create($id)
+                UserAccountId::create((int) $id)
             )
         );
     }
