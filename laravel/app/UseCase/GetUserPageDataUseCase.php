@@ -16,6 +16,12 @@ final class GetUserPageDataUseCase
 
     public function execute(Username $username)
     {
-        return $this->userService->getUserIdByUsername($username);
+        $id = $this->userService->getUserIdByUsername($username);
+
+        if ($id === null) {
+            return;
+        }
+
+        return $this->userService->getFollowedByMe($id);
     }
 }

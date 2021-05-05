@@ -2,19 +2,18 @@
 
 namespace App\Http\Responders;
 
-use App\Domain\ValueObject\UserAccountId;
 use Illuminate\Http\JsonResponse;
 
 class GetUserPageDataResponder
 {
     /**
-     * @param null|UserAccountId $userId
+     * @param null|array $data
      */
-    public function response($userId): JsonResponse
+    public function response($data): JsonResponse
     {
-        if ($userId === null) {
+        if ($data === null) {
             abort(404);
         }
-        return response()->json(['user_id' => $userId->toInt(), JsonResponse::HTTP_OK]);
+        return response()->json($data, JsonResponse::HTTP_OK);
     }
 }
