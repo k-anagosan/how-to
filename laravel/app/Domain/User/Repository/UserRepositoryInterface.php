@@ -27,6 +27,14 @@ interface UserRepositoryInterface
     public function getUserIdByUsername(Username $username);
 
     /**
+     * 引数のユーザーIDのユーザーがログインユーザーにフォローされているかを返す.
+     *
+     * @param UserAccountId $userId
+     * @return array
+     */
+    public function getFollowedByMe(UserAccountId $userId);
+
+    /**
      * 引数のユーザーIDを持つユーザーが存在するか真偽値で返す.
      * @param UserAccountId $userId
      * @return bool
