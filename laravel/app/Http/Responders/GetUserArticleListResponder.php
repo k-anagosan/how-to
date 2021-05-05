@@ -4,7 +4,7 @@ namespace App\Http\Responders;
 
 use Illuminate\Http\JsonResponse;
 
-class GetUserPageResponder
+class GetUserArticleListResponder
 {
     public function response(array $data): JsonResponse
     {

@@ -6,7 +6,7 @@ use App\Domain\Post\Service\PostItemService;
 use App\Domain\User\Service\UserService;
 use App\Domain\ValueObject\Username;
 
-final class GetUserPageUseCase
+final class GetUserArticleListUseCase
 {
     private $postItemService;
 
