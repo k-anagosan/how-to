@@ -19,6 +19,7 @@ Route::get('/user', fn () => Auth::check() ? Auth::user() : [])->name('user');
 Route::get('/user/{name}', App\Http\Actions\GetUserPageDataAction::class)->name('user.data');
 Route::get('/user/{name}/articles', App\Http\Actions\GetUserArticleListAction::class)->name('user.show');
 Route::get('/user/{name}/likes', App\Http\Actions\GetLikedArticleListAction::class)->name('user.likes');
+Route::get('/user/{name}/followers', App\Http\Actions\GetFollowerListAction::class)->name('user.followers');
 
 Route::put('/user/{id}/follow', App\Http\Actions\FollowUserAction::class)->name('user.follow');
 Route::delete('/user/{id}/follow', App\Http\Actions\UnfollowUserAction::class)->name('user.unfollow');
