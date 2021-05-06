@@ -69,4 +69,15 @@ class UserService
     {
         return $this->userRepository->getFollowedByMe($userId);
     }
+
+    /**
+     * 引数のユーザーIDのユーザーをフォローしているユーザー一覧を返す.
+     *
+     * @param UserAccountId $userId
+     * @return array
+     */
+    public function getFollowers(UserAccountId $userId)
+    {
+        return $this->userRepository->getFollowers($userId);
+    }
 }
