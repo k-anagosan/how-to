@@ -256,14 +256,20 @@ describe("Vue Router関連", () => {
     });
 
     describe.each([
-        ["/user/xxxにアクセスしたらArticlesが表示される", "/", Articles],
-        ["/user/xxx/archivesにアクセスしたらArchivesが表示される", "/archives", Archives],
-        ["/user/xxx/likesにアクセスしたらLikesが表示される", "/likes", Likes],
-        ["/user/xxx/followersにアクセスしたらFollowersが表示される", "/followers", Followers],
-    ])("/user/xxx アクセス結果", (describe, path, Component) => {
-        it(`${describe}`, async () => {
+        ["/user/xxx", "Articles", "/", Articles],
+        ["/user/xxx/archives", "Archives", "/archives", Archives],
+        ["/user/xxx/likes", "Likes", "/likes", Likes],
+        ["/user/xxx/followers", "Followers", "/followers", Followers],
+    ])("/user/xxx アクセス結果", (fullPath, ComponentName, path, Component) => {
+        it(`${fullPath}にアクセスしたら${ComponentName}が表示される`, async () => {
             if (path === "/archives") wrapper.vm.$store.commit("auth/setUser", author);
             await Test.testRoutingWithComponent("/", `/user/${author}${path}`, Component);
+        });
+
+        it(`${fullPath}にアクセスしたらリンクにactiveクラスが付加される`, async () => {
+            if (path === "/archives") wrapper.vm.$store.commit("auth/setUser", { name: author });
+            await wrapper.vm.$router.push(`/user/${author}${path}`);
+            expect(wrapper.find(`.${ComponentName.toLowerCase()} .active`).exists()).toBe(true);
         });
     });
 });
