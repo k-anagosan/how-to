@@ -104,7 +104,7 @@ class EloquentUserRepository implements UserRepository
                 ->followers()
                 ->paginate(20);
 
-            $followers = $followers->setCollection($followers->getCollection()->makeVisible('followed_by_me'));
+            $followers = $followers->setCollection($followers->getCollection()->makeVisible(['followed_by_me', 'id']));
         } catch (\Exception $e) {
             throw $e;
         }
