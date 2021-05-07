@@ -38,7 +38,7 @@ class GetFollowerListApiTest extends TestCase
             ->followers()
             ->limit($this->perPage)
             ->get()
-            ->makeVisible('followed_by_me')
+            ->makeVisible(['followed_by_me', 'id'])
             ->toArray();
 
         $response->assertStatus(200)
@@ -58,7 +58,7 @@ class GetFollowerListApiTest extends TestCase
             ->followers()
             ->limit($this->perPage)
             ->get()
-            ->makeVisible('followed_by_me')
+            ->makeVisible(['followed_by_me', 'id'])
             ->toArray();
 
         $response->assertStatus(200)
