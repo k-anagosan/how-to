@@ -19,22 +19,34 @@
           </div>
           <ul class="px-4 pb-4 grid gap-y-1 grid-cols-1">
             <li class="articles text-xl">
-              <RouterLink :to="`/user/${name}`" class="flex items-center"
+              <RouterLink
+                :to="`/user/${name}`"
+                class="flex items-center px-4 py-2 text-gray-500"
+                exact-active-class="active"
                 ><ion-icon name="document-text-outline" class="mr-2"></ion-icon>Articles</RouterLink
               >
             </li>
             <li v-if="loginUser && loginUser.name === name" class="archives text-xl">
-              <RouterLink :to="`/user/${name}/archives`" class="flex items-center"
+              <RouterLink
+                :to="`/user/${name}/archives`"
+                class="flex items-center px-4 py-2 text-gray-500"
+                exact-active-class="active"
                 ><ion-icon name="archive-outline" class="mr-2"></ion-icon>Archives</RouterLink
               >
             </li>
             <li class="likes text-xl">
-              <RouterLink :to="`/user/${name}/likes`" class="flex items-center"
+              <RouterLink
+                :to="`/user/${name}/likes`"
+                class="flex items-center px-4 py-2 text-gray-500"
+                exact-active-class="active"
                 ><ion-icon name="thumbs-up-outline" class="mr-2"></ion-icon>Likes</RouterLink
               >
             </li>
             <li class="followers text-xl">
-              <RouterLink :to="`/user/${name}/followers`" class="flex items-center"
+              <RouterLink
+                :to="`/user/${name}/followers`"
+                class="flex items-center px-4 py-2 text-gray-500"
+                exact-active-class="active"
                 ><ion-icon name="person-outline" class="mr-2"></ion-icon>Followers</RouterLink
               >
             </li>
@@ -42,7 +54,7 @@
         </div>
       </aside>
       <div class="lg:ml-4 xl:w-3/4 lg:w-2/3 w-full">
-        <RouterView :username="name" :page="page" />
+        <RouterView :username="name" :page="page" @follow="onFollow" />
       </div>
     </div>
   </div>
@@ -119,3 +131,12 @@ export default {
   },
 };
 </script>
+
+<style>
+.active {
+  color: rgba(59, 130, 246, 1);
+  background-color: rgba(219, 234, 254, 1);
+  font-weight: bold;
+  border-radius: 999px;
+}
+</style>
