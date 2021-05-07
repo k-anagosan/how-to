@@ -102,12 +102,13 @@ class EloquentUserRepository implements UserRepository
             $followers = User::with('followers')
                 ->find($userId->toInt())
                 ->followers()
-                ->paginate(20)
-                ->toArray();
+                ->paginate(20);
+
+            $followers = $followers->setCollection($followers->getCollection()->makeVisible('followed_by_me'));
         } catch (\Exception $e) {
             throw $e;
         }
 
-        return $followers;
+        return $followers->toArray();
     }
 }
