@@ -22,14 +22,8 @@ class GetFollowerListApiTest extends TestCase
         $this->perPage = 20;
 
         $this->followedUser = factory(User::class)->create();
-        $this->followUsers($this->followedUser);
-
-        $this->followerList = User::with(['followers'])
-            ->find($this->followedUser->id)
-            ->followers()
-            ->limit($this->perPage)
-            ->get()
-            ->toArray();
+        $this->loginUser = factory(User::class)->create();
+        $this->followUsers($this->followedUser, $this->loginUser);
     }
 
     /**
@@ -39,9 +33,37 @@ class GetFollowerListApiTest extends TestCase
     {
         $response = $this->getJson(route('user.followers', $this->followedUser->name));
 
+        $expect = User::with(['followers'])
+            ->find($this->followedUser->id)
+            ->followers()
+            ->limit($this->perPage)
+            ->get()
+            ->makeVisible('followed_by_me')
+            ->toArray();
+
         $response->assertStatus(200)
             ->assertJsonCount($this->perPage, 'data')
-            ->assertJsonFragment(['data' => $this->followerList]);
+            ->assertJsonFragment(['data' => $expect]);
+    }
+
+    /**
+     * @test
+     */
+    public function should_ログイン済みユーザーがフォロワー一覧を取得した時に正しいデータを取得できる(): void
+    {
+        $response = $this->actingAs($this->loginUser)->getJson(route('user.followers', $this->followedUser->name));
+
+        $expect = User::with(['followers'])
+            ->find($this->followedUser->id)
+            ->followers()
+            ->limit($this->perPage)
+            ->get()
+            ->makeVisible('followed_by_me')
+            ->toArray();
+
+        $response->assertStatus(200)
+            ->assertJsonCount($this->perPage, 'data')
+            ->assertJsonFragment(['data' => $expect]);
     }
 
     /**
@@ -67,7 +89,7 @@ class GetFollowerListApiTest extends TestCase
         $response->assertStatus(404);
     }
 
-    private function followUsers($followedUser): void
+    private function followUsers($followedUser, $loginUser): void
     {
         $followers = factory(User::class, self::FOLLOWER_NUMBER)->create();
 
@@ -78,13 +100,17 @@ class GetFollowerListApiTest extends TestCase
             $follower->follows()->attach($followedUser->id);
         });
 
-        $dummyUser = factory(User::class)->create();
-
-        $followers->map(function ($follower) use ($dummyUser): void {
-            if ($follower->id === $dummyUser->id) {
-                return;
-            }
-            $follower->follows()->attach($dummyUser->id);
-        });
+        // フォロワーの内10人が$loginUserによってフォローされる
+        User::with(['followers'])
+            ->find($followedUser->id)
+            ->followers()
+            ->limit(10)
+            ->get()
+            ->map(function ($follower) use ($loginUser): void {
+                if ($follower->id === $loginUser->id) {
+                    return;
+                }
+                $loginUser->follows()->attach($follower->id);
+            });
     }
 }
