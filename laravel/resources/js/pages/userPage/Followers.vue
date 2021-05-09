@@ -6,7 +6,7 @@
         <div
           v-for="follower in pageData"
           :key="follower.name"
-          class="flex justify-between items-center bg-white p-4 cursor-pointer sm:shadow-md sm:hover:shadow-xl transition-shadow hover:underline"
+          class="follower flex justify-between items-center bg-white p-4 cursor-pointer sm:shadow-md sm:hover:shadow-xl transition-shadow hover:underline"
           @click="() => push(follower.name)"
         >
           <div class="flex justify-start items-center">
