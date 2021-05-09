@@ -30,22 +30,37 @@ describe("userpage.js actions", () => {
             tags: [{ name: randomStr(10) }, { name: randomStr(10) }, { name: randomStr(10) }],
             author: { name: randomStr(10) },
         };
+        const follower = {
+            id: Math.floor(Math.random(1, 100)),
+            name: randomStr(),
+            followed_by_me: false,
+        };
         const articleList = {
             data: [article, article, article, article],
         };
+        const followerList = {
+            data: [follower, follower, follower, follower],
+        };
 
         it.each([
-            ["getUserPageData", "ユーザーページの左カラム表示に必要な情報が取得できるか", pageData, OK],
-            ["getArticles", "ユーザーページのArticles表示に必要な情報を取得できるか", articleList, OK],
-        ])("%sにより正しく%s", async (action, _, data, status) => {
+            ["getUserPageData", "ユーザーページの左カラム表示に必要な情報が取得できるか", pageData, OK, ""],
+            ["getArticles", "ユーザーページのArticles表示に必要な情報を取得できるか", articleList, OK, "articles"],
+            [
+                "getFollowerList",
+                "ユーザーページのFollowerList表示に必要な情報を取得できるか",
+                followerList,
+                OK,
+                "followers",
+            ],
+        ])("%sにより正しく%s", async (action, _, data, status, state) => {
             const get = () => ({ data, status });
 
             Test.mockAxios(get, null, null, null);
 
-            if (action === "getArticles") {
-                await Test.testStateWithAction(`userpage/${action}`, "articles", data);
-            } else {
+            if (action === "getUserPageData") {
                 await Test.testApiResponse(`userpage/${action}`, data);
+            } else {
+                await Test.testStateWithAction(`userpage/${action}`, state, data);
             }
         });
     });
@@ -70,16 +85,19 @@ describe("userpage.js actions", () => {
             Test.clearSpysCalledTimes();
         });
 
-        describe.each([["getUserPageData"], ["getArticles"]])("%sアクションでリクエストに失敗", action => {
-            it("apiIsSuccessに正しく値が保存されるか", async done => {
-                await Test.testApiResult(`userpage/${action}`, false);
-                done();
-            });
+        describe.each([["getUserPageData"], ["getArticles"], ["getFollowerList"]])(
+            "%sアクションでリクエストに失敗",
+            action => {
+                it("apiIsSuccessに正しく値が保存されるか", async done => {
+                    await Test.testApiResult(`userpage/${action}`, false);
+                    done();
+                });
 
-            it("errorストアのsetErrorCodeが呼び出されるか", async done => {
-                await setErrorCodeTest(action);
-                done();
-            });
-        });
+                it("errorストアのsetErrorCodeが呼び出されるか", async done => {
+                    await setErrorCodeTest(action);
+                    done();
+                });
+            }
+        );
     });
 });
