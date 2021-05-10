@@ -21,7 +21,7 @@ class FollowUserApiTest extends TestCase
         factory(User::class, self::USER_NUMBER)->create();
 
         $this->user = User::first();
-        $this->followId = User::find(random_int(1, self::USER_NUMBER))->id;
+        $this->followId = User::find(random_int(2, self::USER_NUMBER))->id;
     }
 
     /**
