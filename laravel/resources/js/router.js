@@ -101,6 +101,13 @@ const routes = [
             {
                 path: "archives",
                 component: Archives,
+                beforeEnter(to, from, next) {
+                    if (store.state.auth.user && store.state.auth.user.name === to.params.name) {
+                        next();
+                    } else {
+                        next(`/user/${to.params.name}`);
+                    }
+                },
             },
             {
                 path: "followers",

@@ -31,9 +31,9 @@ class GetUserArticleListApiTest extends TestCase
     /**
      * @test
      */
-    public function should_ログイン時のユーザーページ表示に必要なデータを返す(): void
+    public function should_ユーザーページ表示に必要なデータを返す(): void
     {
-        $response = $this->actingAs($this->user)->getJson(route('user.show', $this->user->name));
+        $response = $this->getJson(route('user.show', $this->user->name));
 
         $expect = $this->posts->map(function ($post) {
             return [
