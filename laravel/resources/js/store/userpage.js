@@ -69,6 +69,20 @@ const actions = {
         context.commit("error/setErrorCode", response.status, { root: true });
         context.commit("setApiIsSuccess", false);
     },
+    async getFollowerList(context, data) {
+        context.commit("setApiIsSuccess", null);
+
+        const response = await window.axios.get(`/api/user/${data.name}/followers?page=${data.page}`);
+
+        if (response.status === OK) {
+            context.commit("setApiIsSuccess", true);
+            context.commit("setFollowers", response.data);
+            return;
+        }
+
+        context.commit("error/setErrorCode", response.status, { root: true });
+        context.commit("setApiIsSuccess", false);
+    },
 };
 
 export default {

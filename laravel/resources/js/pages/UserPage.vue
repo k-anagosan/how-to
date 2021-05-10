@@ -71,7 +71,14 @@ export default {
     Spinner,
   },
   beforeRouteLeave(to, from, next) {
-    this.clearUserPage();
+    this.clearPageData();
+    next();
+  },
+  beforeRouteUpdate(to, from, next) {
+    if (to.params.name !== from.params.name) {
+      this.clearUserData();
+      this.clearPageData();
+    }
     next();
   },
   props: {
@@ -116,15 +123,19 @@ export default {
       this.userId = user.id;
       this.followed_by_me = user.followed_by_me;
     },
-    clearUserPage() {
+    clearPageData() {
       this.$store.commit("userpage/setArticles", null, { root: true });
       this.$store.commit("userpage/setArchives", null, { root: true });
       this.$store.commit("userpage/setLikes", null, { root: true });
       this.$store.commit("userpage/setFollowers", null, { root: true });
     },
+    clearUserData() {
+      this.userId = null;
+      this.followed_by_me = false;
+    },
     async onFollow(e) {
-      await this.$store.dispatch(e.isFollowing ? "auth/putFollow" : "auth/deleteFollow", this.userId);
-      if (this.apiIsSuccess) {
+      await this.$store.dispatch(e.isFollowing ? "auth/putFollow" : "auth/deleteFollow", e.id ?? this.userId);
+      if (!e.id && this.apiIsSuccess) {
         this.followed_by_me = e.isFollowing;
       }
     },

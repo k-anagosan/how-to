@@ -26,9 +26,10 @@ jest.mock("@/pages/userPage/Likes.vue", () => ({
 
 const Test = new TestUtils();
 const spyFetchUserPageData = jest.spyOn(UserPage.methods, "fetchUserPageData");
-const spyClearUserPage = jest.spyOn(UserPage.methods, "clearUserPage");
+const spyClearPageData = jest.spyOn(UserPage.methods, "clearPageData");
+const spyClearUserData = jest.spyOn(UserPage.methods, "clearUserData");
 const spyOnFollow = jest.spyOn(UserPage.methods, "onFollow");
-Test.setSpys({ spyFetchUserPageData, spyClearUserPage, spyOnFollow });
+Test.setSpys({ spyFetchUserPageData, spyClearPageData, spyClearUserData, spyOnFollow });
 
 const author = randomStr();
 const user_id = 1;
@@ -170,6 +171,20 @@ describe("表示関連", () => {
 });
 
 describe("メソッド関連", () => {
+    it("clearUserData()が実行されたらdataが初期化される", () => {
+        wrapper.setData({ followed_by_me: true });
+        expect(wrapper.vm.$data).toEqual({
+            userId: user_id,
+            followed_by_me: true,
+            loading: expect.anything(),
+        });
+        wrapper.vm.clearUserData();
+        expect(wrapper.vm.$data).toEqual({
+            userId: null,
+            followed_by_me: false,
+            loading: expect.anything(),
+        });
+    });
     it("dataにuserIdがあればfetchUserPageData()が実行されない", async () => {
         Test.clearSpysCalledTimes();
         await wrapper.vm.$router.push("/user/xxx");
@@ -207,6 +222,20 @@ describe("メソッド関連", () => {
             expect(auth.actions.deleteFollow).toHaveBeenCalled();
         }
         expect(wrapper.vm.$data.followed_by_me).toBe(isFollowing);
+    });
+
+    it.each([
+        ["ある", "更新されない", 1],
+        ["ない", "更新される", null],
+    ])("onFollow()が実行されたときe.idが%sならthis.followed_by_meが%s", async (_, __, id) => {
+        auth.state.user.name = randomStr();
+        userpage.actions.getUserPageData = jest.fn().mockImplementation(() => ({ id: user_id, followed_by_me: true }));
+        Test.setVuex({ auth, userpage });
+        wrapper = await Test.shallowWrapperFactory();
+        wrapper.setData({ loading: false });
+
+        await wrapper.vm.onFollow({ isFollowing: false, id });
+        expect(wrapper.vm.$data.followed_by_me).toBe(Boolean(id));
     });
 });
 
@@ -272,6 +301,30 @@ describe("Vue Router関連", () => {
             expect(wrapper.find(`.${ComponentName.toLowerCase()} .active`).exists()).toBe(true);
         });
     });
+
+    it("beforeRouteLeave()実行時にclearPageData()が実行される", () => {
+        expect(spyClearPageData).not.toHaveBeenCalled();
+        UserPage.beforeRouteLeave.call(wrapper.vm, null, null, jest.fn());
+        expect(spyClearPageData).toHaveBeenCalled();
+    });
+
+    describe.each([
+        [true, "実行されない", { params: { name: "equal" } }, { params: { name: "equal" } }],
+        [false, "実行される", { params: { name: "notEqual" } }, { params: { name: "not-equal" } }],
+    ])("beforeRouteUpdate()実行時", (isEqual, describe, to, from) => {
+        it(`to.params.name !== from.params.nameが${isEqual}ならclearPageData()とclearUserData()が${describe}`, () => {
+            expect(spyClearPageData).not.toHaveBeenCalled();
+            expect(spyClearUserData).not.toHaveBeenCalled();
+            UserPage.beforeRouteUpdate.call(wrapper.vm, to, from, jest.fn());
+            if (isEqual) {
+                expect(spyClearPageData).not.toHaveBeenCalled();
+                expect(spyClearUserData).not.toHaveBeenCalled();
+            } else {
+                expect(spyClearPageData).toHaveBeenCalled();
+                expect(spyClearUserData).toHaveBeenCalled();
+            }
+        });
+    });
 });
 
 describe("Vuex関連", () => {
@@ -287,8 +340,8 @@ describe("Vuex関連", () => {
         expect(Test.computedValue("loginUser", { $store: wrapper.vm.$store })).toBe(auth.state.user);
     });
 
-    it("clearUserPage()を実行したらuserpageのstateが初期化される", () => {
-        wrapper.vm.clearUserPage();
+    it("clearPageData()を実行したらuserpageのstateが初期化される", () => {
+        wrapper.vm.clearPageData();
         Object.keys(userpage.mutations).forEach(key => {
             expect(userpage.mutations[key]).toHaveBeenCalled();
         });
