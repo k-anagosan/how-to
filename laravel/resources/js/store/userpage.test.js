@@ -26,9 +26,10 @@ describe("userpage.js actions", () => {
         const article = {
             id: randomStr(20),
             title: randomStr(30),
-            content: randomStr(100),
             tags: [{ name: randomStr(10) }, { name: randomStr(10) }, { name: randomStr(10) }],
             author: { name: randomStr(10) },
+            liked_count: 10,
+            liked_by_me: false,
         };
         const follower = {
             id: Math.floor(Math.random(1, 100)),
@@ -45,6 +46,7 @@ describe("userpage.js actions", () => {
         it.each([
             ["getUserPageData", "ユーザーページの左カラム表示に必要な情報が取得できるか", pageData, OK, ""],
             ["getArticles", "ユーザーページのArticles表示に必要な情報を取得できるか", articleList, OK, "articles"],
+            ["getLikedArticles", "ユーザーページのLikes表示に必要な情報を取得できるか", articleList, OK, "likes"],
             [
                 "getFollowerList",
                 "ユーザーページのFollowerList表示に必要な情報を取得できるか",
@@ -85,7 +87,7 @@ describe("userpage.js actions", () => {
             Test.clearSpysCalledTimes();
         });
 
-        describe.each([["getUserPageData"], ["getArticles"], ["getFollowerList"]])(
+        describe.each([["getUserPageData"], ["getArticles"], ["getLikedArticles"], ["getFollowerList"]])(
             "%sアクションでリクエストに失敗",
             action => {
                 it("apiIsSuccessに正しく値が保存されるか", async done => {
