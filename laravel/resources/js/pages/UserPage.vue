@@ -14,24 +14,39 @@
             </figure>
             <h2 id="username" class="text-center text-xl text-gray-600">@{{ name }}</h2>
           </div>
+          <div v-if="!loginUser || loginUser.name !== name" class="flex items-center justify-center">
+            <FollowButton class="py-1 px-2 w-40" :is-following="followed_by_me" @follow="onFollow" />
+          </div>
           <ul class="px-4 pb-4 grid gap-y-1 grid-cols-1">
             <li class="articles text-xl">
-              <RouterLink :to="`/user/${name}`" class="flex items-center"
+              <RouterLink
+                :to="`/user/${name}`"
+                class="flex items-center px-4 py-2 text-gray-500"
+                exact-active-class="active"
                 ><ion-icon name="document-text-outline" class="mr-2"></ion-icon>Articles</RouterLink
               >
             </li>
             <li v-if="loginUser && loginUser.name === name" class="archives text-xl">
-              <RouterLink :to="`/user/${name}/archives`" class="flex items-center"
+              <RouterLink
+                :to="`/user/${name}/archives`"
+                class="flex items-center px-4 py-2 text-gray-500"
+                exact-active-class="active"
                 ><ion-icon name="archive-outline" class="mr-2"></ion-icon>Archives</RouterLink
               >
             </li>
             <li class="likes text-xl">
-              <RouterLink :to="`/user/${name}/likes`" class="flex items-center"
+              <RouterLink
+                :to="`/user/${name}/likes`"
+                class="flex items-center px-4 py-2 text-gray-500"
+                exact-active-class="active"
                 ><ion-icon name="thumbs-up-outline" class="mr-2"></ion-icon>Likes</RouterLink
               >
             </li>
             <li class="followers text-xl">
-              <RouterLink :to="`/user/${name}/followers`" class="flex items-center"
+              <RouterLink
+                :to="`/user/${name}/followers`"
+                class="flex items-center px-4 py-2 text-gray-500"
+                exact-active-class="active"
                 ><ion-icon name="person-outline" class="mr-2"></ion-icon>Followers</RouterLink
               >
             </li>
@@ -39,22 +54,31 @@
         </div>
       </aside>
       <div class="lg:ml-4 xl:w-3/4 lg:w-2/3 w-full">
-        <RouterView :username="name" :page="page" />
+        <RouterView :username="name" :page="page" @follow="onFollow" />
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import FollowButton from "../components/FollowButton.vue";
 import Spinner from "../components/Spinner.vue";
 import { mapState } from "vuex";
 
 export default {
   components: {
+    FollowButton,
     Spinner,
   },
   beforeRouteLeave(to, from, next) {
-    this.clearUserPage();
+    this.clearPageData();
+    next();
+  },
+  beforeRouteUpdate(to, from, next) {
+    if (to.params.name !== from.params.name) {
+      this.clearUserData();
+      this.clearPageData();
+    }
     next();
   },
   props: {
@@ -78,6 +102,7 @@ export default {
   computed: {
     ...mapState({
       loginUser: state => state.auth.user,
+      apiIsSuccess: state => state.auth.apiIsSuccess,
     }),
   },
   watch: {
@@ -98,12 +123,31 @@ export default {
       this.userId = user.id;
       this.followed_by_me = user.followed_by_me;
     },
-    clearUserPage() {
+    clearPageData() {
       this.$store.commit("userpage/setArticles", null, { root: true });
       this.$store.commit("userpage/setArchives", null, { root: true });
       this.$store.commit("userpage/setLikes", null, { root: true });
       this.$store.commit("userpage/setFollowers", null, { root: true });
     },
+    clearUserData() {
+      this.userId = null;
+      this.followed_by_me = false;
+    },
+    async onFollow(e) {
+      await this.$store.dispatch(e.isFollowing ? "auth/putFollow" : "auth/deleteFollow", e.id ?? this.userId);
+      if (!e.id && this.apiIsSuccess) {
+        this.followed_by_me = e.isFollowing;
+      }
+    },
   },
 };
 </script>
+
+<style>
+.active {
+  color: rgba(59, 130, 246, 1);
+  background-color: rgba(219, 234, 254, 1);
+  font-weight: bold;
+  border-radius: 999px;
+}
+</style>

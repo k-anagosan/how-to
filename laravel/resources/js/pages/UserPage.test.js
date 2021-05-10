@@ -26,8 +26,10 @@ jest.mock("@/pages/userPage/Likes.vue", () => ({
 
 const Test = new TestUtils();
 const spyFetchUserPageData = jest.spyOn(UserPage.methods, "fetchUserPageData");
-const spyClearUserPage = jest.spyOn(UserPage.methods, "clearUserPage");
-Test.setSpys({ spyFetchUserPageData, spyClearUserPage });
+const spyClearPageData = jest.spyOn(UserPage.methods, "clearPageData");
+const spyClearUserData = jest.spyOn(UserPage.methods, "clearUserData");
+const spyOnFollow = jest.spyOn(UserPage.methods, "onFollow");
+Test.setSpys({ spyFetchUserPageData, spyClearPageData, spyClearUserData, spyOnFollow });
 
 const author = randomStr();
 const user_id = 1;
@@ -39,7 +41,7 @@ let wrapper = null;
 beforeEach(() => {
     auth = {
         namespaced: true,
-        state: { user: { name: author } },
+        state: { user: { name: author }, apiIsSuccess: true },
         mutations: {
             setUser(state, user) {
                 state.user = user;
@@ -47,6 +49,10 @@ beforeEach(() => {
         },
         getters: {
             username: state => state.user.name,
+        },
+        actions: {
+            putFollow: jest.fn(),
+            deleteFollow: jest.fn(),
         },
     };
     userpage = {
@@ -74,7 +80,11 @@ beforeEach(() => {
         actions: { getUserPageData: jest.fn().mockImplementation(() => ({ id: user_id, followed_by_me })) },
     };
 
-    Test.setSpys({ getUserPageData: userpage.actions.getUserPageData });
+    Test.setSpys({
+        getUserPageData: userpage.actions.getUserPageData,
+        putFollow: auth.actions.putFollow,
+        deleteFollow: auth.actions.deleteFollow,
+    });
 
     Test.setVueRouter();
     Test.setVuex({ auth, userpage });
@@ -103,22 +113,47 @@ describe("表示関連", () => {
     it.each([
         [true, "させる"],
         [false, "させない"],
-    ])("loginUser.name === nameが%sなら.archivesを表示%s", isShown => {
+    ])("loginUser.name === nameが%sなら.archivesを表示%s", async isShown => {
         if (!isShown) {
             auth.state.user.name = randomStr();
             Test.setVuex({ auth, userpage });
             wrapper = Test.shallowWrapperFactory();
+            await wrapper.setData({ loading: false });
         }
 
         expect(wrapper.find(".archives").exists()).toBe(isShown);
     });
 
-    it("loginUserがnullなら.archivesが表示されない", () => {
+    it("loginUserがnullなら.archivesが表示されない", async () => {
         auth.state.user = null;
         Test.setVuex({ auth, userpage });
         wrapper = Test.shallowWrapperFactory();
+        await wrapper.setData({ loading: false });
 
         expect(wrapper.find(".archives").exists()).toBe(false);
+    });
+
+    it.each([
+        [true, "させる"],
+        [false, "させない"],
+    ])("loginUser.name !== nameが%sならFollowButtonを表示%s", async isShown => {
+        if (isShown) {
+            auth.state.user.name = randomStr();
+            Test.setVuex({ auth, userpage });
+            wrapper = Test.shallowWrapperFactory();
+            await wrapper.setData({ loading: false });
+        }
+
+        expect(wrapper.find("followbutton-stub").exists()).toBe(isShown);
+    });
+
+    it("loginUserがnullならFollowButtonが表示される", async () => {
+        auth.state.user = null;
+        Test.setVuex({ auth, userpage });
+        wrapper = Test.shallowWrapperFactory();
+        await wrapper.setData({ loading: false });
+
+        expect(wrapper.find("followbutton-stub").exists()).toBe(true);
     });
 
     it("ユーザーネームが表示される", () => {
@@ -136,10 +171,71 @@ describe("表示関連", () => {
 });
 
 describe("メソッド関連", () => {
-    it("dataにuserIdがあればfetchUserId()が実行されない", async () => {
+    it("clearUserData()が実行されたらdataが初期化される", () => {
+        wrapper.setData({ followed_by_me: true });
+        expect(wrapper.vm.$data).toEqual({
+            userId: user_id,
+            followed_by_me: true,
+            loading: expect.anything(),
+        });
+        wrapper.vm.clearUserData();
+        expect(wrapper.vm.$data).toEqual({
+            userId: null,
+            followed_by_me: false,
+            loading: expect.anything(),
+        });
+    });
+    it("dataにuserIdがあればfetchUserPageData()が実行されない", async () => {
         Test.clearSpysCalledTimes();
         await wrapper.vm.$router.push("/user/xxx");
         expect(spyFetchUserPageData).not.toHaveBeenCalled();
+    });
+
+    it("FollowButtonでfollowイベントが発火されたらonFollow()が実行される", async () => {
+        auth.state.user.name = randomStr();
+        Test.setVuex({ auth, userpage });
+        wrapper = Test.shallowWrapperFactory();
+        await wrapper.setData({ loading: false });
+
+        expect(spyOnFollow).not.toHaveBeenCalled();
+        wrapper.find("followbutton-stub").vm.$emit("follow", { isFollowing: true });
+        expect(spyOnFollow).toHaveBeenCalled();
+    });
+
+    it.each([
+        [true, "putFollow"],
+        [false, "deleteFollow"],
+    ])("onFollow()が実行されたときisFollowingが%sなら%sアクションが実行される", async isFollowing => {
+        auth.state.user.name = randomStr();
+        Test.setVuex({ auth, userpage });
+        wrapper = Test.shallowWrapperFactory();
+        await wrapper.setData({ loading: false });
+
+        expect(auth.actions.putFollow).not.toHaveBeenCalled();
+        expect(auth.actions.deleteFollow).not.toHaveBeenCalled();
+        await wrapper.vm.onFollow({ isFollowing });
+        if (isFollowing) {
+            expect(auth.actions.putFollow).toHaveBeenCalled();
+            expect(auth.actions.deleteFollow).not.toHaveBeenCalled();
+        } else {
+            expect(auth.actions.putFollow).not.toHaveBeenCalled();
+            expect(auth.actions.deleteFollow).toHaveBeenCalled();
+        }
+        expect(wrapper.vm.$data.followed_by_me).toBe(isFollowing);
+    });
+
+    it.each([
+        ["ある", "更新されない", 1],
+        ["ない", "更新される", null],
+    ])("onFollow()が実行されたときe.idが%sならthis.followed_by_meが%s", async (_, __, id) => {
+        auth.state.user.name = randomStr();
+        userpage.actions.getUserPageData = jest.fn().mockImplementation(() => ({ id: user_id, followed_by_me: true }));
+        Test.setVuex({ auth, userpage });
+        wrapper = await Test.shallowWrapperFactory();
+        wrapper.setData({ loading: false });
+
+        await wrapper.vm.onFollow({ isFollowing: false, id });
+        expect(wrapper.vm.$data.followed_by_me).toBe(Boolean(id));
     });
 });
 
@@ -189,14 +285,44 @@ describe("Vue Router関連", () => {
     });
 
     describe.each([
-        ["/user/xxxにアクセスしたらArticlesが表示される", "/", Articles],
-        ["/user/xxx/archivesにアクセスしたらArchivesが表示される", "/archives", Archives],
-        ["/user/xxx/likesにアクセスしたらLikesが表示される", "/likes", Likes],
-        ["/user/xxx/followersにアクセスしたらFollowersが表示される", "/followers", Followers],
-    ])("/user/xxx アクセス結果", (describe, path, Component) => {
-        it(`${describe}`, async () => {
+        ["/user/xxx", "Articles", "/", Articles],
+        ["/user/xxx/archives", "Archives", "/archives", Archives],
+        ["/user/xxx/likes", "Likes", "/likes", Likes],
+        ["/user/xxx/followers", "Followers", "/followers", Followers],
+    ])("/user/xxx アクセス結果", (fullPath, ComponentName, path, Component) => {
+        it(`${fullPath}にアクセスしたら${ComponentName}が表示される`, async () => {
             if (path === "/archives") wrapper.vm.$store.commit("auth/setUser", author);
             await Test.testRoutingWithComponent("/", `/user/${author}${path}`, Component);
+        });
+
+        it(`${fullPath}にアクセスしたらリンクにactiveクラスが付加される`, async () => {
+            if (path === "/archives") wrapper.vm.$store.commit("auth/setUser", { name: author });
+            await wrapper.vm.$router.push(`/user/${author}${path}`);
+            expect(wrapper.find(`.${ComponentName.toLowerCase()} .active`).exists()).toBe(true);
+        });
+    });
+
+    it("beforeRouteLeave()実行時にclearPageData()が実行される", () => {
+        expect(spyClearPageData).not.toHaveBeenCalled();
+        UserPage.beforeRouteLeave.call(wrapper.vm, null, null, jest.fn());
+        expect(spyClearPageData).toHaveBeenCalled();
+    });
+
+    describe.each([
+        [true, "実行されない", { params: { name: "equal" } }, { params: { name: "equal" } }],
+        [false, "実行される", { params: { name: "notEqual" } }, { params: { name: "not-equal" } }],
+    ])("beforeRouteUpdate()実行時", (isEqual, describe, to, from) => {
+        it(`to.params.name !== from.params.nameが${isEqual}ならclearPageData()とclearUserData()が${describe}`, () => {
+            expect(spyClearPageData).not.toHaveBeenCalled();
+            expect(spyClearUserData).not.toHaveBeenCalled();
+            UserPage.beforeRouteUpdate.call(wrapper.vm, to, from, jest.fn());
+            if (isEqual) {
+                expect(spyClearPageData).not.toHaveBeenCalled();
+                expect(spyClearUserData).not.toHaveBeenCalled();
+            } else {
+                expect(spyClearPageData).toHaveBeenCalled();
+                expect(spyClearUserData).toHaveBeenCalled();
+            }
         });
     });
 });
@@ -214,8 +340,8 @@ describe("Vuex関連", () => {
         expect(Test.computedValue("loginUser", { $store: wrapper.vm.$store })).toBe(auth.state.user);
     });
 
-    it("clearUserPage()を実行したらuserpageのstateが初期化される", () => {
-        wrapper.vm.clearUserPage();
+    it("clearPageData()を実行したらuserpageのstateが初期化される", () => {
+        wrapper.vm.clearPageData();
         Object.keys(userpage.mutations).forEach(key => {
             expect(userpage.mutations[key]).toHaveBeenCalled();
         });

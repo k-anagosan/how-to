@@ -75,11 +75,23 @@ describe("auth.js actions", () => {
             await Test.testStateWithAction(`auth/${action}`, "user", expected);
             expect(post ?? get).toHaveBeenCalled();
         });
+
+        it.each([
+            ["putFollow", "フォローAPIが実行されるか", OK],
+            ["deleteFollow", "フォロー解除APIが実行されるか", OK],
+        ])("%sにより%s", async (action, _, status) => {
+            const data = { user_id: 1 };
+            const res = jest.fn().mockImplementation(() => ({ data, status }));
+
+            Test.mockAxios(null, null, res, res);
+
+            await Test.testedAction(`auth/${action}`, 1);
+            res.mock.calls = [];
+        });
     });
 
     describe("API request failed with status code 500", () => {
-        const post = () => ({ status: INTERNAL_SERVER_ERROR });
-        const get = () => ({ status: INTERNAL_SERVER_ERROR });
+        const res = () => ({ status: INTERNAL_SERVER_ERROR });
 
         const checkApiIsFailure = async action => {
             expect(store.state.auth.user).toBe(null);
@@ -93,10 +105,10 @@ describe("auth.js actions", () => {
             );
         };
         beforeEach(() => {
-            Test.mockAxios(get, post);
+            Test.mockAxios(res, res, res, res);
         });
 
-        describe.each([["register"], ["login"], ["logout"], ["getCurrentUser"]])(
+        describe.each([["register"], ["login"], ["logout"], ["getCurrentUser"], ["putFollow"], ["deleteFollow"]])(
             "%sアクションでリクエストに失敗",
             action => {
                 it("apiIsSuccessに正しく値が保存されるか", async done => {

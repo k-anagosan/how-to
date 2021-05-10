@@ -63,4 +63,12 @@ interface UserRepositoryInterface
      * @return null|UserAccountId
      */
     public function deleteFollow(UserAccountId $userId, UserAccountId $followId);
+
+    /**
+     * 引数のユーザーIDのユーザーをフォローしているユーザー一覧を返す.
+     *
+     * @param UserAccountId $userId
+     * @return array
+     */
+    public function getFollowers(UserAccountId $userId);
 }
