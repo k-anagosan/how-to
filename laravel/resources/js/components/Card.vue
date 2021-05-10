@@ -11,18 +11,22 @@
         </div>
       </figure>
       <div class="flex flex-col bg-white sm:p-6 p-4 min-card-height">
-        <div @click.stop>
-          <Icon :icon="article.author" size="sm" class="mb-2" :to="`/user/${article.author.name}`" />
+        <div>
+          <span @click.stop>
+            <Icon :icon="article.author" size="sm" class="mb-2" :to="`/user/${article.author.name}`" />
+          </span>
         </div>
         <h2 class="article-title mb-4 flex-auto font-bold">
           {{ article.title }}
         </h2>
         <ul v-if="article.tags" class="flex flex-wrap">
           <li v-for="tag in article.tags" :key="tag.name" class="article-tag" @click.stop>
-            <RouterLink :to="`/tag/${tag.name}`" class="tag">
-              <div
-                class="inline-block lg:p-2 p-1 mr-1 mb-1 text-xs text-gray-900 border border-gray-200 hover:border-gray-600 transition-colors"
-              >
+            <RouterLink
+              :to="`/tag/${tag.name}`"
+              class="inline-block mr-1 mb-1 tag border border-gray-200 hover:border-gray-600 transition-colors"
+              active-class="active-tag"
+            >
+              <div class="inline-block lg:p-2 p-1 text-xs text-gray-900 transition-colors">
                 {{ tag.name }}
               </div>
             </RouterLink>
@@ -64,3 +68,8 @@ export default {
   },
 };
 </script>
+<style>
+.active-tag {
+  border-color: rgba(75, 85, 99, 1);
+}
+</style>
