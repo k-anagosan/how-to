@@ -44,6 +44,7 @@ describe("Header.vue のRouterLink", () => {
     it.each([
         ["'Login / Register'", "/login", false, "a.login-link"],
         ["'Edit Button'", "/edit", true, "a.edit-button"],
+        ["ユーザー名", "/user/testuser", true, "a.userpage-link"],
     ])("%sをクリックしたら'%s'にアクセスされる", async (_, path, isAuth, target) => {
         setVuex(isAuth);
         wrapper = Test.wrapperFactory();
@@ -60,11 +61,11 @@ describe("Header.vueのナビゲーション", () => {
         setVuex(isAuth);
         wrapper = Test.wrapperFactory();
         if (checkNavi) {
-            expect(wrapper.find(".header-username").exists()).toBe(true);
-            expect(wrapper.find(".header-username").text()).toBe("testuser");
+            expect(wrapper.find(".userpage-link").exists()).toBe(true);
+            expect(wrapper.find(".userpage-link").text()).toBe("testuser");
         } else {
             expect(wrapper.find(".submit-button").exists()).toBe(isAuth);
-            expect(wrapper.find(".header-username").exists()).toBe(isAuth);
+            expect(wrapper.find(".userpage-link").exists()).toBe(isAuth);
             expect(wrapper.find(".login-link").exists()).toBe(!isAuth);
         }
     });
