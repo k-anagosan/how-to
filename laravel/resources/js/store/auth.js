@@ -1,4 +1,4 @@
-import { OK, CREATED, UNPROCESSABLE_ENTITY, hasProperty } from "../utils";
+import { OK, CREATED, UNPROCESSABLE_ENTITY, flatten } from "../utils";
 
 const state = {
     user: null,
@@ -10,29 +10,8 @@ const state = {
 const getters = {
     isAuthenticated: state => Boolean(state.user),
     username: state => (state.user ? state.user.name : ""),
-    registerErrors: state => {
-        const nameMessage = hasProperty(state.registerValidationMessage, "name")
-            ? state.registerValidationMessage.name
-            : [];
-        const emailMessage = hasProperty(state.registerValidationMessage, "email")
-            ? state.registerValidationMessage.email
-            : [];
-        const passwordMessage = hasProperty(state.registerValidationMessage, "password")
-            ? state.registerValidationMessage.password
-            : [];
-
-        return [...nameMessage, ...emailMessage, ...passwordMessage];
-    },
-    loginErrors: state => {
-        const emailMessage = hasProperty(state.loginValidationMessage, "email")
-            ? state.loginValidationMessage.email
-            : [];
-        const passwordMessage = hasProperty(state.loginValidationMessage, "password")
-            ? state.loginValidationMessage.password
-            : [];
-
-        return [...emailMessage, ...passwordMessage];
-    },
+    registerErrors: state => flatten(state.registerValidationMessage, ["name", "email", "password"]),
+    loginErrors: state => flatten(state.loginValidationMessage, ["name", "email", "password"]),
 };
 
 const mutations = {

@@ -17,3 +17,9 @@ export const hasProperty = (object, target) => {
     if (object === null) return false;
     return Object.prototype.hasOwnProperty.call(object, target);
 };
+
+export const flatten = (target, keys) => {
+    const messages = keys.map(key => (hasProperty(target, key) ? target[key] : []));
+
+    return messages.flat();
+};
