@@ -164,25 +164,16 @@ describe("auth.js getters", () => {
         name: "testuser",
         email: "test@example.com",
     };
-    const loginValidationMessage = {
+    const validationMessage = {
         email: [randomStr()],
+        name: [randomStr()],
         password: [randomStr()],
     };
-    const loginErrors = [...loginValidationMessage.email, ...loginValidationMessage.password];
-    const registerValidationMessage = {
-        name: [randomStr()],
-        email: [randomStr()],
-        password: [randomStr(), randomStr()],
-    };
-    const registerErrors = [
-        ...registerValidationMessage.name,
-        ...registerValidationMessage.email,
-        ...registerValidationMessage.password,
-    ];
+    const errors = [...validationMessage.name, ...validationMessage.email, ...validationMessage.password];
 
     beforeEach(() => {
-        store.commit("auth/setLoginValidationMessage", loginValidationMessage);
-        store.commit("auth/setRegisterValidationMessage", registerValidationMessage);
+        store.commit("auth/setLoginValidationMessage", validationMessage);
+        store.commit("auth/setRegisterValidationMessage", validationMessage);
     });
 
     describe.each([
@@ -205,8 +196,8 @@ describe("auth.js getters", () => {
     });
 
     it.each([
-        ["registerErrors", registerErrors],
-        ["loginErrors", loginErrors],
+        ["registerErrors", errors],
+        ["loginErrors", errors],
     ])("%sゲッターにより正しい値を取得できるか", (getter, messages) => {
         const errors = Test.testedGetter(`auth/${getter}`);
         expect(errors).toEqual(messages);

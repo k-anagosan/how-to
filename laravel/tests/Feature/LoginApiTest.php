@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class LoginApiTest extends TestCase
@@ -30,8 +31,8 @@ class LoginApiTest extends TestCase
         $expected = [
             'message' => 'The given data was invalid.',
             'errors' => [
-                'email' => [
-                    'メールアドレス は必須です',
+                'name' => [
+                    'ユーザー名 は必須です',
                 ],
                 'password' => [
                     'パスワード は必須です',
@@ -45,7 +46,22 @@ class LoginApiTest extends TestCase
     /**
      * @test
      */
-    public function should_正しいログイン情報であればログインに成功する(): void
+    public function should_正しいユーザー名とパスワードであればログインに成功する(): void
+    {
+        $this->data['email'] = $this->user->name;
+        $response = $this->postJson(route('login'), $this->data);
+
+        $expected = [
+            'name' => $this->user->name,
+        ];
+
+        $response->assertStatus(200)->assertJson($expected);
+    }
+
+    /**
+     * @test
+     */
+    public function should_正しいメールアドレスとパスワードであればログインに成功する(): void
     {
         $response = $this->postJson(route('login'), $this->data);
 
@@ -69,6 +85,25 @@ class LoginApiTest extends TestCase
             'message' => 'The given data was invalid.',
             'errors' => [
                 'email' => ['認証に失敗しました'],
+            ],
+        ];
+
+        $response->assertStatus(422)->assertExactJson($expected);
+    }
+
+    /**
+     * @test
+     */
+    public function should_ユーザー名が間違っていればログインに失敗する(): void
+    {
+        $this->data['email'] = Str::random();
+
+        $response = $this->postJson(route('login'), $this->data);
+
+        $expected = [
+            'message' => 'The given data was invalid.',
+            'errors' => [
+                'name' => ['認証に失敗しました'],
             ],
         ];
 
