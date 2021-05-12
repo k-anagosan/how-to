@@ -109,7 +109,7 @@ class EloquentPostRepository implements PostRepository
                     $query->where('name', 'like', $username->toString());
                 })
                 ->orderBy(Post::CREATED_AT, 'desc')
-                ->paginate(10)
+                ->paginate(12)
                 ->toArray();
         } catch (\Exception $e) {
             throw $e;
@@ -128,7 +128,7 @@ class EloquentPostRepository implements PostRepository
                     $query->where('user_id', $userId->toInt());
                 })
                 ->orderBy(Post::CREATED_AT, 'desc')
-                ->paginate(10)
+                ->paginate(12)
                 ->toArray();
         } catch (\Exception $e) {
             throw $e;

@@ -285,7 +285,7 @@ describe("Vue Router関連", () => {
     });
 
     describe.each([
-        ["/user/xxx", "Articles", "/", Articles],
+        ["/user/xxx", "Articles", "", Articles],
         ["/user/xxx/archives", "Archives", "/archives", Archives],
         ["/user/xxx/likes", "Likes", "/likes", Likes],
         ["/user/xxx/followers", "Followers", "/followers", Followers],

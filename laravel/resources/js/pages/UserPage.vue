@@ -4,9 +4,9 @@
     <div
       v-if="!loading"
       id="userpage"
-      class="container mx-auto flex lg:flex-row flex-col lg:px-32 sm:p-8 pagetop-offset"
+      class="container mx-auto flex md:flex-row flex-col lg:px-32 sm:p-8 pagetop-offset"
     >
-      <aside class="lg:m-0 mb-4 xl:w-1/4 lg:w-1/3 w-full">
+      <aside class="md:m-0 mb-8 xl:w-1/4 md:w-1/3 w-full">
         <div class="grid gap-y-4 bg-white p-4 shadow-md">
           <div>
             <figure class="flex justify-center items-center h-24">
@@ -22,7 +22,7 @@
               <RouterLink
                 :to="`/user/${name}`"
                 class="flex items-center px-4 py-2 text-gray-500"
-                exact-active-class="active"
+                :class="{ active: $route.path.match(/^\/user\/\w+$/) }"
                 ><ion-icon name="document-text-outline" class="mr-2"></ion-icon>Articles</RouterLink
               >
             </li>
@@ -30,7 +30,7 @@
               <RouterLink
                 :to="`/user/${name}/archives`"
                 class="flex items-center px-4 py-2 text-gray-500"
-                exact-active-class="active"
+                :class="{ active: $route.path.match(/^\/user\/\w+\/archives$/) }"
                 ><ion-icon name="archive-outline" class="mr-2"></ion-icon>Archives</RouterLink
               >
             </li>
@@ -38,7 +38,7 @@
               <RouterLink
                 :to="`/user/${name}/likes`"
                 class="flex items-center px-4 py-2 text-gray-500"
-                exact-active-class="active"
+                :class="{ active: $route.path.match(/^\/user\/\w+\/likes$/) }"
                 ><ion-icon name="thumbs-up-outline" class="mr-2"></ion-icon>Likes</RouterLink
               >
             </li>
@@ -46,14 +46,14 @@
               <RouterLink
                 :to="`/user/${name}/followers`"
                 class="flex items-center px-4 py-2 text-gray-500"
-                exact-active-class="active"
+                :class="{ active: $route.path.match(/^\/user\/\w+\/followers$/) }"
                 ><ion-icon name="person-outline" class="mr-2"></ion-icon>Followers</RouterLink
               >
             </li>
           </ul>
         </div>
       </aside>
-      <div class="lg:ml-4 xl:w-3/4 lg:w-2/3 w-full">
+      <div class="lg:ml-8 md:ml-4 xl:w-3/4 md:w-2/3 w-full">
         <RouterView :username="name" :page="page" @follow="onFollow" />
       </div>
     </div>

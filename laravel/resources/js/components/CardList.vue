@@ -1,7 +1,7 @@
 <template>
-  <div class="xl:mx-40 mx-4">
+  <div>
     <slot></slot>
-    <ul v-if="list" class="cardlist grid lg:grid-cols-3 sm:grid-cols-2 sm:gap-6 gap-y-6">
+    <ul v-if="list" class="cardlist grid" :class="grid">
       <Card v-for="article in list" :key="article.id" :article="article" @changeLike="onChangeLike" />
     </ul>
   </div>
@@ -17,6 +17,11 @@ export default {
     list: {
       type: Array,
       required: true,
+    },
+    grid: {
+      type: String,
+      required: false,
+      default: "lg:grid-cols-3 md:grid-cols-2 sm:gap-4 gap-y-6",
     },
   },
   methods: {

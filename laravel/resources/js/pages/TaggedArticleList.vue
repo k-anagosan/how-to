@@ -2,7 +2,7 @@
   <div>
     <Spinner v-if="loading" class="pagetop-offset" />
     <div v-if="!loading" id="cardlist" class="pagetop-offset">
-      <CardList :list="list" @changeLike="onChangeLike">
+      <CardList class="xl:mx-40 mx-4" :list="list" @changeLike="onChangeLike">
         <h1 class="text-4xl mb-4">{{ tag }}</h1>
       </CardList>
       <Pagination v-if="pagination" class="xl:mx-40 mx-4" :pagination="pagination" :to="`/tag/${tag}`" />
