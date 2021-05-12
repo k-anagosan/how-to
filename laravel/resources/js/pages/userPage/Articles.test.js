@@ -5,8 +5,8 @@ import { randomStr } from "../../utils";
 const Test = new TestUtils();
 const spyFetchPageData = jest.spyOn(Articles.methods, "fetchPageData");
 const spySetData = jest.spyOn(Articles.methods, "setData");
-const spyPush = jest.spyOn(Articles.methods, "push");
-Test.setSpys({ spyFetchPageData, spySetData });
+const spyOnChangeLike = jest.spyOn(Articles.methods, "onChangeLike");
+Test.setSpys({ spyFetchPageData, spySetData, spyOnChangeLike });
 
 const author = randomStr();
 const article = () => ({
@@ -32,12 +32,12 @@ const { current_page, per_page, last_page } = {
     last_page: 3,
 };
 
-const response = responseFactory(current_page, per_page, last_page);
-
+let response = null;
 let userpage = null;
 let wrapper = null;
 let [spyDispatch, spyRouterPush] = [null, null];
 beforeEach(async () => {
+    response = responseFactory(current_page, per_page, last_page);
     userpage = {
         namespaced: true,
         state: { articles: null },
@@ -76,6 +76,18 @@ describe("表示関連", () => {
     it("ページアクセスしたらdataにpageDataが保存される", () => {
         expect(wrapper.vm.$data.pageData).toEqual(response.data);
     });
+
+    it("pageData.length === 0がtrueならまだ記事を投稿していない内容のメッセージを表示する", async () => {
+        await wrapper.setData({ pageData: [] });
+        expect(wrapper.find("h1").text()).toBe("まだ記事を投稿していません");
+    });
+
+    it("pageData.length > 0がtrueなら投稿している記事を表示する", () => {
+        expect(wrapper.find("cardlist-stub").exists()).toBe(true);
+        expect(wrapper.find("pagination-stub").exists()).toBe(true);
+        expect(wrapper.find("h1").exists()).toBe(false);
+    });
+
     it("ページアクセスしたらdataにpaginationが保存される", () => {
         const res = { ...response };
         delete res.data;
@@ -91,17 +103,11 @@ describe("表示関連", () => {
         expect(wrapper.find("#articles").exists()).toBe(!isShown);
     });
 
-    it("pageDataのデータをもとに記事リンクが正しく表示される", () => {
-        wrapper.findAll(".article").wrappers.forEach((wrapper, index) => {
-            const article = response.data[index];
-            expect(wrapper.find("h2").text()).toBe(article.title);
-            wrapper.findAll(".tag").wrappers.forEach((wrapper, index) => {
-                expect(wrapper.text()).toBe(article.tags[index].name);
-            });
-        });
+    it("pageDataをCardListコンポーネントに渡せる", () => {
+        expect(wrapper.find("cardlist-stub").props().list).toEqual(wrapper.vm.$data.pageData);
     });
 
-    it("paginationのデータをPaginationコンポーネントに渡せる", () => {
+    it("paginationをPaginationコンポーネントに渡せる", () => {
         expect(wrapper.find("pagination-stub").props().pagination).toEqual(wrapper.vm.$data.pagination);
         expect(wrapper.find("pagination-stub").props().to).toEqual(`/user/${wrapper.vm.username}`);
     });
@@ -115,22 +121,28 @@ describe("メソッド関連", () => {
         expect(spy).toHaveBeenCalled();
     });
 
-    it("記事リンクをクリックしたらpush()が実行される", () => {
-        wrapper.findAll(".article").wrappers.forEach((wrapper, index) => {
-            expect(spyPush).not.toHaveBeenCalled();
-            wrapper.trigger("click");
-            expect(spyPush).toHaveBeenCalled();
-            expect(spyPush.mock.calls[0]).toEqual([response.data[index].id]);
-            spyPush.mock.calls = [];
-        });
+    it("changeLikeイベントが発火されたらonChangeLike()が実行される", () => {
+        expect(spyOnChangeLike).not.toHaveBeenCalled();
+        const e = { id: response.data[0].id, isLiked: !response.data[0].liked_by_me };
+        wrapper
+            .find("cardlist-stub")
+            .vm.$emit("changeLike", { id: response.data[0].id, isLiked: !response.data[0].liked_by_me });
+        expect(spyOnChangeLike.mock.calls[0]).toEqual([e]);
     });
 
-    it("push()を実行したらrouter.push()が実行される", () => {
-        const id = randomStr();
-        expect(spyRouterPush).not.toHaveBeenCalled();
-        wrapper.vm.push(id);
-        expect(spyRouterPush).toHaveBeenCalled();
-        expect(spyRouterPush.mock.calls[0][0]).toBe(`/article/${id}`);
+    it.each([[false], [true]])("onChangeLike()がisLiked: %sで実行されたらpageDataが反映される", isLiked => {
+        response.data[0].liked_by_me = !isLiked;
+        const e = { id: response.data[0].id, isLiked };
+        wrapper.vm.$data.pageData.forEach((article, index) => {
+            expect(article.likes_count).toBe(10);
+            expect(article.liked_by_me).toBe(index === 0 ? !isLiked : false);
+        });
+        wrapper.vm.onChangeLike(e);
+        wrapper.vm.$data.pageData.forEach((article, index) => {
+            const likes_count = isLiked ? 11 : 9;
+            expect(article.likes_count).toBe(index === 0 ? likes_count : 10);
+            expect(article.liked_by_me).toBe(index === 0 ? isLiked : false);
+        });
     });
 });
 
