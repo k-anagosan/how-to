@@ -18,7 +18,7 @@ class GetUserArticleListApiTest extends TestCase
     {
         parent::setUp();
 
-        $this->perPage = 10;
+        $this->perPage = 12;
 
         for ($i = 0; $i < 3; $i++) {
             $user = factory(User::class)->create();
