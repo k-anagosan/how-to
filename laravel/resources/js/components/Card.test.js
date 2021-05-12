@@ -106,11 +106,35 @@ describe("いいね処理関連", () => {
             expect(post.actions.putLike).not.toHaveBeenCalled();
             expect(post.actions.deleteLike).not.toHaveBeenCalled();
             await wrapper.vm.onChangeLike(e);
-            if (e.isLiked) {
-                expect(wrapper.emitted().changeLike).toEqual([[{ id: article.id, isLiked: true }]]);
-            } else {
-                expect(wrapper.emitted().changeLike).toEqual([[{ id: article.id, isLiked: false }]]);
-            }
+            expect(wrapper.emitted().changeLike).toEqual([[{ id: article.id, isLiked }]]);
+        });
+    });
+
+    describe("いいね処理失敗時", () => {
+        beforeEach(() => {
+            post = {
+                namespaced: true,
+                actions: {
+                    putLike: jest.fn().mockImplementation(() => null),
+                    deleteLike: jest.fn().mockImplementation(() => null),
+                },
+            };
+            Test.setSpys({ spyOnChangeLike, putLike: post.actions.putLike, deleteLike: post.actions.deleteLike });
+            Test.setVuex({ post });
+            wrapper = Test.shallowWrapperFactory();
+        });
+
+        it.each([
+            ["putLike", false, { isLiked: true }],
+            ["deleteLike", true, { isLiked: false }],
+        ])("%sアクションの結果がnullなら{isLiked: %s}で再度changeLikeイベントを発火する", async (_, isLiked, e) => {
+            expect(post.actions.putLike).not.toHaveBeenCalled();
+            expect(post.actions.deleteLike).not.toHaveBeenCalled();
+            await wrapper.vm.onChangeLike(e);
+            expect(wrapper.emitted().changeLike).toEqual([
+                [{ id: article.id, isLiked: !isLiked }],
+                [{ id: article.id, isLiked }],
+            ]);
         });
     });
 });
