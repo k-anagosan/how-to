@@ -55,11 +55,13 @@ export default {
   methods: {
     async onChangeLike(e) {
       if (e.isLiked) {
-        const id = await this.$store.dispatch("post/putLike", this.article.id);
-        this.$emit("changeLike", { id, isLiked: true });
+        this.$emit("changeLike", { id: this.article.id, isLiked: true });
+        if (!(await this.$store.dispatch("post/putLike", this.article.id)))
+          this.$emit("changeLike", { id: this.article.id, isLiked: false });
       } else {
-        const id = await this.$store.dispatch("post/deleteLike", this.article.id);
-        this.$emit("changeLike", { id, isLiked: false });
+        this.$emit("changeLike", { id: this.article.id, isLiked: false });
+        if (!(await this.$store.dispatch("post/deleteLike", this.article.id)))
+          this.$emit("changeLike", { id: this.article.id, isLiked: true });
       }
     },
     push() {
