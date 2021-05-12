@@ -1,34 +1,19 @@
 <template>
   <div>
     <Spinner v-if="loading" />
-    <div v-if="!loading" id="articles" class="grid sm:gap-y-4 grid-cols-1">
-      <div
-        v-for="article in pageData"
-        :key="article.id"
-        class="h-32 bg-white p-4 cursor-pointer sm:shadow-md sm:hover:shadow-xl transition-shadow"
-        @click="() => push(article.id)"
-      >
-        <div class="article relative h-full">
-          <h2>{{ article.title }}</h2>
-          <ul v-if="article.tags.length > 0" class="absolute bottom-0 left-0 flex flex-row">
-            <li v-for="tag in article.tags" :key="tag.name" class="inline-block" @click.stop>
-              <RouterLink :to="`/tag/${tag.name}`">
-                <div
-                  class="tag p-2 mr-1 text-xs text-gray-900 border border-gray-200 hover:border-gray-600 transition-colors"
-                >
-                  {{ tag.name }}
-                </div>
-              </RouterLink>
-            </li>
-          </ul>
-        </div>
+    <div v-if="!loading" id="articles">
+      <div v-if="pageData !== null && pageData.length > 0" class="grid sm:gap-y-4 grid-cols-1">
+        <CardList class="sm:mx-0 mx-4" :list="pageData" @changeLike="onChangeLike" />
+        <Pagination
+          v-if="!loading && pagination && pageData.length > 0"
+          class="sm:mx-0 mx-4"
+          :pagination="pagination"
+          :to="`/user/${username}`"
+        />
       </div>
-      <Pagination
-        v-if="!loading && pagination && pageData.length > 0"
-        class="sm:mx-0 mx-2"
-        :pagination="pagination"
-        :to="`/user/${username}`"
-      />
+      <div v-if="pageData === null || pageData.length === 0" class="sm:mx-0 mx-4">
+        <h1>まだ記事を投稿していません</h1>
+      </div>
     </div>
   </div>
 </template>
@@ -36,11 +21,13 @@
 <script>
 import Spinner from "../../components/Spinner.vue";
 import Pagination from "../../components/Pagination.vue";
+import CardList from "../../components/CardList.vue";
 import { mapState } from "vuex";
 export default {
   components: {
     Spinner,
     Pagination,
+    CardList,
   },
   props: {
     username: {
@@ -76,9 +63,6 @@ export default {
     },
   },
   methods: {
-    push(id) {
-      this.$router.push(`/article/${id}`);
-    },
     async fetchPageData() {
       if (!this.articles || this.articles.current_page !== this.page) {
         const payload = { name: this.username, page: this.page };
@@ -90,6 +74,20 @@ export default {
       this.pageData = articles.data;
       delete articles.data;
       this.pagination = articles;
+    },
+    onChangeLike({ id, isLiked }) {
+      this.pageData = this.pageData.map(article => {
+        if (article.id === id) {
+          if (isLiked) {
+            article.likes_count += 1;
+            article.liked_by_me = true;
+          } else {
+            article.likes_count -= 1;
+            article.liked_by_me = false;
+          }
+        }
+        return article;
+      });
     },
   },
 };
