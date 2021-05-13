@@ -3,7 +3,12 @@
     <Spinner v-if="loading" />
     <div v-if="!loading" id="likes">
       <div v-if="pageData !== null && pageData.length > 0" class="grid sm:gap-y-4 grid-cols-1">
-        <CardList class="sm:mx-0 mx-4" :list="pageData" @changeLike="onChangeLike" />
+        <CardList
+          class="sm:mx-0 mx-4"
+          :list="pageData"
+          grid="xl:grid-cols-3 lg:grid-cols-2 sm:gap-4 gap-y-6"
+          @changeLike="onChangeLike"
+        />
         <Pagination
           v-if="!loading && pagination && pageData.length > 0"
           class="sm:mx-0 mx-4"
