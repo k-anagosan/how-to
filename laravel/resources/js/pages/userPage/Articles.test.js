@@ -33,8 +33,8 @@ const { current_page, per_page, last_page } = {
 };
 
 let response = null;
-let userpage = null;
 let wrapper = null;
+let [userpage, auth] = [null, null];
 let [spyDispatch, spyRouterPush] = [null, null];
 beforeEach(async () => {
     response = responseFactory(current_page, per_page, last_page);
@@ -45,6 +45,7 @@ beforeEach(async () => {
             setArticles(state, articles) {
                 state.articles = articles;
             },
+            setLikes: jest.fn(),
         },
         actions: {
             getArticles: jest.fn().mockImplementation(context => {
@@ -52,13 +53,25 @@ beforeEach(async () => {
             }),
         },
     };
+    auth = {
+        namespaced: true,
+        state: { user: { name: author } },
+        getters: {
+            username: state => state.user.name,
+        },
+    };
 
     const router = Test.setVueRouter();
-    const store = Test.setVuex({ userpage });
+    const store = Test.setVuex({ userpage, auth });
     spyDispatch = jest.spyOn(store, "dispatch");
     spyRouterPush = jest.spyOn(router, "push");
 
-    Test.setSpys({ getArticles: userpage.actions.getArticles, spyDispatch, spyRouterPush });
+    Test.setSpys({
+        getArticles: userpage.actions.getArticles,
+        setLikes: userpage.mutations.setLikes,
+        spyDispatch,
+        spyRouterPush,
+    });
     const options = {
         propsData: { page: current_page, username: author },
     };
@@ -107,6 +120,12 @@ describe("表示関連", () => {
         expect(wrapper.find("cardlist-stub").props().list).toEqual(wrapper.vm.$data.pageData);
     });
 
+    it("owned-by-meをCardListコンポーネントに渡せる", () => {
+        expect(wrapper.find("cardlist-stub").props().ownedByMe).toEqual(
+            wrapper.vm.username === wrapper.vm.loginUsername
+        );
+    });
+
     it("paginationをPaginationコンポーネントに渡せる", () => {
         expect(wrapper.find("pagination-stub").props().pagination).toEqual(wrapper.vm.$data.pagination);
         expect(wrapper.find("pagination-stub").props().to).toEqual(`/user/${wrapper.vm.username}`);
@@ -144,6 +163,24 @@ describe("メソッド関連", () => {
             expect(article.liked_by_me).toBe(index === 0 ? isLiked : false);
         });
     });
+
+    it.each([
+        ["自身のユーザーページの/articles", "実行される", true],
+        ["他のユーザーページの/articles", "実行されない", false],
+    ])("onChangeLike()が%sで実行されたら、setLikesミューテーションが%s", (_, __, isOwned) => {
+        if (!isOwned) {
+            auth.state.user.name = randomStr();
+            Test.setVuex({ auth, userpage });
+            wrapper = Test.shallowWrapperFactory();
+        }
+        expect(spyOnChangeLike).not.toHaveBeenCalled();
+        wrapper.vm.onChangeLike({ id: wrapper.vm.$data.pageData[0].id, isLiked: true });
+        if (isOwned) {
+            expect(userpage.mutations.setLikes).toHaveBeenCalled();
+        } else {
+            expect(userpage.mutations.setLikes).not.toHaveBeenCalled();
+        }
+    });
 });
 
 describe("Vuex関連", () => {
@@ -156,5 +193,9 @@ describe("Vuex関連", () => {
 
     it("articlesを正しく算出している", () => {
         expect(Test.computedValue("articles", { $store: wrapper.vm.$store })).toEqual(userpage.state.articles);
+    });
+
+    it("loginUsernameを正しく算出している", () => {
+        expect(Test.computedValue("loginUsername", { $store: wrapper.vm.$store })).toEqual(auth.state.user.name);
     });
 });
