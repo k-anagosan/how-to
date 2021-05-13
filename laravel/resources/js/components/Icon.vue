@@ -30,7 +30,9 @@ export default {
   },
   methods: {
     onClick() {
-      if (this.to) this.$router.push(this.to);
+      if (this.to && this.$route.path !== this.to) {
+        this.$router.push(this.to);
+      }
     },
   },
 };
