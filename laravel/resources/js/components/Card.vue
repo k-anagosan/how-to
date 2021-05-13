@@ -10,10 +10,32 @@
           <LikeButton :is-liked="article.liked_by_me" @like="onChangeLike" />
         </div>
       </figure>
-      <div class="flex flex-col bg-white sm:p-6 p-4 min-card-height">
-        <div>
+      <div class="flex flex-col bg-white p-6 min-card-height">
+        <div class="flex justify-between">
           <span @click.stop>
             <Icon :icon="article.author" size="sm" class="mb-2" :to="`/user/${article.author.name}`" />
+          </span>
+          <span v-if="ownedByMe" class="relative mb-2 flex items-center">
+            <ion-icon
+              :id="`open-button-${article.id}`"
+              name="chevron-down-outline"
+              class="text-2xl text-gray-400 hover:text-gray-800 transition-colors"
+              @click="isShown = !isShown"
+            ></ion-icon>
+            <div
+              v-if="isShown"
+              class="absolute edit-menu flex flex-col rounded-lg shadow-lg top-6 -left-20 bg-white"
+              @click.stop
+            >
+              <RouterLink
+                to="/"
+                class="p-2 w-24 rounded-t-lg border-b border-gray-200 hover:bg-blue-100 transition-colors"
+                >更新する</RouterLink
+              >
+              <div class="p-2 w-24 rounded-b-lg text-red-500 hover:bg-blue-100 transition-colors" @click="onClick">
+                削除する
+              </div>
+            </div>
           </span>
         </div>
         <h2 class="article-title mb-4 flex-auto font-bold">
@@ -51,6 +73,22 @@ export default {
       type: Object,
       required: true,
     },
+    ownedByMe: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+  },
+  data() {
+    return {
+      isShown: false,
+    };
+  },
+  mounted() {
+    window.addEventListener("click", this.closeMenu);
+  },
+  beforeDestroy() {
+    window.removeEventListener("click", this.closeMenu);
   },
   methods: {
     async onChangeLike(e) {
@@ -64,8 +102,15 @@ export default {
           this.$emit("changeLike", { id: this.article.id, isLiked: true });
       }
     },
-    push() {
+    push(e) {
+      if (this.$el.querySelector(`#open-button-${this.article.id}`).contains(e.target)) return;
       this.$router.push(`/article/${this.article.id}`);
+    },
+    onClick() {},
+    closeMenu(e) {
+      if (!this.$el.querySelector(`#open-button-${this.article.id}`).contains(e.target)) {
+        this.isShown = false;
+      }
     },
   },
 };
@@ -73,5 +118,8 @@ export default {
 <style>
 .active-tag {
   border-color: rgba(75, 85, 99, 1);
+}
+.edit-menu {
+  box-shadow: 0 3px 12px rgb(0 61 111 / 25%);
 }
 </style>

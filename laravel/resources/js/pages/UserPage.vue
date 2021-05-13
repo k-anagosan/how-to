@@ -4,7 +4,7 @@
     <div
       v-if="!loading"
       id="userpage"
-      class="container mx-auto flex md:flex-row flex-col lg:px-32 sm:p-8 pagetop-offset"
+      class="container mx-auto flex md:flex-row flex-col xl:px-32 sm:p-8 pagetop-offset"
     >
       <aside class="md:m-0 mb-8 xl:w-1/4 md:w-1/3 w-full">
         <div class="grid gap-y-4 bg-white p-4 shadow-md">
@@ -17,7 +17,7 @@
           <div v-if="!loginUser || loginUser.name !== name" class="flex items-center justify-center">
             <FollowButton class="py-1 px-2 w-40" :is-following="followed_by_me" @follow="onFollow" />
           </div>
-          <ul class="px-4 pb-4 grid gap-y-1 grid-cols-1">
+          <ul class="sm:px-4 pb-4 grid gap-y-1 grid-cols-1">
             <li class="articles text-xl">
               <RouterLink
                 :to="`/user/${name}`"

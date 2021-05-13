@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 @import "./markdown.css";
-@import "~highlightjs/styles/github.css";
+@import "~highlight.js/styles/github.css";
 
 .pagetop-offset {
     @apply pt-8;
@@ -34,15 +34,15 @@
     border-radius: 8px;
 }
 
-.icon-size-sm: {
+.icon-size-sm {
     @apply h-6 w-6
 }
 
-.icon-size-md: {
+.icon-size-md {
     @apply h-8 w-8
 }
 
-.icon-size-lg: {
+.icon-size-lg {
     @apply h-10 w-10
 }
 

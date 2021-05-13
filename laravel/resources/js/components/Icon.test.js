@@ -54,18 +54,23 @@ describe("イベント関連", () => {
     });
 
     it.each([
-        ["でないなら", "実行される", null],
-        ["であるなら", "実行されない", randomStr()],
-    ])("onClick()が実行されたときtoがnull%s、push()が%s", async (_, __, to) => {
+        ["nullであるなら", "push()が実行されない", null, false],
+        ["nullでないなら", "push()が実行される", `/${randomStr()}`, false],
+        ["$route.pathと同じであるなら", "push()が実行されない", `/${randomStr()}`, true],
+    ])("onClick()が実行されたときtoが%s、%s", async (_, __, to, isSame) => {
         propsData.to = to;
         Test.setMountOption(Icon, { propsData });
         wrapper = Test.shallowWrapperFactory();
+        if (isSame) {
+            await wrapper.vm.$router.push(to);
+            Test.clearSpysCalledTimes();
+        }
         const spyPush = jest.spyOn(wrapper.vm.$router, "push");
         Test.setSpys({ spyPush });
 
         expect(spyPush).not.toHaveBeenCalled();
         await wrapper.vm.onClick();
-        if (to) {
+        if (to && !isSame) {
             expect(spyPush).toHaveBeenCalled();
             expect(spyPush.mock.calls).toEqual([[to]]);
         } else {

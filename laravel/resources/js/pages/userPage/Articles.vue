@@ -3,7 +3,13 @@
     <Spinner v-if="loading" />
     <div v-if="!loading" id="articles">
       <div v-if="pageData !== null && pageData.length > 0" class="grid sm:gap-y-4 grid-cols-1">
-        <CardList class="sm:mx-0 mx-4" :list="pageData" @changeLike="onChangeLike" />
+        <CardList
+          class="sm:mx-0 mx-4"
+          :list="pageData"
+          :owned-by-me="username === loginUsername"
+          grid="xl:grid-cols-3 lg:grid-cols-2 sm:gap-4 gap-y-6"
+          @changeLike="onChangeLike"
+        />
         <Pagination
           v-if="!loading && pagination && pageData.length > 0"
           class="sm:mx-0 mx-4"
@@ -22,7 +28,7 @@
 import Spinner from "../../components/Spinner.vue";
 import Pagination from "../../components/Pagination.vue";
 import CardList from "../../components/CardList.vue";
-import { mapState } from "vuex";
+import { mapState, mapGetters } from "vuex";
 export default {
   components: {
     Spinner,
@@ -50,12 +56,17 @@ export default {
     ...mapState({
       articles: state => state.userpage.articles,
     }),
+    ...mapGetters({
+      loginUsername: "auth/username",
+    }),
   },
   watch: {
     $route: {
       async handler() {
         this.loading = true;
-        await this.fetchPageData();
+        if (!this.articles || this.articles.current_page !== this.page) {
+          await this.fetchPageData();
+        }
         this.setData();
         this.loading = false;
       },
@@ -64,10 +75,8 @@ export default {
   },
   methods: {
     async fetchPageData() {
-      if (!this.articles || this.articles.current_page !== this.page) {
-        const payload = { name: this.username, page: this.page };
-        await this.$store.dispatch("userpage/getArticles", payload);
-      }
+      const payload = { name: this.username, page: this.page };
+      await this.$store.dispatch("userpage/getArticles", payload);
     },
     setData() {
       const articles = { ...this.articles };
@@ -88,6 +97,9 @@ export default {
         }
         return article;
       });
+      if (this.username === this.loginUsername) {
+        this.$store.commit("userpage/setLikes", null, { root: true });
+      }
     },
   },
 };
