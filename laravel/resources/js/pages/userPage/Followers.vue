@@ -28,7 +28,7 @@
           :to="`/user/${username}/followers`"
         />
       </div>
-      <div v-if="pageData === null || pageData.length === 0">
+      <div v-if="pageData === null || pageData.length === 0" class="sm:mx-0 mx-4">
         <h1>まだ他のユーザーをフォローしていません</h1>
       </div>
     </div>
