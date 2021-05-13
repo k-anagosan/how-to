@@ -4,6 +4,8 @@ import Card from "@/components/Card.vue";
 import { randomStr } from "@/utils";
 
 const Test = new TestUtils();
+const spyPush = jest.spyOn(Card.methods, "push");
+Test.setSpys({ spyPush });
 
 const article = {
     id: randomStr(20),
@@ -14,15 +16,16 @@ const article = {
     liked_by_me: false,
 };
 
-const options = {
-    stubs: { RouterLink: RouterLinkStub },
-    propsData: { article },
-};
-
+let options = null;
 let wrapper = null;
 beforeEach(() => {
+    options = {
+        stubs: { RouterLink: RouterLinkStub, "ion-icon": true },
+        propsData: { article, ownedByMe: true },
+    };
     Test.setMountOption(Card, options);
     Test.setVueRouter();
+
     wrapper = Test.shallowWrapperFactory();
 });
 
@@ -57,6 +60,23 @@ describe("表示関連", () => {
         article.tags.forEach((tag, index) => {
             expect(tags.at(index).text()).toBe(tag.name);
         });
+    });
+
+    it.each([
+        [true, "表示される"],
+        [false, "表示されない"],
+    ])("onwedByMeが%sの時メニュー開閉ボタンが%s", ownedByMe => {
+        options.propsData.ownedByMe = ownedByMe;
+        Test.setMountOption(Card, options);
+        wrapper = Test.shallowWrapperFactory();
+
+        expect(wrapper.find(`#open-button-${wrapper.vm.article.id}`).exists()).toBe(ownedByMe);
+    });
+
+    it("メニュー開閉ボタンをクリックしたらメニューが表示される", async () => {
+        expect(wrapper.find(".edit-menu").exists()).toBe(false);
+        await wrapper.find(`#open-button-${wrapper.vm.article.id}`).vm.$emit("click");
+        expect(wrapper.find(".edit-menu").exists()).toBe(true);
     });
 });
 
@@ -140,45 +160,59 @@ describe("いいね処理関連", () => {
 });
 
 describe("Vue Router 関連", () => {
-    let spyPush = null;
+    let spyRouterPush = null;
     beforeEach(() => {
-        spyPush = jest.spyOn(wrapper.vm.$router, "push");
-        Test.setSpys({ spyPush });
+        spyRouterPush = jest.spyOn(wrapper.vm.$router, "push");
+        Test.setSpys({ spyRouterPush });
         options.stubs = ["ion-icon"];
         Test.setMountOption(Card, options);
         wrapper = Test.wrapperFactory();
     });
 
     afterEach(() => {
+        if (wrapper.vm.$route.path !== "/") wrapper.vm.$router.push("/");
         Test.clearSpysCalledTimes();
     });
-    it("push()イベントハンドラにより記事詳細ページへ遷移する", async () => {
+    it("push()イベントハンドラにより記事詳細ページへ遷移する", async done => {
         expect(wrapper.vm.$route.path).toBe(`/`);
-        await wrapper.vm.push();
+        await wrapper.vm.push(wrapper.vm.$el.querySelector(".card"));
         expect(wrapper.vm.$route.path).toBe(`/article/${article.id}`);
+        done();
     });
 
     it("カードをクリックしたらpush()が実行される", async done => {
         expect(spyPush).not.toHaveBeenCalled();
         await wrapper.find(".card").trigger("click");
         expect(spyPush).toHaveBeenCalled();
+        expect(spyRouterPush).toHaveBeenCalled();
         done();
     });
+
+    it("メニュー開閉ボタンをクリックしたら$router.push()は実行されない", async done => {
+        expect(spyPush).not.toHaveBeenCalled();
+        await wrapper.find(`#open-button-${wrapper.vm.article.id}`).trigger("click");
+        expect(spyPush).toHaveBeenCalled();
+        expect(spyRouterPush).not.toHaveBeenCalled();
+        done();
+    });
+
     it("タグを表すRouterLinkのtoにタグページへのurlが設定される", () => {
         const tags = wrapper.findAll(".tag");
         tags.wrappers.forEach((tag, index) => {
             expect(tag.props().to).toBe(`/tag/${article.tags[index].name}`);
         });
     });
-    it("タグををクリックしたら指定したページ（仮では'/'）に飛ぶ", async done => {
+    it("タグををクリックしたら指定したページに飛ぶ", () => {
         const tags = wrapper.findAll(".tag");
 
-        await tags.wrappers.forEach(async tag => {
-            spyPush.mock.calls = [];
-            expect(spyPush).not.toHaveBeenCalled();
-            await tag.find(".tag").trigger("click");
-            expect(spyPush).toHaveBeenCalled();
+        tags.wrappers.forEach((tag, index) => {
+            expect(spyRouterPush).not.toHaveBeenCalled();
+            expect(wrapper.vm.$route.path).toBe("/");
+            tag.trigger("click");
+            expect(spyRouterPush).toHaveBeenCalled();
+            expect(wrapper.vm.$route.path).toBe(`/tag/${article.tags[index].name}`);
+            wrapper.vm.$router.push("/");
+            spyRouterPush.mock.calls = [];
         });
-        done();
     });
 });
