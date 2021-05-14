@@ -103,12 +103,12 @@ export default {
       }
     },
     push(e) {
-      if (this.$el.querySelector(`#open-button-${this.article.id}`).contains(e.target)) return;
+      if (this.ownedByMe && this.$el.querySelector(`#open-button-${this.article.id}`).contains(e.target)) return;
       this.$router.push(`/article/${this.article.id}`);
     },
     onClick() {},
     closeMenu(e) {
-      if (!this.$el.querySelector(`#open-button-${this.article.id}`).contains(e.target)) {
+      if (this.ownedByMe && !this.$el.querySelector(`#open-button-${this.article.id}`).contains(e.target)) {
         this.isShown = false;
       }
     },
