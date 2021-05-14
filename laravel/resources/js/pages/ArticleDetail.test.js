@@ -8,6 +8,7 @@ Test.setSpys({ spyFetchArticle });
 
 let wrapper = null;
 let response = null;
+let post = null;
 beforeEach(() => {
     response = {
         id: randomStr(20),
@@ -18,16 +19,20 @@ beforeEach(() => {
         likes_count: 10,
         liked_by_me: false,
     };
-    const post = {
+    post = {
         namespaced: true,
         actions: {
             getArticle: jest.fn().mockImplementation(() => ({ ...response })),
-            putLike: jest.fn(),
-            deleteLike: jest.fn(),
+            putLike: jest.fn().mockImplementation(() => randomStr()),
+            deleteLike: jest.fn().mockImplementation(() => randomStr()),
         },
     };
 
-    Test.setSpys({ getArticle: post.actions.getArticle });
+    Test.setSpys({
+        getArticle: post.actions.getArticle,
+        putLike: post.actions.putLike,
+        deleteLike: post.actions.deleteLike,
+    });
     Test.setVueRouter();
     Test.setVuex({ post });
 
@@ -109,26 +114,69 @@ describe("いいね関連", () => {
         });
     });
 
-    it.each([
-        [true, "増え", true],
-        [false, "減り", false],
-    ])("isLikedが%sならいいね数が1つ%s、liked_by_meが%sになる", async isLiked => {
-        if (!isLiked) wrapper.vm.$data.article.liked_by_me = true;
+    describe.each([[true], [false]])("isLikedが%sの時のonChangeLike()関連", isLiked => {
+        it(`isLikedが${isLiked}ならいいね数が1つ${
+            isLiked ? "増え" : "減り"
+        }、liked_by_meが${isLiked}になる`, async () => {
+            wrapper.vm.$data.article.liked_by_me = !isLiked;
 
-        await wrapper.vm.onChangeLike({ isLiked });
-        let likedByMe = response.liked_by_me;
-        let likesCount = response.likes_count;
+            await wrapper.vm.onChangeLike({ isLiked });
+            let [likedByMe, likesCount] = [null, response.likes_count];
 
-        if (isLiked) {
-            likedByMe = true;
-            likesCount += 1;
-        } else {
-            likedByMe = false;
-            likesCount -= 1;
-        }
+            if (isLiked) {
+                likedByMe = true;
+                likesCount += 1;
+            } else {
+                likedByMe = false;
+                likesCount -= 1;
+            }
 
-        expect(wrapper.vm.$data.article.liked_by_me).toBe(likedByMe);
-        expect(wrapper.vm.$data.article.likes_count).toBe(likesCount);
+            expect(wrapper.vm.$data.article.liked_by_me).toBe(likedByMe);
+            expect(wrapper.vm.$data.article.likes_count).toBe(likesCount);
+        });
+
+        it("APIに失敗したら、いいね数とliked_by_meが元に戻る", async () => {
+            if (isLiked) {
+                post.actions.putLike = jest.fn().mockImplementation(() => null);
+                expect(post.actions.putLike).not.toHaveBeenCalled();
+            } else {
+                post.actions.deleteLike = jest.fn().mockImplementation(() => null);
+                expect(post.actions.deleteLike).not.toHaveBeenCalled();
+            }
+
+            Test.setVuex({ post });
+            wrapper = Test.shallowWrapperFactory();
+            await wrapper.vm.fetchArticle().then(() => {
+                wrapper.vm.$data.article.liked_by_me = !isLiked;
+            });
+            await wrapper.vm.onChangeLike({ isLiked });
+            const likesCount = response.likes_count;
+
+            if (isLiked) {
+                expect(post.actions.putLike).toHaveBeenCalled();
+            } else {
+                expect(post.actions.deleteLike).toHaveBeenCalled();
+            }
+            expect(wrapper.vm.$data.article.liked_by_me).toBe(!isLiked);
+            expect(wrapper.vm.$data.article.likes_count).toBe(likesCount);
+        });
+    });
+
+    it("like()メソッドが正しく機能する", () => {
+        expect(wrapper.vm.$data.article.likes_count).toBe(10);
+        expect(wrapper.vm.$data.article.liked_by_me).toBe(false);
+        wrapper.vm.like();
+        expect(wrapper.vm.$data.article.likes_count).toBe(11);
+        expect(wrapper.vm.$data.article.liked_by_me).toBe(true);
+    });
+
+    it("unlike()メソッドが正しく機能する", () => {
+        wrapper.vm.$data.article.liked_by_me = true;
+        expect(wrapper.vm.$data.article.likes_count).toBe(10);
+        expect(wrapper.vm.$data.article.liked_by_me).toBe(true);
+        wrapper.vm.unlike();
+        expect(wrapper.vm.$data.article.likes_count).toBe(9);
+        expect(wrapper.vm.$data.article.liked_by_me).toBe(false);
     });
 });
 

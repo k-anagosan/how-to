@@ -91,14 +91,24 @@ export default {
     },
     async onChangeLike(e) {
       if (e.isLiked) {
-        await this.$store.dispatch("post/putLike", this.article.id);
-        this.article.likes_count += 1;
-        this.article.liked_by_me = true;
+        this.like();
+        if (!(await this.$store.dispatch("post/putLike", this.article.id))) {
+          this.unlike();
+        }
       } else {
-        await this.$store.dispatch("post/deleteLike", this.article.id);
-        this.article.likes_count -= 1;
-        this.article.liked_by_me = false;
+        this.unlike();
+        if (!(await this.$store.dispatch("post/deleteLike", this.article.id))) {
+          this.like();
+        }
       }
+    },
+    like() {
+      this.article.likes_count += 1;
+      this.article.liked_by_me = true;
+    },
+    unlike() {
+      this.article.likes_count -= 1;
+      this.article.liked_by_me = false;
     },
   },
 };
