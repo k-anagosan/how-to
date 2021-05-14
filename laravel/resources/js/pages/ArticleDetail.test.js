@@ -8,14 +8,15 @@ Test.setSpys({ spyFetchArticle });
 
 let wrapper = null;
 let response = null;
-let post = null;
+let [post, auth] = [null, null];
+const authorName = randomStr(10);
 beforeEach(() => {
     response = {
         id: randomStr(20),
         title: randomStr(30),
         content: randomStr(100),
         tags: [{ name: randomStr(10) }, { name: randomStr(10) }, { name: randomStr(10) }],
-        author: { name: randomStr(10) },
+        author: { name: authorName },
         likes_count: 10,
         liked_by_me: false,
     };
@@ -27,14 +28,21 @@ beforeEach(() => {
             deleteLike: jest.fn().mockImplementation(() => randomStr()),
         },
     };
+    auth = {
+        namespaced: true,
+        getters: {
+            username: jest.fn().mockImplementation(() => authorName),
+        },
+    };
 
     Test.setSpys({
         getArticle: post.actions.getArticle,
         putLike: post.actions.putLike,
         deleteLike: post.actions.deleteLike,
+        username: auth.getters.username,
     });
     Test.setVueRouter();
-    Test.setVuex({ post });
+    Test.setVuex({ post, auth });
 
     const options = { propsData: { id: randomStr(20) }, stubs: { "ion-icon": true } };
     Test.setMountOption(ArticleDetail, options);
@@ -97,6 +105,34 @@ describe("表示、入力関連", () => {
         expect(wrapper.find("spinner-stub").exists()).toBe(isShown);
         expect(wrapper.find("#article-detail").exists()).toBe(!isShown);
     });
+
+    it.each([
+        ["自身の記事の場合", "表示される", true],
+        ["自身のものでない記事の場合", "表示されない", false],
+    ])("%sにEditMenuが%s", async (_, __, isOwned) => {
+        if (!isOwned) {
+            auth.getters.username = jest.fn().mockImplementation(() => "");
+            Test.setVuex({ post, auth });
+            wrapper = Test.shallowWrapperFactory();
+            await wrapper.vm.fetchArticle();
+        }
+        expect(wrapper.find("editmenu-stub").exists()).toBe(isOwned);
+    });
+});
+
+describe("メソッド関連", () => {
+    it.each([
+        ["自身の記事の場合", true],
+        ["自身のものでない記事の場合", false],
+    ])("%sにisOwned()が期待した値を返す", async (_, isOwned) => {
+        if (!isOwned) {
+            auth.getters.username = jest.fn().mockImplementation(() => "");
+            Test.setVuex({ post, auth });
+            wrapper = Test.shallowWrapperFactory();
+            await wrapper.vm.fetchArticle();
+        }
+        expect(wrapper.vm.isOwned()).toBe(isOwned);
+    });
 });
 
 describe("いいね関連", () => {
@@ -144,7 +180,7 @@ describe("いいね関連", () => {
                 expect(post.actions.deleteLike).not.toHaveBeenCalled();
             }
 
-            Test.setVuex({ post });
+            Test.setVuex({ post, auth });
             wrapper = Test.shallowWrapperFactory();
             await wrapper.vm.fetchArticle().then(() => {
                 wrapper.vm.$data.article.liked_by_me = !isLiked;
@@ -180,11 +216,15 @@ describe("いいね関連", () => {
     });
 });
 
-describe("Vuex", () => {
+describe("Vuex 関連", () => {
     it("ページアクセスしたらgetArticleアクションが実行される", async done => {
         expect(spyFetchArticle).not.toHaveBeenCalled();
         await wrapper.vm.$router.push(`/article/${randomStr(20)}`);
         expect(spyFetchArticle).toHaveBeenCalled();
         done();
+    });
+
+    it("loginUsernameを正しく算出している", () => {
+        expect(Test.computedValue("loginUsername", { $store: wrapper.vm.$store }));
     });
 });

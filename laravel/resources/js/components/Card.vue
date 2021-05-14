@@ -11,32 +11,13 @@
         </div>
       </figure>
       <div class="flex flex-col bg-white p-6 min-card-height">
-        <div class="flex justify-between">
-          <span @click.stop>
-            <Icon :icon="article.author" size="sm" class="mb-2" :to="`/user/${article.author.name}`" />
-          </span>
-          <span v-if="ownedByMe" class="relative mb-2 flex items-center">
-            <ion-icon
-              :id="`open-button-${article.id}`"
-              name="chevron-down-outline"
-              class="text-2xl text-gray-400 hover:text-gray-800 transition-colors"
-              @click="isShown = !isShown"
-            ></ion-icon>
-            <div
-              v-if="isShown"
-              class="absolute edit-menu flex flex-col rounded-lg shadow-lg top-6 -left-20 bg-white"
-              @click.stop
-            >
-              <RouterLink
-                to="/"
-                class="p-2 w-24 rounded-t-lg border-b border-gray-200 hover:bg-blue-100 transition-colors"
-                >更新する</RouterLink
-              >
-              <div class="p-2 w-24 rounded-b-lg text-red-500 hover:bg-blue-100 transition-colors" @click="onClick">
-                削除する
-              </div>
-            </div>
-          </span>
+        <div class="flex h-6 mb-2 justify-between">
+          <div @click.stop>
+            <Icon :icon="article.author" size="sm" :to="`/user/${article.author.name}`" />
+          </div>
+          <div v-if="ownedByMe" class="relative flex items-center">
+            <EditMenu :article-id="article.id" />
+          </div>
         </div>
         <h2 class="article-title mb-4 flex-auto font-bold">
           {{ article.title }}
@@ -62,11 +43,13 @@
 <script>
 import Icon from "../components/Icon";
 import LikeButton from "../components/LikeButton";
+import EditMenu from "../components/EditMenu";
 
 export default {
   components: {
     Icon,
     LikeButton,
+    EditMenu,
   },
   props: {
     article: {
@@ -78,17 +61,6 @@ export default {
       required: false,
       default: false,
     },
-  },
-  data() {
-    return {
-      isShown: false,
-    };
-  },
-  mounted() {
-    window.addEventListener("click", this.closeMenu);
-  },
-  beforeDestroy() {
-    window.removeEventListener("click", this.closeMenu);
   },
   methods: {
     async onChangeLike(e) {
@@ -105,12 +77,6 @@ export default {
     push(e) {
       if (this.ownedByMe && this.$el.querySelector(`#open-button-${this.article.id}`).contains(e.target)) return;
       this.$router.push(`/article/${this.article.id}`);
-    },
-    onClick() {},
-    closeMenu(e) {
-      if (this.ownedByMe && !this.$el.querySelector(`#open-button-${this.article.id}`).contains(e.target)) {
-        this.isShown = false;
-      }
     },
   },
 };
