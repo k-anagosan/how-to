@@ -65,18 +65,16 @@ describe("表示関連", () => {
     it.each([
         [true, "表示される"],
         [false, "表示されない"],
-    ])("onwedByMeが%sの時メニュー開閉ボタンが%s", ownedByMe => {
+    ])("onwedByMeが%sの時EditMenuが%s", ownedByMe => {
         options.propsData.ownedByMe = ownedByMe;
         Test.setMountOption(Card, options);
         wrapper = Test.shallowWrapperFactory();
 
-        expect(wrapper.find(`#open-button-${wrapper.vm.article.id}`).exists()).toBe(ownedByMe);
+        expect(wrapper.find("editmenu-stub").exists()).toBe(ownedByMe);
     });
 
-    it("メニュー開閉ボタンをクリックしたらメニューが表示される", async () => {
-        expect(wrapper.find(".edit-menu").exists()).toBe(false);
-        await wrapper.find(`#open-button-${wrapper.vm.article.id}`).vm.$emit("click");
-        expect(wrapper.find(".edit-menu").exists()).toBe(true);
+    it("EditMenuのarticle-idに値を正しく渡せている", () => {
+        expect(wrapper.find("editmenu-stub").props().articleId).toBe(wrapper.vm.article.id);
     });
 });
 
