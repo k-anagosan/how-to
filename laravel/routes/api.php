@@ -25,6 +25,7 @@ Route::put('/user/{id}/follow', App\Http\Actions\FollowUserAction::class)->name(
 Route::delete('/user/{id}/follow', App\Http\Actions\UnfollowUserAction::class)->name('user.unfollow');
 
 Route::post('/post', App\Http\Actions\PostAction::class)->name('post.create');
+Route::delete('/post', App\Http\Actions\DeleteArticleAction::class)->name('post.delete');
 Route::get('/post/{id}', App\Http\Actions\GetArticleAction::class)->name('post.show');
 Route::put('/post/{id}/like', App\Http\Actions\LikeAction::class)->name('post.like');
 Route::delete('/post/{id}/unlike', App\Http\Actions\UnlikeAction::class)->name('post.unlike');
