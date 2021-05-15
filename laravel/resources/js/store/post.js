@@ -51,6 +51,20 @@ const actions = {
         context.commit("setApiIsSuccess", false);
         return null;
     },
+    async deleteItem(context, data) {
+        context.commit("setApiIsSuccess", null);
+
+        const response = await window.axios.delete(`/api/post/${data}`);
+
+        if (response.status === OK) {
+            context.commit("setApiIsSuccess", true);
+            return response.data.id;
+        }
+
+        context.commit("error/setErrorCode", response.status, { root: true });
+        context.commit("setApiIsSuccess", false);
+        return null;
+    },
     async postPhoto(context, data) {
         context.commit("setApiIsSuccess", null);
 
