@@ -46,6 +46,7 @@ class EloquentPostRepository implements PostRepository
         DB::beginTransaction();
 
         try {
+            $this->deleteTags($postId);
             $postOrm->delete();
             DB::commit();
         } catch (\Exception $e) {
@@ -147,6 +148,21 @@ class EloquentPostRepository implements PostRepository
                 return $this->findOrCraeteTagName($tag)->toInt();
             })->all();
             $post->tags()->attach($tagNameIds);
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+    }
+
+    public function deleteTags(PostId $postId): void
+    {
+        DB::beginTransaction();
+
+        try {
+            $post = Post::with(['tags'])->find($postId->toString());
+            $tagIds = $post->tags->map(fn ($tag) => $tag->id);
+            $post->tags()->detach($tagIds);
             DB::commit();
         } catch (\Exception $e) {
             DB::rollback();

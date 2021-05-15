@@ -71,6 +71,14 @@ interface PostRepositoryInterface
     public function addTags(PostId $postId, PostTags $tags): void;
 
     /*
+    * 引数の記事IDに付加されているタグを削除.
+    *
+    * @param PostId   $postId
+    * @param PostTags $tags
+    */
+    public function deleteTags(PostId $postId): void;
+
+    /*
     * TagNameストアに引数のPostTagがあればそのIDを返す。
     * 無ければ新たにそのPostTagを保存し、新規登録したIDを返す。
     *
