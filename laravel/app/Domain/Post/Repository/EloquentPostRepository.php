@@ -46,6 +46,7 @@ class EloquentPostRepository implements PostRepository
         DB::beginTransaction();
 
         try {
+            $this->deleteTags($postId);
             $postOrm->delete();
             DB::commit();
         } catch (\Exception $e) {
@@ -154,6 +155,21 @@ class EloquentPostRepository implements PostRepository
         }
     }
 
+    public function deleteTags(PostId $postId): void
+    {
+        DB::beginTransaction();
+
+        try {
+            $post = Post::with(['tags'])->find($postId->toString());
+            $tagIds = $post->tags->map(fn ($tag) => $tag->id);
+            $post->tags()->detach($tagIds);
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+    }
+
     public function findOrCraeteTagName(PostTag $postTag): TagNameId
     {
         DB::beginTransaction();
@@ -209,5 +225,17 @@ class EloquentPostRepository implements PostRepository
         }
 
         return $postId;
+    }
+
+    public function exists(PostId $postId): bool
+    {
+        return Post::where('id', $postId->toString())->exists();
+    }
+
+    public function isOwned(PostId $postId, UserAccountId $userId)
+    {
+        $post = Post::find($postId->toString());
+
+        return $post->author->id === $userId->toInt();
     }
 }
