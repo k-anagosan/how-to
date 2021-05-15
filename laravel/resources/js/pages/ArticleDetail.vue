@@ -9,7 +9,7 @@
           </div>
           <div class="flex">
             <div v-if="isOwned()" class="relative flex justify-center items-center">
-              <EditMenu :article-id="article.id" />
+              <EditMenu :article-id="article.id" @delete="deleteArticle" />
             </div>
             <div class="flex justify-between items-center ml-1 rounded-2xl bg-gray-200 bg-opacity-80">
               <span class="pr-2 pl-3 likes-count">{{ article.likes_count }}</span>
@@ -31,7 +31,7 @@
               <li class="likes-count mx-auto text-xs text-gray-500">{{ article.likes_count }}</li>
               <li class="mt-4">
                 <span v-if="isOwned()" class="relative flex justify-center items-center">
-                  <EditMenu :article-id="article.id" direction="right" />
+                  <EditMenu :article-id="article.id" direction="right" @delete="deleteArticle" />
                 </span>
               </li>
             </ul>
@@ -130,6 +130,9 @@ export default {
     },
     isOwned() {
       return this.article.author.name === this.loginUsername;
+    },
+    deleteArticle() {
+      this.$router.push("/");
     },
   },
 };
