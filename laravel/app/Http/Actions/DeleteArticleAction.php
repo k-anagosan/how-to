@@ -7,7 +7,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Responders\DeleteArticleResponder;
 use App\UseCase\DeleteArticleUseCase;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class DeleteArticleAction extends Controller
 {
@@ -22,11 +21,11 @@ class DeleteArticleAction extends Controller
         $this->middleware('auth');
     }
 
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(string $id): JsonResponse
     {
         return $this->responder->response(
             $this->useCase->execute(
-                PostId::create($request->input('id'))
+                PostId::create($id)
             )
         );
     }

@@ -74,7 +74,6 @@ interface PostRepositoryInterface
     * 引数の記事IDに付加されているタグを削除.
     *
     * @param PostId   $postId
-    * @param PostTags $tags
     */
     public function deleteTags(PostId $postId): void;
 
@@ -102,6 +101,13 @@ interface PostRepositoryInterface
      * @return null|PostId
      */
     public function deleteLike(PostId $postId, UserAccountId $userId);
+
+    /**
+     * 記事に付加されているいいねをLikesストアからすべて削除する.
+     * @param PostId $postId
+     * @return null|PostId
+     */
+    public function clearLike(PostId $postId);
 
     /**
      * 指定した記事IDが存在するか真偽値で返す.

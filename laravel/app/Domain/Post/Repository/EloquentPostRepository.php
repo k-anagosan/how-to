@@ -41,12 +41,13 @@ class EloquentPostRepository implements PostRepository
 
     public function delete(PostId $postId): void
     {
-        $postOrm = Post::find($postId->toString());
+        $postOrm = Post::with(['likes'])->find($postId->toString());
 
         DB::beginTransaction();
 
         try {
             $this->deleteTags($postId);
+            $this->clearLike($postId);
             $postOrm->delete();
             DB::commit();
         } catch (\Exception $e) {
@@ -208,7 +209,7 @@ class EloquentPostRepository implements PostRepository
 
     public function deleteLike(PostId $postId, UserAccountId $userId)
     {
-        $post = Post::where('id', $postId->toString())->with(['likes'])->first();
+        $post = Post::with(['likes'])->find($postId->toString());
 
         if (!$post) {
             return;
@@ -218,6 +219,33 @@ class EloquentPostRepository implements PostRepository
 
         try {
             $post->likes()->detach($userId->toInt());
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+
+        return $postId;
+    }
+
+    public function clearLike(PostId $postId)
+    {
+        $post = Post::with(['likes'])->find($postId->toString());
+
+        if (!$post) {
+            return;
+        }
+
+        $userIds = $post->likes
+            ->map(fn ($user) => $user->id)
+            ->toArray();
+
+        DB::beginTransaction();
+
+        try {
+            if ($userIds) {
+                $post->likes()->detach($userIds);
+            }
             DB::commit();
         } catch (\Exception $e) {
             DB::rollback();
