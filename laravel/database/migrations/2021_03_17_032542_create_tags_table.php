@@ -12,13 +12,14 @@ class CreateTagsTable extends Migration
     public function up(): void
     {
         Schema::create('tags', function (Blueprint $table): void {
-            $table->bigIncrements('id');
             $table->string('post_id');
             $table->unsignedBigInteger('tag_name_id');
             $table->timestamps();
 
             $table->foreign('post_id')->references('id')->on('posts');
             $table->foreign('tag_name_id')->references('id')->on('tag_names');
+
+            $table->unique(['post_id', 'tag_name_id']);
         });
     }
 
