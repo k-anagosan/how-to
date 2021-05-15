@@ -215,4 +215,11 @@ class EloquentPostRepository implements PostRepository
     {
         return Post::where('id', $postId->toString())->exists();
     }
+
+    public function isOwned(PostId $postId, UserAccountId $userId)
+    {
+        $post = Post::find($postId->toString());
+
+        return $post->author->id === $userId->toInt();
+    }
 }

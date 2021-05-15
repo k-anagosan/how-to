@@ -101,4 +101,12 @@ interface PostRepositoryInterface
      * @return bool
      */
     public function exists(PostId $postId);
+
+    /*
+     * 指定したユーザーが指定した記事の著者であるか真偽値で返す.
+     * @param PostId        $postId
+     * @param UserAccountId $userId
+     * @return bool
+     */
+    public function isOwned(PostId $postId, UserAccountId $userId);
 }
