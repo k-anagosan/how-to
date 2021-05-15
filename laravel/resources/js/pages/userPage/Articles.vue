@@ -91,7 +91,7 @@ export default {
       this.pageData = articles.data;
       delete articles.data;
       this.pagination = articles;
-      if (this.pageData.length === 0) {
+      if (this.pageData.length === 0 && this.pagination.last_page > 1) {
         this.$router.push(`/user/${this.username}?page=${this.pagination.last_page}`);
       }
     },
