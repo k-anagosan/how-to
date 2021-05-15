@@ -15,7 +15,10 @@
       <RouterLink to="/" class="p-2 w-24 rounded-t-lg border-b border-gray-200 hover:bg-blue-100 transition-colors"
         >更新する</RouterLink
       >
-      <div class="p-2 w-24 rounded-b-lg text-red-500 hover:bg-blue-100 transition-colors" @click="onClick">
+      <div
+        class="delete-button p-2 w-24 rounded-b-lg text-red-500 hover:bg-blue-100 transition-colors"
+        @click="onClick"
+      >
         削除する
       </div>
     </div>
@@ -45,16 +48,27 @@ export default {
   },
   mounted() {
     window.addEventListener("click", this.closeMenu);
+    window.addEventListener("keydown", this.onKeyDown);
   },
   beforeDestroy() {
     window.removeEventListener("click", this.closeMenu);
+    window.removeEventListener("keydown", this.onKeyDown);
   },
   methods: {
-    onClick() {},
+    onClick() {
+      this.deleteArticle();
+    },
+    onKeyDown(e) {
+      if (e.key === "Escape") this.isShown = false;
+    },
     closeMenu(e) {
       if (!this.$el.querySelector(`#open-button-${this.articleId}`).contains(e.target)) {
         this.isShown = false;
       }
+    },
+    async deleteArticle() {
+      const deletedItem = await this.$store.dispatch("post/deleteItem", this.articleId);
+      if (deletedItem) this.$emit("delete");
     },
   },
 };

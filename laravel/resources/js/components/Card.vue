@@ -16,7 +16,7 @@
             <Icon :icon="article.author" size="sm" :to="`/user/${article.author.name}`" />
           </div>
           <div v-if="ownedByMe" class="relative flex items-center">
-            <EditMenu :article-id="article.id" />
+            <EditMenu :article-id="article.id" @delete="deleteCard" />
           </div>
         </div>
         <h2 class="article-title mb-4 flex-auto font-bold">
@@ -77,6 +77,9 @@ export default {
     push(e) {
       if (this.ownedByMe && this.$el.querySelector(`#open-button-${this.article.id}`).contains(e.target)) return;
       this.$router.push(`/article/${this.article.id}`);
+    },
+    deleteCard() {
+      this.$store.commit("userpage/setArticles", null, { root: true });
     },
   },
 };

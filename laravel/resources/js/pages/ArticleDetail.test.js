@@ -4,7 +4,9 @@ import { randomStr } from "@/utils";
 
 const Test = new TestUtils();
 const spyFetchArticle = jest.spyOn(ArticleDetail.methods, "fetchArticle");
-Test.setSpys({ spyFetchArticle });
+const spyOnChangeLike = jest.spyOn(ArticleDetail.methods, "onChangeLike");
+const spyDeleteArticle = jest.spyOn(ArticleDetail.methods, "deleteArticle");
+Test.setSpys({ spyFetchArticle, spyOnChangeLike, spyDeleteArticle });
 
 let wrapper = null;
 let response = null;
@@ -133,14 +135,26 @@ describe("メソッド関連", () => {
         }
         expect(wrapper.vm.isOwned()).toBe(isOwned);
     });
+
+    it("EditMenuからdeleteイベントが発火されたらdeleteArticle()が実行される", () => {
+        const spyDeleteArticle = jest.spyOn(ArticleDetail.methods, "deleteArticle").mockImplementation(() => {});
+        wrapper.findAll("editmenu-stub").wrappers.forEach(wrapper => {
+            expect(spyDeleteArticle).not.toHaveBeenCalled();
+            wrapper.vm.$emit("delete");
+            expect(spyDeleteArticle).toHaveBeenCalled();
+            spyDeleteArticle.mock.calls = [];
+        });
+        spyDeleteArticle.mockRestore();
+    });
+
+    it("deleteArticle()が実行されたら'/'に移動する", async () => {
+        wrapper.vm.$router.push("/article/xxx");
+        await wrapper.vm.deleteArticle();
+        expect(wrapper.vm.$route.path).toBe("/");
+    });
 });
 
 describe("いいね関連", () => {
-    const spyOnChangeLike = jest.spyOn(ArticleDetail.methods, "onChangeLike");
-    beforeEach(() => {
-        Test.setSpys({ spyOnChangeLike });
-    });
-
     it("likeイベントが発火されたらonChangeLike()が実行される", async () => {
         await wrapper.findAll("likebutton-stub").wrappers.forEach(wrapper => {
             expect(spyOnChangeLike).not.toHaveBeenCalled();
