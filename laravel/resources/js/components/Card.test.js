@@ -4,8 +4,10 @@ import Card from "@/components/Card.vue";
 import { randomStr } from "@/utils";
 
 const Test = new TestUtils();
+const spyOnChangeLike = jest.spyOn(Card.methods, "onChangeLike");
 const spyPush = jest.spyOn(Card.methods, "push");
-Test.setSpys({ spyPush });
+const spyDeleteCard = jest.spyOn(Card.methods, "deleteCard");
+Test.setSpys({ spyOnChangeLike, spyPush, spyDeleteCard });
 
 const article = {
     id: randomStr(20),
@@ -18,6 +20,7 @@ const article = {
 
 let options = null;
 let wrapper = null;
+let [post, userpage] = [null, null];
 beforeEach(() => {
     options = {
         stubs: { RouterLink: RouterLinkStub, "ion-icon": true },
@@ -25,6 +28,22 @@ beforeEach(() => {
     };
     Test.setMountOption(Card, options);
     Test.setVueRouter();
+
+    post = {
+        namespaced: true,
+        actions: {
+            putLike: jest.fn().mockImplementation((context, data) => data),
+            deleteLike: jest.fn().mockImplementation((context, data) => data),
+        },
+    };
+    userpage = {
+        namespaced: true,
+        mutations: {
+            setArticles: jest.fn().mockImplementation((state, data) => data),
+        },
+    };
+    Test.setSpys({ spyOnChangeLike, putLike: post.actions.putLike, deleteLike: post.actions.deleteLike });
+    Test.setVuex({ post, userpage });
 
     wrapper = Test.shallowWrapperFactory();
 });
@@ -78,19 +97,22 @@ describe("表示関連", () => {
     });
 });
 
+describe("メソッド関連", () => {
+    it("EditMenuからdeleteイベントが発火されたらdeleteCard()が実行される", () => {
+        expect(spyDeleteCard).not.toHaveBeenCalled();
+        wrapper.find("editmenu-stub").vm.$emit("delete");
+        expect(spyDeleteCard).toHaveBeenCalled();
+    });
+
+    it("deleteCard()が実行されたらsetArticlesミューテーションが実行される", () => {
+        expect(userpage.mutations.setArticles).not.toHaveBeenCalled();
+        wrapper.vm.deleteCard();
+        expect(userpage.mutations.setArticles.mock.calls[0][1]).toBeNull();
+    });
+});
+
 describe("いいね処理関連", () => {
-    let post = null;
-    const spyOnChangeLike = jest.spyOn(Card.methods, "onChangeLike");
     beforeEach(() => {
-        post = {
-            namespaced: true,
-            actions: {
-                putLike: jest.fn().mockImplementation((context, data) => data),
-                deleteLike: jest.fn().mockImplementation((context, data) => data),
-            },
-        };
-        Test.setSpys({ spyOnChangeLike, putLike: post.actions.putLike, deleteLike: post.actions.deleteLike });
-        Test.setVuex({ post });
         wrapper = Test.shallowWrapperFactory();
     });
 
