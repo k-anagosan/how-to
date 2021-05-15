@@ -50,10 +50,18 @@ export default {
     window.removeEventListener("click", this.closeMenu);
   },
   methods: {
-    onClick() {},
+    onClick() {
+      this.deleteArticle();
+    },
     closeMenu(e) {
       if (!this.$el.querySelector(`#open-button-${this.articleId}`).contains(e.target)) {
         this.isShown = false;
+      }
+    },
+    async deleteArticle() {
+      const deletedItem = await this.$store.dispatch("post/deleteItem", this.articleId);
+      if (deletedItem) {
+        this.$emit("delete");
       }
     },
   },
