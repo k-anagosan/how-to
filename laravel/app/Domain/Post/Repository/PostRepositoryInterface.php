@@ -94,4 +94,11 @@ interface PostRepositoryInterface
      * @return null|PostId
      */
     public function deleteLike(PostId $postId, UserAccountId $userId);
+
+    /**
+     * 指定した記事IDが存在するか真偽値で返す.
+     * @param PostId $postId
+     * @return bool
+     */
+    public function exists(PostId $postId);
 }

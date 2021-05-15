@@ -210,4 +210,9 @@ class EloquentPostRepository implements PostRepository
 
         return $postId;
     }
+
+    public function exists(PostId $postId): bool
+    {
+        return Post::where('id', $postId->toString())->exists();
+    }
 }
