@@ -90,4 +90,9 @@ class PostItemService
     {
         return $this->postRepository->retrieveLikedArticles($userId);
     }
+
+    public function exists($postId): bool
+    {
+        return $this->postRepository->exists($postId);
+    }
 }
