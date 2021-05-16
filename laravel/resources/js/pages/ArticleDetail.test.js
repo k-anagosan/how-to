@@ -6,7 +6,9 @@ const Test = new TestUtils();
 const spyFetchArticle = jest.spyOn(ArticleDetail.methods, "fetchArticle");
 const spyOnChangeLike = jest.spyOn(ArticleDetail.methods, "onChangeLike");
 const spyDeleteArticle = jest.spyOn(ArticleDetail.methods, "deleteArticle");
-Test.setSpys({ spyFetchArticle, spyOnChangeLike, spyDeleteArticle });
+const spyLike = jest.spyOn(ArticleDetail.methods, "like");
+const spyUnlike = jest.spyOn(ArticleDetail.methods, "unlike");
+Test.setSpys({ spyFetchArticle, spyOnChangeLike, spyDeleteArticle, spyLike, spyUnlike });
 
 let wrapper = null;
 let response = null;
@@ -32,8 +34,14 @@ beforeEach(() => {
     };
     auth = {
         namespaced: true,
+        state: { user: { name: authorName } },
+        mutations: {
+            setUser(state, user) {
+                state.user = user;
+            },
+        },
         getters: {
-            username: jest.fn().mockImplementation(() => authorName),
+            username: jest.fn().mockImplementation(state => (state.user ? state.user.name : "")),
         },
     };
 
@@ -209,6 +217,18 @@ describe("いいね関連", () => {
             }
             expect(wrapper.vm.$data.article.liked_by_me).toBe(!isLiked);
             expect(wrapper.vm.$data.article.likes_count).toBe(likesCount);
+        });
+
+        it("未ログイン状態ならいいね処理が実行されず$router.push()が実行される", async () => {
+            const spyRouterPush = jest.spyOn(wrapper.vm.$router, "push").mockImplementation(() => {});
+            wrapper.vm.$store.commit("auth/setUser", null, { root: true });
+
+            expect(spyRouterPush).not.toHaveBeenCalled();
+            await wrapper.vm.onChangeLike({ isLiked });
+            expect(spyRouterPush.mock.calls[0][0]).toBe("/login");
+            expect(spyLike).not.toHaveBeenCalled();
+            expect(spyUnlike).not.toHaveBeenCalled();
+            spyRouterPush.mockRestore();
         });
     });
 
