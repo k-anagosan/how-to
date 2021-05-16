@@ -1,14 +1,34 @@
 import TestUtils from "@/testutils";
 import FollowButton from "@/components/FollowButton.vue";
+import { randomStr } from "@/utils";
 
 const Test = new TestUtils();
 
 Test.setMountOption(FollowButton, {});
 
+const username = randomStr();
 let wrapper = null;
 let propsData = {};
+let auth = null;
 beforeEach(() => {
     Test.setMountOption(FollowButton, { propsData });
+
+    auth = {
+        namespaced: true,
+        state: { user: { name: username } },
+        mutations: {
+            setUser(state, user) {
+                state.user = user;
+            },
+        },
+        getters: {
+            isAuthenticated: state => Boolean(state.user),
+        },
+    };
+
+    Test.setVuex({ auth });
+    Test.setVueRouter();
+
     wrapper = Test.shallowWrapperFactory();
 });
 
@@ -67,6 +87,27 @@ describe("メソッド、イベント関連", () => {
     });
 
     it.each([
+        ["ログイン時", "発火される", true],
+        ["未ログイン時", "発火されずに$router.push()が実行される", false],
+    ])("%sであれば, onClick()実行によりイベントが", async (_, auth) => {
+        const spyRouterPush = jest.spyOn(wrapper.vm.$router, "push").mockImplementation(() => {});
+        if (!auth) {
+            wrapper.vm.$store.commit("auth/setUser", null, { root: true });
+        }
+        expect(spyOnClick).not.toHaveBeenCalled();
+        expect(spyRouterPush).not.toHaveBeenCalled();
+        await wrapper.vm.onClick();
+        expect(spyOnClick).toHaveBeenCalled();
+        if (auth) {
+            expect(spyRouterPush).not.toHaveBeenCalled();
+            expect(wrapper.emitted().follow).toEqual([[{ isFollowing: true }]]);
+        } else {
+            expect(spyRouterPush.mock.calls[0][0]).toBe("/login");
+        }
+        spyRouterPush.mockRestore();
+    });
+
+    it.each([
         [false, "できる"],
         [true, "できない"],
     ])("dataのdisabledが%sなら、onClick()を実行%s", async disabled => {
@@ -76,7 +117,7 @@ describe("メソッド、イベント関連", () => {
         wrapper.vm.onClick();
         expect(spyOnClick).toHaveBeenCalled();
         if (disabled) {
-            expect(wrapper.emitted()).toEqual({});
+            expect(wrapper.emitted().follow).toBeUndefined();
         } else {
             expect(wrapper.emitted().follow).toEqual([[{ isFollowing: true }]]);
         }
@@ -102,5 +143,11 @@ describe("メソッド、イベント関連", () => {
         expect(spyEnable).toHaveBeenCalled();
         expect(wrapper.vm.$data.disabled).toBe(false);
         done();
+    });
+});
+
+describe("vuex 関連", () => {
+    it("authを算出できる", () => {
+        expect(Test.computedValue("auth", { $store: wrapper.vm.$store })).toBe(true);
     });
 });
