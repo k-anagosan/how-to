@@ -44,6 +44,7 @@
 import Icon from "../components/Icon";
 import LikeButton from "../components/LikeButton";
 import EditMenu from "../components/EditMenu";
+import { mapGetters } from "vuex";
 
 export default {
   components: {
@@ -62,8 +63,17 @@ export default {
       default: false,
     },
   },
+  computed: {
+    ...mapGetters({
+      username: "auth/username",
+    }),
+  },
   methods: {
     async onChangeLike(e) {
+      if (!this.username) {
+        this.$router.push("/login");
+        return;
+      }
       if (e.isLiked) {
         this.$emit("changeLike", { id: this.article.id, isLiked: true });
         if (!(await this.$store.dispatch("post/putLike", this.article.id)))
