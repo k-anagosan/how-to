@@ -88,7 +88,7 @@ class PhotoSubmitApiTest extends TestCase
             ],
         ];
 
-        $this->invalidResponesCheck($response, $expected);
+        $this->invalidResponseCheck($response, $expected);
     }
 
     /**
@@ -108,7 +108,7 @@ class PhotoSubmitApiTest extends TestCase
             ],
         ];
 
-        $this->invalidResponesCheck($response, $expected);
+        $this->invalidResponseCheck($response, $expected);
     }
 
     /**
@@ -129,7 +129,7 @@ class PhotoSubmitApiTest extends TestCase
             ],
         ];
 
-        $this->invalidResponesCheck($response, $expected);
+        $this->invalidResponseCheck($response, $expected);
     }
 
     /**
@@ -185,7 +185,7 @@ class PhotoSubmitApiTest extends TestCase
         Storage::cloud()->assertExists('photos/' . $photo->filename);
     }
 
-    private function invalidResponesCheck($response, $expected): void
+    private function invalidResponseCheck($response, $expected): void
     {
         $response->assertStatus(422)->assertExactJson($expected);
 
