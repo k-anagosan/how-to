@@ -108,10 +108,6 @@ export default {
       this.article = article;
     },
     async onChangeLike(e) {
-      if (!this.loginUsername) {
-        this.$router.push("/login");
-        return;
-      }
       if (e.isLiked) {
         this.like();
         if (!(await this.$store.dispatch("post/putLike", this.article.id))) {
