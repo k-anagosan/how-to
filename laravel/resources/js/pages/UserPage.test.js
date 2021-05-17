@@ -84,6 +84,7 @@ beforeEach(() => {
         getUserPageData: userpage.actions.getUserPageData,
         putFollow: auth.actions.putFollow,
         deleteFollow: auth.actions.deleteFollow,
+        setFollowers: userpage.mutations.setFollowers,
     });
 
     Test.setVueRouter();
@@ -109,7 +110,6 @@ describe("表示関連", () => {
     it("ページアクセスしたらdataにuserIdが保存される", () => {
         expect(wrapper.vm.$data.userId).toBe(user_id);
     });
-
     it.each([
         [true, "させる"],
         [false, "させない"],
@@ -120,19 +120,15 @@ describe("表示関連", () => {
             wrapper = Test.shallowWrapperFactory();
             await wrapper.setData({ loading: false });
         }
-
         expect(wrapper.find(".archives").exists()).toBe(isShown);
     });
-
     it("loginUserがnullなら.archivesが表示されない", async () => {
         auth.state.user = null;
         Test.setVuex({ auth, userpage });
         wrapper = Test.shallowWrapperFactory();
         await wrapper.setData({ loading: false });
-
         expect(wrapper.find(".archives").exists()).toBe(false);
     });
-
     it.each([
         [true, "させる"],
         [false, "させない"],
@@ -143,23 +139,18 @@ describe("表示関連", () => {
             wrapper = Test.shallowWrapperFactory();
             await wrapper.setData({ loading: false });
         }
-
         expect(wrapper.find("followbutton-stub").exists()).toBe(isShown);
     });
-
     it("loginUserがnullならFollowButtonが表示される", async () => {
         auth.state.user = null;
         Test.setVuex({ auth, userpage });
         wrapper = Test.shallowWrapperFactory();
         await wrapper.setData({ loading: false });
-
         expect(wrapper.find("followbutton-stub").exists()).toBe(true);
     });
-
     it("ユーザーネームが表示される", () => {
         expect(wrapper.find("#username").text()).toBe(`@${author}`);
     });
-
     it.each([
         [true, "される"],
         [false, "されない"],
@@ -208,8 +199,8 @@ describe("メソッド関連", () => {
     ])("onFollow()が実行されたときisFollowingが%sなら%sアクションが実行される", async isFollowing => {
         auth.state.user.name = randomStr();
         Test.setVuex({ auth, userpage });
-        wrapper = Test.shallowWrapperFactory();
-        await wrapper.setData({ loading: false });
+        wrapper = await Test.shallowWrapperFactory();
+        await wrapper.setData({ loading: false, followed_by_me: !isFollowing });
 
         expect(auth.actions.putFollow).not.toHaveBeenCalled();
         expect(auth.actions.deleteFollow).not.toHaveBeenCalled();
@@ -232,10 +223,27 @@ describe("メソッド関連", () => {
         userpage.actions.getUserPageData = jest.fn().mockImplementation(() => ({ id: user_id, followed_by_me: true }));
         Test.setVuex({ auth, userpage });
         wrapper = await Test.shallowWrapperFactory();
-        wrapper.setData({ loading: false });
+        await wrapper.setData({ loading: false });
 
         await wrapper.vm.onFollow({ isFollowing: false, id });
         expect(wrapper.vm.$data.followed_by_me).toBe(Boolean(id));
+        if (id) {
+            expect(userpage.mutations.setFollowers).not.toHaveBeenCalled();
+        } else {
+            expect(userpage.mutations.setFollowers).toHaveBeenCalled();
+        }
+    });
+
+    it("onFollow()が実行されたときAPIの結果が失敗ならthis.followed_by_meが更新されない", async () => {
+        auth.state.apiIsSuccess = false;
+        Test.setVuex({ auth, userpage });
+        wrapper = await Test.shallowWrapperFactory();
+        await wrapper.setData({ loading: false });
+
+        expect(wrapper.vm.$data.followed_by_me).toBe(false);
+        await wrapper.vm.onFollow({ isFollowing: true });
+        expect(wrapper.vm.$data.followed_by_me).toBe(false);
+        expect(userpage.mutations.setFollowers).toHaveBeenCalled();
     });
 });
 
