@@ -16,6 +16,7 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex";
 export default {
   props: {
     size: {
@@ -37,8 +38,17 @@ export default {
       disabled: false,
     };
   },
+  computed: {
+    ...mapGetters({
+      username: "auth/username",
+    }),
+  },
   methods: {
     onClick() {
+      if (!this.username) {
+        this.$router.push("/login");
+        return;
+      }
       if (this.disabled) return;
       this.disabled = true;
       this.$emit("like", { isLiked: !this.isLiked });
