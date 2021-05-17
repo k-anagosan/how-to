@@ -13,7 +13,7 @@
             <div class="rounded-full bg-black mr-2 icon-size-lg"></div>
             <h2>{{ follower.name }}</h2>
           </div>
-          <div @click.stop>
+          <div v-if="follower.name !== loginUsername" @click.stop>
             <FollowButton
               class="py-1 px-4"
               :is-following="follower.followed_by_me"
@@ -39,7 +39,7 @@
 import Spinner from "../../components/Spinner.vue";
 import Pagination from "../../components/Pagination.vue";
 import FollowButton from "../../components/FollowButton.vue";
-import { mapState } from "vuex";
+import { mapState, mapGetters } from "vuex";
 export default {
   components: {
     Spinner,
@@ -67,6 +67,9 @@ export default {
     ...mapState({
       followerList: state => state.userpage.followers,
     }),
+    ...mapGetters({
+      loginUsername: "auth/username",
+    }),
   },
   watch: {
     $route: {
@@ -79,6 +82,14 @@ export default {
         this.loading = false;
       },
       immediate: true,
+    },
+    followerList: {
+      async handler() {
+        if (!this.followerList) {
+          await this.fetchFollowerList();
+        }
+        this.setData();
+      },
     },
   },
   methods: {

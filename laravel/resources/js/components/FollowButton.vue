@@ -10,6 +10,7 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex";
 export default {
   props: {
     isFollowing: {
@@ -23,8 +24,17 @@ export default {
       disabled: false,
     };
   },
+  computed: {
+    ...mapGetters({
+      auth: "auth/isAuthenticated",
+    }),
+  },
   methods: {
     onClick() {
+      if (!this.auth) {
+        this.$router.push("/login");
+        return;
+      }
       if (this.disabled) return;
       this.disabled = true;
       this.$emit("follow", { isFollowing: !this.isFollowing });

@@ -10,6 +10,8 @@ const spyOnFollow = jest.spyOn(Followers.methods, "onFollow");
 const spyRefreshFollowedByMe = jest.spyOn(Followers.methods, "refreshFollowedByMe");
 Test.setSpys({ spyPush, spyFetchFollowerList, spySetData, spyOnFollow, spyRefreshFollowedByMe });
 
+const username = randomStr();
+
 const follower = () => ({
     id: Math.floor(Math.random() * 1000),
     name: randomStr(),
@@ -29,11 +31,20 @@ const { current_page, per_page, last_page } = {
 };
 
 let response = null;
-let userpage = null;
 let wrapper = null;
+let [userpage, auth] = [null, null];
 let [spyDispatch, spyRouterPush] = [null, null];
 beforeEach(async () => {
     response = responseFactory(current_page, per_page, last_page);
+    auth = {
+        namespaced: true,
+        state: {
+            user: { name: username },
+        },
+        getters: {
+            username: state => (state.user ? state.user.name : ""),
+        },
+    };
     userpage = {
         namespaced: true,
         state: { followers: null },
@@ -50,13 +61,13 @@ beforeEach(async () => {
     };
 
     const router = Test.setVueRouter();
-    const store = Test.setVuex({ userpage });
+    const store = Test.setVuex({ userpage, auth });
     spyDispatch = jest.spyOn(store, "dispatch");
     spyRouterPush = jest.spyOn(router, "push");
 
     Test.setSpys({ getFollowers: userpage.actions.getFollowerList, spyDispatch, spyRouterPush });
     const options = {
-        propsData: { page: current_page, username: randomStr() },
+        propsData: { page: current_page, username },
     };
 
     Test.checkSpysHaveNotBeenCalled();
@@ -178,15 +189,26 @@ describe("メソッド関連", () => {
     });
 });
 
-// describe("Vuex関連", () => {
-//     it("ページアクセスしたらgetArticlesアクションが実行される", () => {
-//         const payload = { name: author, page: current_page };
-//         expect(userpage.actions.getArticles).toHaveBeenCalled();
-//         expect(spyDispatch).toHaveBeenCalled();
-//         expect(spyDispatch.mock.calls[0][1]).toEqual(payload);
-//     });
+describe("Vuex関連", () => {
+    it("ページアクセスしたらgetFollowerListアクションが実行される", () => {
+        const payload = { name: username, page: current_page };
+        expect(userpage.actions.getFollowerList).toHaveBeenCalled();
+        expect(spyDispatch).toHaveBeenCalled();
+        expect(spyDispatch.mock.calls[0][1]).toEqual(payload);
+    });
 
-//     it("articlesを正しく算出している", () => {
-//         expect(Test.computedValue("articles", { $store: wrapper.vm.$store })).toEqual(userpage.state.articles);
-//     });
-// });
+    it("followerListが変更されたらgetFollowerListアクションが実行される", () => {
+        const payload = { name: username, page: current_page };
+        wrapper.vm.$store.commit("userpage/setFollowers", null, { root: true });
+        expect(userpage.actions.getFollowerList).toHaveBeenCalled();
+        expect(spyDispatch).toHaveBeenCalled();
+        expect(spyDispatch.mock.calls[0][1]).toEqual(payload);
+    });
+
+    it("followerListを正しく算出している", () => {
+        expect(Test.computedValue("followerList", { $store: wrapper.vm.$store })).toEqual(userpage.state.followers);
+    });
+    it("loginUsernameを正しく算出している", () => {
+        expect(Test.computedValue("loginUsername", { $store: wrapper.vm.$store })).toEqual(auth.state.user.name);
+    });
+});
