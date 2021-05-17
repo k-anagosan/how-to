@@ -1,14 +1,31 @@
 import TestUtils from "@/testutils";
 import LikeButton from "@/components/LikeButton.vue";
+import { randomStr } from "@/utils";
 
 const Test = new TestUtils();
 
 Test.setMountOption(LikeButton, { stubs: ["ion-icon"] });
 
+const username = randomStr();
 let wrapper = null;
+let auth = null;
 let propsData = {};
 beforeEach(() => {
     Test.setMountOption(LikeButton, { propsData });
+    auth = {
+        namespaced: true,
+        state: { user: { name: username } },
+        mutations: {
+            setUser(state, user) {
+                state.user = user;
+            },
+        },
+        getters: {
+            username: state => (state.user ? state.user.name : ""),
+        },
+    };
+    Test.setVuex({ auth });
+    Test.setVueRouter();
     wrapper = Test.shallowWrapperFactory();
 });
 
@@ -106,7 +123,7 @@ describe("メソッド、イベント関連", () => {
         wrapper.vm.onClick();
         expect(spyOnClick).toHaveBeenCalled();
         if (disabled) {
-            expect(wrapper.emitted()).toEqual({});
+            expect(wrapper.emitted().like).toBeUndefined();
         } else {
             expect(wrapper.emitted().like).toEqual([[{ isLiked: true }]]);
         }
@@ -132,5 +149,17 @@ describe("メソッド、イベント関連", () => {
         expect(spyEnable).toHaveBeenCalled();
         expect(wrapper.vm.$data.disabled).toBe(false);
         done();
+    });
+
+    it("onClick()実行時に未ログイン状態であれば'/loing'に遷移する", async () => {
+        wrapper.vm.$store.commit("auth/setUser", null, { root: true });
+        await wrapper.vm.onClick();
+        expect(wrapper.vm.$route.path).toBe("/login");
+    });
+});
+
+describe("vuex関連", () => {
+    it("usernameを算出できる", () => {
+        expect(Test.computedValue("username", { $store: wrapper.vm.$store })).toBe(username);
     });
 });
