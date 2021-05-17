@@ -65,17 +65,25 @@ export default {
       async handler() {
         this.loading = true;
         if (!this.articles || this.articles.current_page !== this.page) {
-          await this.fetchPageData();
+          await this.fetchPageData(this.page);
         }
         this.setData();
         this.loading = false;
       },
       immediate: true,
     },
+    articles: {
+      async handler() {
+        if (!this.articles) {
+          await this.fetchPageData(this.page);
+        }
+        this.setData();
+      },
+    },
   },
   methods: {
-    async fetchPageData() {
-      const payload = { name: this.username, page: this.page };
+    async fetchPageData(page) {
+      const payload = { page, name: this.username };
       await this.$store.dispatch("userpage/getArticles", payload);
     },
     setData() {
@@ -83,6 +91,9 @@ export default {
       this.pageData = articles.data;
       delete articles.data;
       this.pagination = articles;
+      if (this.pageData.length === 0 && this.pagination.last_page > 1) {
+        this.$router.push(`/user/${this.username}?page=${this.pagination.last_page}`);
+      }
     },
     onChangeLike({ id, isLiked }) {
       this.pageData = this.pageData.map(article => {

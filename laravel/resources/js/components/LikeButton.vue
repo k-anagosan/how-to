@@ -1,12 +1,17 @@
 <template>
   <button
     type="button"
-    class="rounded-full bg-blue-200 flex justify-center items-center outline-none focus:outline-none"
+    class="rounded-full bg-blue-200 flex justify-center items-center outline-none focus:outline-none hover:shadow-lg text-red transition-shadow"
     :class="`icon-size-${size}`"
     @click.stop="onClick"
   >
-    <ion-icon v-if="!isLiked" :class="{ 'text-xl': size === 'lg' }" name="heart-outline"></ion-icon>
-    <ion-icon v-if="isLiked" :class="{ 'text-xl': size === 'lg' }" name="heart"></ion-icon>
+    <ion-icon
+      v-if="!isLiked"
+      :class="{ 'text-xl': size === 'lg' }"
+      class="transition-colors"
+      name="heart-outline"
+    ></ion-icon>
+    <ion-icon v-if="isLiked" :class="{ 'text-xl': size === 'lg' }" class="transition-colors" name="heart"></ion-icon>
   </button>
 </template>
 
@@ -48,3 +53,13 @@ export default {
   },
 };
 </script>
+
+<style>
+button:hover ion-icon[name="heart-outline"] {
+  color: rgba(248, 113, 113, 1);
+}
+
+ion-icon[name="heart"] {
+  color: rgba(248, 113, 113, 1);
+}
+</style>

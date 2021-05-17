@@ -4,9 +4,12 @@ import Card from "@/components/Card.vue";
 import { randomStr } from "@/utils";
 
 const Test = new TestUtils();
+const spyOnChangeLike = jest.spyOn(Card.methods, "onChangeLike");
 const spyPush = jest.spyOn(Card.methods, "push");
-Test.setSpys({ spyPush });
+const spyDeleteCard = jest.spyOn(Card.methods, "deleteCard");
+Test.setSpys({ spyOnChangeLike, spyPush, spyDeleteCard });
 
+const username = randomStr();
 const article = {
     id: randomStr(20),
     title: randomStr(30),
@@ -18,13 +21,45 @@ const article = {
 
 let options = null;
 let wrapper = null;
+let router = null;
+let [post, userpage, auth] = [null, null, null];
 beforeEach(() => {
     options = {
         stubs: { RouterLink: RouterLinkStub, "ion-icon": true },
         propsData: { article, ownedByMe: true },
     };
     Test.setMountOption(Card, options);
-    Test.setVueRouter();
+    router = Test.setVueRouter();
+    auth = {
+        namespaced: true,
+        state: { user: { name: username } },
+        mutations: {
+            setUser(state, user) {
+                state.user = user;
+            },
+        },
+        getters: { username: jest.fn().mockImplementation(state => (state.user ? state.user.name : "")) },
+    };
+    post = {
+        namespaced: true,
+        actions: {
+            putLike: jest.fn().mockImplementation((context, data) => data),
+            deleteLike: jest.fn().mockImplementation((context, data) => data),
+        },
+    };
+    userpage = {
+        namespaced: true,
+        mutations: {
+            setArticles: jest.fn().mockImplementation((state, data) => data),
+        },
+    };
+    Test.setSpys({
+        spyOnChangeLike,
+        username: auth.getters.username,
+        putLike: post.actions.putLike,
+        deleteLike: post.actions.deleteLike,
+    });
+    Test.setVuex({ post, userpage, auth });
 
     wrapper = Test.shallowWrapperFactory();
 });
@@ -65,34 +100,35 @@ describe("表示関連", () => {
     it.each([
         [true, "表示される"],
         [false, "表示されない"],
-    ])("onwedByMeが%sの時メニュー開閉ボタンが%s", ownedByMe => {
+    ])("onwedByMeが%sの時EditMenuが%s", ownedByMe => {
         options.propsData.ownedByMe = ownedByMe;
         Test.setMountOption(Card, options);
         wrapper = Test.shallowWrapperFactory();
 
-        expect(wrapper.find(`#open-button-${wrapper.vm.article.id}`).exists()).toBe(ownedByMe);
+        expect(wrapper.find("editmenu-stub").exists()).toBe(ownedByMe);
     });
 
-    it("メニュー開閉ボタンをクリックしたらメニューが表示される", async () => {
-        expect(wrapper.find(".edit-menu").exists()).toBe(false);
-        await wrapper.find(`#open-button-${wrapper.vm.article.id}`).vm.$emit("click");
-        expect(wrapper.find(".edit-menu").exists()).toBe(true);
+    it("EditMenuのarticle-idに値を正しく渡せている", () => {
+        expect(wrapper.find("editmenu-stub").props().articleId).toBe(wrapper.vm.article.id);
+    });
+});
+
+describe("メソッド関連", () => {
+    it("EditMenuからdeleteイベントが発火されたらdeleteCard()が実行される", () => {
+        expect(spyDeleteCard).not.toHaveBeenCalled();
+        wrapper.find("editmenu-stub").vm.$emit("delete");
+        expect(spyDeleteCard).toHaveBeenCalled();
+    });
+
+    it("deleteCard()が実行されたらsetArticlesミューテーションが実行される", () => {
+        expect(userpage.mutations.setArticles).not.toHaveBeenCalled();
+        wrapper.vm.deleteCard();
+        expect(userpage.mutations.setArticles.mock.calls[0][1]).toBeNull();
     });
 });
 
 describe("いいね処理関連", () => {
-    let post = null;
-    const spyOnChangeLike = jest.spyOn(Card.methods, "onChangeLike");
     beforeEach(() => {
-        post = {
-            namespaced: true,
-            actions: {
-                putLike: jest.fn().mockImplementation((context, data) => data),
-                deleteLike: jest.fn().mockImplementation((context, data) => data),
-            },
-        };
-        Test.setSpys({ spyOnChangeLike, putLike: post.actions.putLike, deleteLike: post.actions.deleteLike });
-        Test.setVuex({ post });
         wrapper = Test.shallowWrapperFactory();
     });
 
@@ -128,6 +164,17 @@ describe("いいね処理関連", () => {
             await wrapper.vm.onChangeLike(e);
             expect(wrapper.emitted().changeLike).toEqual([[{ id: article.id, isLiked }]]);
         });
+
+        it("未ログイン状態ならイベントが発火されず$router.push()が実行される", async () => {
+            const spyRouterPush = jest.spyOn(router, "push").mockImplementation(() => {});
+            wrapper.vm.$store.commit("auth/setUser", null, { root: true });
+
+            expect(spyRouterPush).not.toHaveBeenCalled();
+            await wrapper.vm.onChangeLike(e);
+            expect(spyRouterPush.mock.calls[0][0]).toBe("/login");
+            expect(wrapper.emitted().changeLike).toBeUndefined();
+            spyRouterPush.mockRestore();
+        });
     });
 
     describe("いいね処理失敗時", () => {
@@ -140,7 +187,7 @@ describe("いいね処理関連", () => {
                 },
             };
             Test.setSpys({ spyOnChangeLike, putLike: post.actions.putLike, deleteLike: post.actions.deleteLike });
-            Test.setVuex({ post });
+            Test.setVuex({ post, userpage, auth });
             wrapper = Test.shallowWrapperFactory();
         });
 
@@ -214,5 +261,11 @@ describe("Vue Router 関連", () => {
             wrapper.vm.$router.push("/");
             spyRouterPush.mock.calls = [];
         });
+    });
+});
+
+describe("vuex 関連", () => {
+    it("usernameを正しく算出できる", () => {
+        expect(Test.computedValue("username", { $store: wrapper.vm.$store })).toBe(username);
     });
 });

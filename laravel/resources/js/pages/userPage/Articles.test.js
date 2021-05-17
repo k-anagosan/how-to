@@ -80,9 +80,10 @@ beforeEach(async () => {
     Test.setMountOption(Articles, options);
     wrapper = await Test.shallowWrapperFactory();
 });
-afterEach(() => {
+afterEach(async () => {
+    if (wrapper.vm.$route.path !== "/") await wrapper.vm.$router.push("/");
     Test.clearSpysCalledTimes();
-    wrapper = null;
+    wrapper.destroy();
 });
 
 describe("表示関連", () => {
@@ -136,8 +137,61 @@ describe("メソッド関連", () => {
     it.each([
         ["fetchPageData", spyFetchPageData],
         ["setData", spySetData],
-    ])("ページアクセスしたら%sが実行される", (_, spy) => {
+    ])("ページアクセスしたら%sが実行される", (method, spy) => {
         expect(spy).toHaveBeenCalled();
+        if (method === "fetchPageData") {
+            expect(spy.mock.calls[0][0]).toBe(current_page);
+            expect(spyDispatch.mock.calls[0]).toEqual(["userpage/getArticles", { page: current_page, name: author }]);
+        }
+    });
+
+    it("リンク変更後でpayloadが変わらなければfetchPageData()は実行されない", async done => {
+        spyFetchPageData.mock.calls = [];
+        await wrapper.vm.$router.push("/user/xxx");
+        expect(spyFetchPageData).not.toHaveBeenCalled();
+        done();
+    });
+
+    it.each([
+        ["fetchPageData", spyFetchPageData],
+        ["setData", spySetData],
+    ])("stateのarticlesがリセットされたら%sが実行される", (method, spy) => {
+        wrapper.vm.$store.commit("userpage/setArticles", null, { root: true });
+        expect(spy).toHaveBeenCalled();
+        if (method === "fetchPageData") {
+            expect(spy.mock.calls[0][0]).toBe(current_page);
+            expect(spyDispatch.mock.calls[0]).toEqual(["userpage/getArticles", { page: current_page, name: author }]);
+        }
+    });
+
+    it("stateのarticlesがnull以外に変更された場合はfetchPageData()は実行されない", () => {
+        spyFetchPageData.mock.calls = [];
+        wrapper.vm.$store.commit("userpage/setArticles", { data: ["test"], last_page }, { root: true });
+        expect(spyFetchPageData).not.toHaveBeenCalled();
+    });
+
+    it("pageDataが空でlast_pageが1より大きいならsetData()実行時に$router.push()が実行される", () => {
+        wrapper.vm.$store.commit("userpage/setArticles", { data: [], last_page }, { root: true });
+        spyRouterPush.mock.calls = [];
+        wrapper.vm.setData();
+        expect(spyRouterPush).toHaveBeenCalled();
+        expect(spyRouterPush.mock.calls[0][0]).toBe(
+            `/user/${wrapper.vm.username}?page=${wrapper.vm.$data.pagination.last_page}`
+        );
+    });
+
+    it("pageDataが空でlast_pageが1ならsetData()実行時に$router.push()が実行されない", () => {
+        wrapper.vm.$store.commit("userpage/setArticles", { data: [], last_page: 1 }, { root: true });
+        spyRouterPush.mock.calls = [];
+        wrapper.vm.setData();
+        expect(spyRouterPush).not.toHaveBeenCalled();
+    });
+
+    it("pageDataが空でないならsetData()実行時に$router.push()が実行されない", () => {
+        wrapper.vm.$store.commit("userpage/setArticles", { data: ["test1", "test2"], last_page }, { root: true });
+        spyRouterPush.mock.calls = [];
+        wrapper.vm.setData();
+        expect(spyRouterPush).not.toHaveBeenCalled();
     });
 
     it("changeLikeイベントが発火されたらonChangeLike()が実行される", () => {

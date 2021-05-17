@@ -4,12 +4,17 @@
     <div v-if="!loading" id="article-detail" class="relative">
       <div v-if="article" class="lg:hidden sticky z-50 top-0 bg-white border-b border-blue-100 shadow">
         <div class="container flex justify-between items-center mx-auto sm:px-8 px-5">
-          <div class="py-4">
+          <div class="flex items-center py-4">
             <Icon :icon="article.author" :to="`/user/${article.author.name}`" />
           </div>
-          <div class="flex justify-between items-center rounded-2xl bg-gray-200 bg-opacity-80">
-            <span class="pr-2 pl-3 likes-count">{{ article.likes_count }}</span>
-            <LikeButton :is-liked="article.liked_by_me" @like="onChangeLike" />
+          <div class="flex">
+            <div v-if="isOwned()" class="relative flex justify-center items-center">
+              <EditMenu :article-id="article.id" @delete="deleteArticle" />
+            </div>
+            <div class="flex justify-between items-center ml-1 rounded-2xl bg-gray-200 bg-opacity-80">
+              <span class="pr-2 pl-3 likes-count">{{ article.likes_count }}</span>
+              <LikeButton :is-liked="article.liked_by_me" @like="onChangeLike" />
+            </div>
           </div>
         </div>
       </div>
@@ -24,6 +29,11 @@
                 <LikeButton :is-liked="article.liked_by_me" size="lg" @like="onChangeLike" />
               </li>
               <li class="likes-count mx-auto text-xs text-gray-500">{{ article.likes_count }}</li>
+              <li class="mt-4">
+                <span v-if="isOwned()" class="relative flex justify-center items-center">
+                  <EditMenu :article-id="article.id" direction="right" @delete="deleteArticle" />
+                </span>
+              </li>
             </ul>
           </div>
           <article class="min-main-height sm:shadow-md sm:p-10 p-5 pb-8 sm:rounded-lg bg-white lg:w-2/3 w-full">
@@ -52,6 +62,8 @@ import Icon from "../components/Icon.vue";
 import IconList from "../components/IconList.vue";
 import Spinner from "../components/Spinner.vue";
 import LikeButton from "../components/LikeButton.vue";
+import EditMenu from "../components/EditMenu.vue";
+import { mapGetters } from "vuex";
 
 export default {
   components: {
@@ -60,6 +72,7 @@ export default {
     IconList,
     Spinner,
     LikeButton,
+    EditMenu,
   },
   props: {
     id: {
@@ -72,6 +85,11 @@ export default {
       article: null,
       loading: false,
     };
+  },
+  computed: {
+    ...mapGetters({
+      loginUsername: "auth/username",
+    }),
   },
   watch: {
     $route: {
@@ -90,15 +108,35 @@ export default {
       this.article = article;
     },
     async onChangeLike(e) {
-      if (e.isLiked) {
-        await this.$store.dispatch("post/putLike", this.article.id);
-        this.article.likes_count += 1;
-        this.article.liked_by_me = true;
-      } else {
-        await this.$store.dispatch("post/deleteLike", this.article.id);
-        this.article.likes_count -= 1;
-        this.article.liked_by_me = false;
+      if (!this.loginUsername) {
+        this.$router.push("/login");
+        return;
       }
+      if (e.isLiked) {
+        this.like();
+        if (!(await this.$store.dispatch("post/putLike", this.article.id))) {
+          this.unlike();
+        }
+      } else {
+        this.unlike();
+        if (!(await this.$store.dispatch("post/deleteLike", this.article.id))) {
+          this.like();
+        }
+      }
+    },
+    like() {
+      this.article.likes_count += 1;
+      this.article.liked_by_me = true;
+    },
+    unlike() {
+      this.article.likes_count -= 1;
+      this.article.liked_by_me = false;
+    },
+    isOwned() {
+      return this.article.author.name === this.loginUsername;
+    },
+    deleteArticle() {
+      this.$router.push("/");
     },
   },
 };

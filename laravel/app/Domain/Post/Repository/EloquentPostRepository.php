@@ -41,11 +41,13 @@ class EloquentPostRepository implements PostRepository
 
     public function delete(PostId $postId): void
     {
-        $postOrm = Post::find($postId->toString());
+        $postOrm = Post::with(['likes'])->find($postId->toString());
 
         DB::beginTransaction();
 
         try {
+            $this->deleteTags($postId);
+            $this->clearLike($postId);
             $postOrm->delete();
             DB::commit();
         } catch (\Exception $e) {
@@ -154,6 +156,21 @@ class EloquentPostRepository implements PostRepository
         }
     }
 
+    public function deleteTags(PostId $postId): void
+    {
+        DB::beginTransaction();
+
+        try {
+            $post = Post::with(['tags'])->find($postId->toString());
+            $tagIds = $post->tags->map(fn ($tag) => $tag->id);
+            $post->tags()->detach($tagIds);
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+    }
+
     public function findOrCraeteTagName(PostTag $postTag): TagNameId
     {
         DB::beginTransaction();
@@ -192,7 +209,7 @@ class EloquentPostRepository implements PostRepository
 
     public function deleteLike(PostId $postId, UserAccountId $userId)
     {
-        $post = Post::where('id', $postId->toString())->with(['likes'])->first();
+        $post = Post::with(['likes'])->find($postId->toString());
 
         if (!$post) {
             return;
@@ -209,5 +226,44 @@ class EloquentPostRepository implements PostRepository
         }
 
         return $postId;
+    }
+
+    public function clearLike(PostId $postId)
+    {
+        $post = Post::with(['likes'])->find($postId->toString());
+
+        if (!$post) {
+            return;
+        }
+
+        $userIds = $post->likes
+            ->map(fn ($user) => $user->id)
+            ->toArray();
+
+        DB::beginTransaction();
+
+        try {
+            if ($userIds) {
+                $post->likes()->detach($userIds);
+            }
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+
+        return $postId;
+    }
+
+    public function exists(PostId $postId): bool
+    {
+        return Post::where('id', $postId->toString())->exists();
+    }
+
+    public function isOwned(PostId $postId, UserAccountId $userId)
+    {
+        $post = Post::find($postId->toString());
+
+        return $post->author->id === $userId->toInt();
     }
 }

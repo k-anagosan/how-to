@@ -26,19 +26,21 @@ class PostItemEntity
 
     /**
      * AuthorEntityによってのみこのインスタンスは生成される.
-     * @param UserAccountId $userId
-     * @param PostTitle     $title
-     * @param PostContent   $content
-     * @param PostTags      $tags
+     * @param UserAccountId    $userId
+     * @param null|PostId      $postId
+     * @param null|PostTitle   $title
+     * @param null|PostContent $content
+     * @param null|PostTags    $tags
      */
     public static function createByAuthor(
         UserAccountId $userId,
-        PostTitle $title,
-        PostContent $content,
-        PostTags $tags
+        ?PostId $postId,
+        ?PostTitle $title,
+        ?PostContent $content,
+        ?PostTags $tags
     ): self {
         $postItem = new self();
-        $postItem->postId = PostId::create();
+        $postItem->postId = $postId ?? PostId::create();
         $postItem->userId = $userId;
         $postItem->title = $title;
         $postItem->content = $content;

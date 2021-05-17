@@ -24,6 +24,7 @@ afterEach(() => {
 describe("post.js actions", () => {
     describe("API request succeded", () => {
         const postId = { post_id: randomStr(20) };
+        const deleteId = { id: randomStr(20) };
         const postFilename = { filename: `${randomStr(20)}.jpg` };
         const article = {
             id: randomStr(20),
@@ -38,6 +39,7 @@ describe("post.js actions", () => {
 
         it.each([
             ["postItem", "IDが取得できるか", postId, CREATED],
+            ["deleteItem", "IDが取得できるか", deleteId, OK],
             ["postPhoto", "ファイル名が取得できるか", postFilename, CREATED],
             ["getArticle", "記事データが取得できるか", article, OK],
             ["getArticleList", "記事リストが取得できるか", articleList, OK],
@@ -49,7 +51,7 @@ describe("post.js actions", () => {
                 post = () => ({ data, status });
             } else if (action === "putLike") {
                 put = () => ({ data, status });
-            } else if (action === "deleteLike") {
+            } else if (action === "deleteLike" || action === "deleteItem") {
                 _delete = () => ({ data, status });
             } else {
                 get = () => ({ data, status });
@@ -59,6 +61,8 @@ describe("post.js actions", () => {
 
             if (action === "postItem" || action === "putLike" || action === "deleteLike") {
                 await Test.testApiResponse(`post/${action}`, data.post_id);
+            } else if (action === "deleteItem") {
+                await Test.testApiResponse(`post/${action}`, data.id);
             } else if (action === "postPhoto") {
                 await Test.testApiResponse(`post/${action}`, data.filename);
             } else {
@@ -87,20 +91,25 @@ describe("post.js actions", () => {
             Test.clearSpysCalledTimes();
         });
 
-        describe.each([["postItem"], ["postPhoto"], ["getArticle"], ["getArticleList"], ["putLike"], ["deleteLike"]])(
-            "%sアクションでリクエストに失敗",
-            action => {
-                it("apiIsSuccessに正しく値が保存されるか", async done => {
-                    await Test.testApiResult(`post/${action}`, false);
-                    done();
-                });
+        describe.each([
+            ["postItem"],
+            ["deleteItem"],
+            ["postPhoto"],
+            ["getArticle"],
+            ["getArticleList"],
+            ["putLike"],
+            ["deleteLike"],
+        ])("%sアクションでリクエストに失敗", action => {
+            it("apiIsSuccessに正しく値が保存されるか", async done => {
+                await Test.testApiResult(`post/${action}`, false);
+                done();
+            });
 
-                it("errorストアのsetErrorCodeが呼び出されるか", async done => {
-                    await setErrorCodeTest(action);
-                    done();
-                });
-            }
-        );
+            it("errorストアのsetErrorCodeが呼び出されるか", async done => {
+                await setErrorCodeTest(action);
+                done();
+            });
+        });
     });
 
     describe("API request failed with status code 422", () => {

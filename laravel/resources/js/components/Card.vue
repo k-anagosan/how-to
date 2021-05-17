@@ -11,32 +11,13 @@
         </div>
       </figure>
       <div class="flex flex-col bg-white p-6 min-card-height">
-        <div class="flex justify-between">
-          <span @click.stop>
-            <Icon :icon="article.author" size="sm" class="mb-2" :to="`/user/${article.author.name}`" />
-          </span>
-          <span v-if="ownedByMe" class="relative mb-2 flex items-center">
-            <ion-icon
-              :id="`open-button-${article.id}`"
-              name="chevron-down-outline"
-              class="text-2xl text-gray-400 hover:text-gray-800 transition-colors"
-              @click="isShown = !isShown"
-            ></ion-icon>
-            <div
-              v-if="isShown"
-              class="absolute edit-menu flex flex-col rounded-lg shadow-lg top-6 -left-20 bg-white"
-              @click.stop
-            >
-              <RouterLink
-                to="/"
-                class="p-2 w-24 rounded-t-lg border-b border-gray-200 hover:bg-blue-100 transition-colors"
-                >更新する</RouterLink
-              >
-              <div class="p-2 w-24 rounded-b-lg text-red-500 hover:bg-blue-100 transition-colors" @click="onClick">
-                削除する
-              </div>
-            </div>
-          </span>
+        <div class="flex h-6 mb-2 justify-between">
+          <div @click.stop>
+            <Icon :icon="article.author" size="sm" :to="`/user/${article.author.name}`" />
+          </div>
+          <div v-if="ownedByMe" class="relative flex items-center">
+            <EditMenu :article-id="article.id" @delete="deleteCard" />
+          </div>
         </div>
         <h2 class="article-title mb-4 flex-auto font-bold">
           {{ article.title }}
@@ -62,11 +43,14 @@
 <script>
 import Icon from "../components/Icon";
 import LikeButton from "../components/LikeButton";
+import EditMenu from "../components/EditMenu";
+import { mapGetters } from "vuex";
 
 export default {
   components: {
     Icon,
     LikeButton,
+    EditMenu,
   },
   props: {
     article: {
@@ -79,19 +63,17 @@ export default {
       default: false,
     },
   },
-  data() {
-    return {
-      isShown: false,
-    };
-  },
-  mounted() {
-    window.addEventListener("click", this.closeMenu);
-  },
-  beforeDestroy() {
-    window.removeEventListener("click", this.closeMenu);
+  computed: {
+    ...mapGetters({
+      username: "auth/username",
+    }),
   },
   methods: {
     async onChangeLike(e) {
+      if (!this.username) {
+        this.$router.push("/login");
+        return;
+      }
       if (e.isLiked) {
         this.$emit("changeLike", { id: this.article.id, isLiked: true });
         if (!(await this.$store.dispatch("post/putLike", this.article.id)))
@@ -103,14 +85,11 @@ export default {
       }
     },
     push(e) {
-      if (this.$el.querySelector(`#open-button-${this.article.id}`).contains(e.target)) return;
+      if (this.ownedByMe && this.$el.querySelector(`#open-button-${this.article.id}`).contains(e.target)) return;
       this.$router.push(`/article/${this.article.id}`);
     },
-    onClick() {},
-    closeMenu(e) {
-      if (!this.$el.querySelector(`#open-button-${this.article.id}`).contains(e.target)) {
-        this.isShown = false;
-      }
+    deleteCard() {
+      this.$store.commit("userpage/setArticles", null, { root: true });
     },
   },
 };

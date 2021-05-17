@@ -8,6 +8,7 @@ use App\Domain\ValueObject\PostId;
 use App\Domain\ValueObject\UserAccountId;
 use App\Domain\ValueObject\Username;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class PostItemService
 {
@@ -49,11 +50,25 @@ class PostItemService
 
     /**
      * 記事IDをもとに保存されている記事を削除する.
-     * @param PostId $postId
+     * @param PostItemEntity $deleteItem
+     * @throws AccessDeniedHttpException|\Execption
      */
-    public function deleteItem(PostId $postId): void
+    public function deleteItem(PostItemEntity $deleteItem): void
     {
-        $this->postRepository->delete($postId);
+        if (!$this->postRepository->isOwned($deleteItem->getId(), $deleteItem->getUserId())) {
+            throw new AccessDeniedHttpException();
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $this->postRepository->delete($deleteItem->getId());
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
     }
 
     /**
@@ -89,5 +104,10 @@ class PostItemService
     public function getLikedArticleList(UserAccountId $userId): array
     {
         return $this->postRepository->retrieveLikedArticles($userId);
+    }
+
+    public function exists($postId): bool
+    {
+        return $this->postRepository->exists($postId);
     }
 }

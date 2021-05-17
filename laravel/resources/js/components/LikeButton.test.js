@@ -38,7 +38,7 @@ describe("表示関連", () => {
             if (size === "lg") {
                 expect(wrapper.find(stubs).classes()).toContain("text-xl");
             } else {
-                expect(wrapper.find(stubs).classes()).toEqual([]);
+                expect(wrapper.find(stubs).classes()).not.toContain("text-xl");
             }
         });
     });

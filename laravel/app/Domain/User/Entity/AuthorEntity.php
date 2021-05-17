@@ -5,6 +5,7 @@ namespace App\Domain\User\Entity;
 use App\Domain\Photo\Entity\PhotoEntity;
 use App\Domain\Post\Entity\PostItemEntity;
 use App\Domain\ValueObject\PostContent;
+use App\Domain\ValueObject\PostId;
 use App\Domain\ValueObject\PostPhoto;
 use App\Domain\ValueObject\PostTags;
 use App\Domain\ValueObject\PostTitle;
@@ -33,7 +34,7 @@ class AuthorEntity
     }
 
     /**
-     * PostItemEntityインスタンスを生成する.
+     * 投稿予定のPostItemEntityインスタンスを生成する.
      *
      * @param PostTitle   $title
      * @param PostContent $content
@@ -45,7 +46,17 @@ class AuthorEntity
         PostContent $content,
         PostTags $tags
     ): PostItemEntity {
-        return PostItemEntity::createByAuthor($this->userId, $title, $content, $tags);
+        return PostItemEntity::createByAuthor($this->userId, null, $title, $content, $tags);
+    }
+
+    /**
+     * 削除予定のPostItemEntityインスタンスを生成する.
+     * @param PostId $postId
+     * @return PostItemEntity
+     */
+    public function deleteItem(PostId $postId)
+    {
+        return PostItemEntity::createByAuthor($this->userId, $postId, null, null, null);
     }
 
     /**
