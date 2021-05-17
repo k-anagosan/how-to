@@ -134,10 +134,12 @@ export default {
       this.followed_by_me = false;
     },
     async onFollow(e) {
+      if (!e.id) this.followed_by_me = e.isFollowing;
       await this.$store.dispatch(e.isFollowing ? "auth/putFollow" : "auth/deleteFollow", e.id ?? this.userId);
-      if (!e.id && this.apiIsSuccess) {
-        this.followed_by_me = e.isFollowing;
+      if (!this.apiIsSuccess) {
+        this.followed_by_me = !this.followed_by_me;
       }
+      if (!e.id) this.$store.commit("userpage/setFollowers", null, { root: true });
     },
   },
 };
