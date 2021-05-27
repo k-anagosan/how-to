@@ -2,6 +2,7 @@
 
 namespace App\Domain\User\Entity;
 
+use App\Domain\Archive\Entity\ArchiveEntity;
 use App\Domain\Follow\Entity\FollowEntity;
 use App\Domain\Like\Entity\LikeEntity;
 use App\Domain\ValueObject\PostId;
@@ -49,5 +50,16 @@ class LoginUserEntity
     public function followUser(UserAccountId $followId): FollowEntity
     {
         return FollowEntity::createByLoginUser($this->userId, $followId);
+    }
+
+    /**
+     * 永続化の対象となるArchiveEntityを生成する.
+     *
+     * @param PostId $postId
+     * @return ArchiveEntity
+     */
+    public function archivePost(PostId $postId): ArchiveEntity
+    {
+        return ArchiveEntity::createByLoginUser($postId, $this->userId);
     }
 }

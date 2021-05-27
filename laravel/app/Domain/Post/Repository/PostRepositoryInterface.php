@@ -103,6 +103,14 @@ interface PostRepositoryInterface
     public function deleteLike(PostId $postId, UserAccountId $userId);
 
     /**
+     * 引数の情報をArchivesストアに保存.
+     * @param PostId        $postId
+     * @param UserAccountId $userId
+     * @return null|PostId
+     */
+    public function putArchive(PostId $postId, UserAccountId $userId);
+
+    /**
      * 記事に付加されているいいねをLikesストアからすべて削除する.
      * @param PostId $postId
      * @return null|PostId
