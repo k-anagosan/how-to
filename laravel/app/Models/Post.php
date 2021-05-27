@@ -34,6 +34,11 @@ class Post extends Model
         return $this->belongsToMany(User::class, 'likes')->withTimestamps();
     }
 
+    public function archives()
+    {
+        return $this->belongsToMany(User::class, 'archives')->withTimestamps();
+    }
+
     public function getLikesCountAttribute()
     {
         return $this->likes->count();
