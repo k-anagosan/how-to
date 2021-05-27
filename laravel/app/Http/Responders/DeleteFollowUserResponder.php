@@ -5,7 +5,7 @@ namespace App\Http\Responders;
 use App\Domain\ValueObject\UserAccountId;
 use Illuminate\Http\JsonResponse;
 
-class UnfollowUserResponder
+class DeleteFollowUserResponder
 {
     /**
      * @param null|UserAccountId $userId

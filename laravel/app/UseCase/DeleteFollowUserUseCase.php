@@ -6,7 +6,7 @@ use App\Domain\Follow\Service\FollowService;
 use App\Domain\User\Service\UserService;
 use App\Domain\ValueObject\UserAccountId;
 
-final class UnfollowUserUseCase
+final class DeleteFollowUserUseCase
 {
     private $userService;
 
