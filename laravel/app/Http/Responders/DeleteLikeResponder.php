@@ -5,7 +5,7 @@ namespace App\Http\Responders;
 use App\Domain\ValueObject\PostId;
 use Illuminate\Http\JsonResponse;
 
-class UnlikeResponder
+class DeleteLikeResponder
 {
     /**
      * @param null|PostId $postId

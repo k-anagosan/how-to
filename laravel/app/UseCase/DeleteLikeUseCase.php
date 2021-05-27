@@ -6,7 +6,7 @@ use App\Domain\Like\Service\LikeService;
 use App\Domain\User\Service\UserService;
 use App\Domain\ValueObject\PostId;
 
-final class UnlikeUseCase
+final class DeleteLikeUseCase
 {
     public function __construct(LikeService $likeService, UserService $userService)
     {

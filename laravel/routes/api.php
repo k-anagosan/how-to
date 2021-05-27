@@ -29,7 +29,7 @@ Route::get('/post/{id}', App\Http\Actions\GetArticleAction::class)->name('post.s
 Route::delete('/post/{id}', App\Http\Actions\DeleteArticleAction::class)->name('post.delete');
 
 Route::put('/post/{id}/like', App\Http\Actions\LikeAction::class)->name('post.like');
-Route::delete('/post/{id}/unlike', App\Http\Actions\UnlikeAction::class)->name('post.unlike');
+Route::delete('/post/{id}/like', App\Http\Actions\DeleteLikeAction::class)->name('post.delete.like');
 
 Route::get('/posts', App\Http\Actions\GetArticleListAction::class)->name('posts');
 
