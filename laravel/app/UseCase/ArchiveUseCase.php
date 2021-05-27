@@ -2,13 +2,15 @@
 
 namespace App\UseCase;
 
+use App\Domain\Archive\Service\ArchiveService;
 use App\Domain\User\Service\UserService;
 use App\Domain\ValueObject\PostId;
 
 final class ArchiveUseCase
 {
-    public function __construct(UserService $userService)
+    public function __construct(ArchiveService $archiveService, UserService $userService)
     {
+        $this->archiveService = $archiveService;
         $this->userService = $userService;
     }
 
@@ -18,6 +20,10 @@ final class ArchiveUseCase
      */
     public function execute(PostId $postId)
     {
-        return $postId;
+        $user = $this->userService->getLoginUser();
+
+        $archivedItem = $user->ArchivePost($postId);
+
+        return $this->archiveService->putArchive($archivedItem);
     }
 }
