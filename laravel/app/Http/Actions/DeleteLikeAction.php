@@ -4,17 +4,17 @@ namespace App\Http\Actions;
 
 use App\Domain\ValueObject\PostId;
 use App\Http\Controllers\Controller;
-use App\Http\Responders\UnlikeResponder;
-use App\UseCase\UnlikeUseCase;
+use App\Http\Responders\DeleteLikeResponder;
+use App\UseCase\DeleteLikeUseCase;
 use Illuminate\Http\JsonResponse;
 
-class UnlikeAction extends Controller
+class DeleteLikeAction extends Controller
 {
     private $useCase;
 
     private $responder;
 
-    public function __construct(UnlikeUseCase $useCase, UnlikeResponder $responder)
+    public function __construct(DeleteLikeUseCase $useCase, DeleteLikeResponder $responder)
     {
         $this->useCase = $useCase;
         $this->responder = $responder;
