@@ -132,7 +132,7 @@ const actions = {
     async deleteLike(context, data) {
         context.commit("setApiIsSuccess", null);
 
-        const response = await window.axios.delete(`/api/post/${data}/unlike`);
+        const response = await window.axios.delete(`/api/post/${data}/like`);
 
         if (response.status === OK) {
             context.commit("setApiIsSuccess", true);
