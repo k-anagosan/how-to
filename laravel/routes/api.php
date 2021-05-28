@@ -37,6 +37,7 @@ Route::name('post.')->prefix('post')->group(function (): void {
     Route::delete('{id}/like', App\Http\Actions\DeleteLikeAction::class)->name('delete.like');
 
     Route::put('{id}/archive', App\Http\Actions\ArchiveAction::class)->name('archive');
+    Route::delete('{id}/archive', App\Http\Actions\DeleteArchiveAction::class)->name('delete.archive');
 });
 
 Route::get('/posts', App\Http\Actions\GetArticleListAction::class)->name('posts');

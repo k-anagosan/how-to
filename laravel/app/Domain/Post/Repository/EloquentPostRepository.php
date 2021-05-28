@@ -250,6 +250,27 @@ class EloquentPostRepository implements PostRepository
         return $postId;
     }
 
+    public function deleteArchive(PostId $postId, UserAccountId $userId)
+    {
+        $post = Post::with(['archives'])->find($postId->toString());
+
+        if (!$post) {
+            return;
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $post->archives()->detach($userId->toInt());
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+
+        return $postId;
+    }
+
     public function clearLike(PostId $postId)
     {
         $post = Post::with(['likes'])->find($postId->toString());
