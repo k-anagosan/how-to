@@ -42,7 +42,7 @@ class GetArticleListApiTest extends TestCase
 
         $response = $this->getJson(route('posts'));
 
-        $posts = Post::with(['author', 'tags', 'likes'])
+        $posts = Post::with(['author', 'tags', 'likes', 'archives'])
             ->orderBy(Post::CREATED_AT, 'desc')
             ->limit($this->perPage)
             ->get();
@@ -57,6 +57,7 @@ class GetArticleListApiTest extends TestCase
                 ],
                 'likes_count' => $post->likes_count,
                 'liked_by_me' => $post->liked_by_me,
+                'archived_by_me' => $post->archived_by_me,
             ];
         })->toArray();
 
@@ -82,7 +83,7 @@ class GetArticleListApiTest extends TestCase
 
         $response = $this->getJson(route('posts', ['page' => $page]));
 
-        $posts = Post::with(['author', 'tags', 'likes'])
+        $posts = Post::with(['author', 'tags', 'likes', 'archives'])
             ->orderBy(Post::CREATED_AT, 'desc')
             ->limit($this->perPage)
             ->offset(($page - 1) * $this->perPage)
@@ -98,6 +99,7 @@ class GetArticleListApiTest extends TestCase
                 ],
                 'likes_count' => $post->likes_count,
                 'liked_by_me' => $post->liked_by_me,
+                'archived_by_me' => $post->archived_by_me,
             ];
         })->toArray();
 
@@ -123,7 +125,7 @@ class GetArticleListApiTest extends TestCase
 
         $response = $this->getJson(route('posts', ['tag' => $queryTag]));
 
-        $posts = Post::with(['author', 'tags', 'likes'])
+        $posts = Post::with(['author', 'tags', 'likes', 'archives'])
             ->whereHas('tags', function ($query) use ($queryTag): void {
                 $query->where('name', 'like', $queryTag);
             })
@@ -141,6 +143,7 @@ class GetArticleListApiTest extends TestCase
                 ],
                 'likes_count' => $post->likes_count,
                 'liked_by_me' => $post->liked_by_me,
+                'archived_by_me' => $post->archived_by_me,
             ];
         })->toArray();
 
