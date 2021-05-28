@@ -25,4 +25,15 @@ class ArchiveService
     {
         return $this->postRepository->putArchive($archiveEntity->getPostId(), $archiveEntity->getUserId());
     }
+
+    /**
+     * ArchiveEntityをもとにアーカイブ解除を行う。
+     *
+     * @param ArchiveEntity $archiveEntity
+     * @return null|PostId
+     */
+    public function deleteArchive(ArchiveEntity $archiveEntity)
+    {
+        return $this->postRepository->deleteArchive($archiveEntity->getPostId(), $archiveEntity->getUserId());
+    }
 }
