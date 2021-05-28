@@ -26,7 +26,7 @@ class GetArticleDetailApiTest extends TestCase
             });
         });
 
-        $post = Post::with(['author', 'tags', 'likes'])->first();
+        $post = Post::with(['author', 'tags', 'likes', 'archives'])->first();
 
         $response = $this->getJson(route('post.show', ['id' => $post->id]));
 
@@ -41,6 +41,7 @@ class GetArticleDetailApiTest extends TestCase
                 ],
                 'likes_count' => $post->likes_count,
                 'liked_by_me' => $post->liked_by_me,
+                'archived_by_me' => $post->archived_by_me,
             ]);
     }
 
@@ -51,7 +52,7 @@ class GetArticleDetailApiTest extends TestCase
     {
         factory(Post::class)->create();
 
-        $post = Post::with(['author', 'tags', 'likes'])->first();
+        $post = Post::with(['author', 'tags', 'likes', 'archives'])->first();
 
         $response = $this->getJson(route('post.show', ['id' => $post->id]));
 
@@ -66,6 +67,7 @@ class GetArticleDetailApiTest extends TestCase
                 ],
                 'likes_count' => $post->likes_count,
                 'liked_by_me' => $post->liked_by_me,
+                'archived_by_me' => $post->archived_by_me,
             ]);
     }
 

@@ -45,6 +45,7 @@ class GetUserArticleListApiTest extends TestCase
                     ],
                     'likes_count' => $post->likes_count,
                     'liked_by_me' => $post->liked_by_me,
+                    'archived_by_me' => $post->archived_by_me,
                 ];
         })->toArray();
 
@@ -83,7 +84,7 @@ class GetUserArticleListApiTest extends TestCase
                 factory(Tag::class)->create(['post_id' => $post->id, 'tag_name_id' => $tagName->id]);
             });
         });
-        return Post::with(['author', 'tags', 'likes'])->whereHas('author', function ($query) use ($user): void {
+        return Post::with(['author', 'tags', 'likes', 'archives'])->whereHas('author', function ($query) use ($user): void {
             $query->where('name', 'like', $user->name);
         })->limit($this->perPage)->orderBy(Post::CREATED_AT, 'desc')->get();
     }
