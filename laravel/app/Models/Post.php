@@ -11,10 +11,10 @@ class Post extends Model
 
     protected $keyType = 'string';
 
-    protected $appends = ['likes_count', 'liked_by_me'];
+    protected $appends = ['likes_count', 'liked_by_me', 'archived_by_me'];
 
     protected $visible = [
-        'id', 'title', 'author', 'tags', 'likes_count', 'liked_by_me',
+        'id', 'title', 'author', 'tags', 'likes_count', 'liked_by_me', 'archived_by_me',
     ];
 
     protected $perPage = 18;
@@ -53,6 +53,19 @@ class Post extends Model
         }
 
         return $this->likes->contains(
+            fn ($user) => $user->id === $userRepository->getLoginUserId()->toInt()
+        );
+    }
+
+    public function getArchivedByMeAttribute()
+    {
+        $userRepository = resolve(UserRepository::class);
+
+        if ($userRepository->isGuest()) {
+            return false;
+        }
+
+        return $this->archives->contains(
             fn ($user) => $user->id === $userRepository->getLoginUserId()->toInt()
         );
     }
