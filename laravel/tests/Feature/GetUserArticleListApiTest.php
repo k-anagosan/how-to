@@ -84,8 +84,9 @@ class GetUserArticleListApiTest extends TestCase
                 factory(Tag::class)->create(['post_id' => $post->id, 'tag_name_id' => $tagName->id]);
             });
         });
-        return Post::with(['author', 'tags', 'likes', 'archives'])->whereHas('author', function ($query) use ($user): void {
-            $query->where('name', 'like', $user->name);
-        })->limit($this->perPage)->orderBy(Post::CREATED_AT, 'desc')->get();
+        return Post::with(['author', 'tags', 'likes', 'archives'])
+            ->whereHas('author', function ($query) use ($user): void {
+                $query->where('name', 'like', $user->name);
+            })->limit($this->perPage)->orderBy(Post::CREATED_AT, 'desc')->get();
     }
 }
