@@ -11,6 +11,9 @@
             <div v-if="isOwned()" class="relative flex justify-center items-center">
               <EditMenu :article-id="article.id" @delete="deleteArticle" />
             </div>
+            <div class="ml-1">
+              <ArchiveButton :is-archived="article.archived_by_me" @archive="onChangeArchive" />
+            </div>
             <div class="flex justify-between items-center ml-1 rounded-2xl bg-gray-200 bg-opacity-80">
               <span class="pr-2 pl-3 likes-count">{{ article.likes_count }}</span>
               <LikeButton :is-liked="article.liked_by_me" @like="onChangeLike" />
@@ -24,11 +27,14 @@
         </div>
         <div class="flex relative">
           <div class="left-column absolute lg:block hidden -left-16 top-2 h-full w-12">
-            <ul class="sticky top-40 flex flex-col">
+            <ul class="sticky top-40 grid grid-cols-1 gap-y-1">
               <li class="mx-auto">
                 <LikeButton :is-liked="article.liked_by_me" size="lg" @like="onChangeLike" />
               </li>
               <li class="likes-count mx-auto text-xs text-gray-500">{{ article.likes_count }}</li>
+              <li class="mx-auto">
+                <ArchiveButton :is-archived="article.archived_by_me" size="lg" @archive="onChangeArchive" />
+              </li>
               <li class="mt-4">
                 <span v-if="isOwned()" class="relative flex justify-center items-center">
                   <EditMenu :article-id="article.id" direction="right" @delete="deleteArticle" />
@@ -62,6 +68,7 @@ import Icon from "../components/Icon.vue";
 import IconList from "../components/IconList.vue";
 import Spinner from "../components/Spinner.vue";
 import LikeButton from "../components/LikeButton.vue";
+import ArchiveButton from "../components/ArchiveButton.vue";
 import EditMenu from "../components/EditMenu.vue";
 import { mapGetters } from "vuex";
 
@@ -73,6 +80,7 @@ export default {
     Spinner,
     LikeButton,
     EditMenu,
+    ArchiveButton,
   },
   props: {
     id: {
@@ -119,6 +127,9 @@ export default {
           this.like();
         }
       }
+    },
+    onChangeArchive(e) {
+      console.log(e);
     },
     like() {
       this.article.likes_count += 1;

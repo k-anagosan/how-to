@@ -3,11 +3,12 @@
     <div class="card cursor-pointer" @click="push">
       <figure class="relative article-card-image">
         <img alt="" />
-        <div
-          class="absolute right-2 bottom-2 z-50 flex justify-between items-center rounded-2xl bg-gray-50 bg-opacity-80"
-        >
-          <span class="pr-2 pl-3 likes-count">{{ article.likes_count }}</span>
-          <LikeButton :is-liked="article.liked_by_me" @like="onChangeLike" />
+        <div class="absolute right-2 bottom-2 z-50 flex justify-between items-center">
+          <ArchiveButton :is-archived="article.archived_by_me" @archive="onChangeArchive" />
+          <div class="flex items-center rounded-2xl bg-gray-50 bg-opacity-80 ml-1">
+            <span class="pr-2 pl-3 likes-count">{{ article.likes_count }}</span>
+            <LikeButton :is-liked="article.liked_by_me" @like="onChangeLike" />
+          </div>
         </div>
       </figure>
       <div class="flex flex-col bg-white p-6 min-card-height">
@@ -43,6 +44,7 @@
 <script>
 import Icon from "../components/Icon";
 import LikeButton from "../components/LikeButton";
+import ArchiveButton from "../components/ArchiveButton";
 import EditMenu from "../components/EditMenu";
 
 export default {
@@ -50,6 +52,7 @@ export default {
     Icon,
     LikeButton,
     EditMenu,
+    ArchiveButton,
   },
   props: {
     article: {
@@ -73,6 +76,9 @@ export default {
         if (!(await this.$store.dispatch("post/deleteLike", this.article.id)))
           this.$emit("changeLike", { id: this.article.id, isLiked: true });
       }
+    },
+    onChangeArchive(e) {
+      console.log(e);
     },
     push(e) {
       if (this.ownedByMe && this.$el.querySelector(`#open-button-${this.article.id}`).contains(e.target)) return;
