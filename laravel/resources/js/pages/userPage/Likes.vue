@@ -8,6 +8,7 @@
           :list="pageData"
           grid="xl:grid-cols-3 lg:grid-cols-2 sm:gap-4 gap-y-6"
           @changeLike="onChangeLike"
+          @changeArchive="onChangeArchive"
         />
         <Pagination
           v-if="!loading && pagination && pageData.length > 0"
@@ -90,6 +91,14 @@ export default {
             article.likes_count -= 1;
             article.liked_by_me = false;
           }
+        }
+        return article;
+      });
+    },
+    onChangeArchive({ id, isArchived }) {
+      this.pageData = this.pageData.map(article => {
+        if (article.id === id) {
+          article.archived_by_me = isArchived;
         }
         return article;
       });

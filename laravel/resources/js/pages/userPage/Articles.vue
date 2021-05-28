@@ -9,6 +9,7 @@
           :owned-by-me="username === loginUsername"
           grid="xl:grid-cols-3 lg:grid-cols-2 sm:gap-4 gap-y-6"
           @changeLike="onChangeLike"
+          @changeArchive="onChangeArchive"
         />
         <Pagination
           v-if="!loading && pagination && pageData.length > 0"
@@ -110,6 +111,17 @@ export default {
       });
       if (this.username === this.loginUsername) {
         this.$store.commit("userpage/setLikes", null, { root: true });
+      }
+    },
+    onChangeArchive({ id, isArchived }) {
+      this.pageData = this.pageData.map(article => {
+        if (article.id === id) {
+          article.archived_by_me = isArchived;
+        }
+        return article;
+      });
+      if (this.username === this.loginUsername) {
+        this.$store.commit("userpage/setArchives", null, { root: true });
       }
     },
   },
