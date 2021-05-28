@@ -67,18 +67,18 @@ export default {
   },
   methods: {
     async onChangeLike(e) {
-      if (e.isLiked) {
-        this.$emit("changeLike", { id: this.article.id, isLiked: true });
-        if (!(await this.$store.dispatch("post/putLike", this.article.id)))
-          this.$emit("changeLike", { id: this.article.id, isLiked: false });
-      } else {
-        this.$emit("changeLike", { id: this.article.id, isLiked: false });
-        if (!(await this.$store.dispatch("post/deleteLike", this.article.id)))
-          this.$emit("changeLike", { id: this.article.id, isLiked: true });
+      const action = e.isLiked ? "post/putLike" : "post/deleteLike";
+      this.$emit("changeLike", { id: this.article.id, isLiked: e.isLiked });
+      if (!(await this.$store.dispatch(action, this.article.id))) {
+        this.$emit("changeLike", { id: this.article.id, isLiked: !e.isLiked });
       }
     },
-    onChangeArchive(e) {
-      console.log(e);
+    async onChangeArchive(e) {
+      const action = e.isArchived ? "post/putArchive" : "post/deleteArchive";
+      this.$emit("changeArchive", { id: this.article.id, isArchived: e.isArchived });
+      if (!(await this.$store.dispatch(action, this.article.id))) {
+        this.$emit("changeArchive", { id: this.article.id, isArchived: !e.isArchived });
+      }
     },
     push(e) {
       if (this.ownedByMe && this.$el.querySelector(`#open-button-${this.article.id}`).contains(e.target)) return;

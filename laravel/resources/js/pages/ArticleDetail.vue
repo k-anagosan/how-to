@@ -128,9 +128,6 @@ export default {
         }
       }
     },
-    onChangeArchive(e) {
-      console.log(e);
-    },
     like() {
       this.article.likes_count += 1;
       this.article.liked_by_me = true;
@@ -138,6 +135,13 @@ export default {
     unlike() {
       this.article.likes_count -= 1;
       this.article.liked_by_me = false;
+    },
+    async onChangeArchive(e) {
+      const action = e.isArchived ? "post/putArchive" : "post/deleteArchive";
+      this.article.archived_by_me = e.isArchived;
+      if (!(await this.$store.dispatch(action, this.article.id))) {
+        this.article.archived_by_me = !e.isArchived;
+      }
     },
     isOwned() {
       return this.article.author.name === this.loginUsername;
