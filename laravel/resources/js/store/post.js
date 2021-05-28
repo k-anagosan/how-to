@@ -143,6 +143,34 @@ const actions = {
         context.commit("setApiIsSuccess", false);
         return null;
     },
+    async putArchive(context, data) {
+        context.commit("setApiIsSuccess", null);
+
+        const response = await window.axios.put(`/api/post/${data}/archive`);
+
+        if (response.status === OK) {
+            context.commit("setApiIsSuccess", true);
+            return response.data.post_id;
+        }
+
+        context.commit("error/setErrorCode", response.status, { root: true });
+        context.commit("setApiIsSuccess", false);
+        return null;
+    },
+    async deleteArchive(context, data) {
+        context.commit("setApiIsSuccess", null);
+
+        const response = await window.axios.delete(`/api/post/${data}/archive`);
+
+        if (response.status === OK) {
+            context.commit("setApiIsSuccess", true);
+            return response.data.post_id;
+        }
+
+        context.commit("error/setErrorCode", response.status, { root: true });
+        context.commit("setApiIsSuccess", false);
+        return null;
+    },
 };
 
 export default {
