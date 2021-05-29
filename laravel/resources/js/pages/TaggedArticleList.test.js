@@ -16,6 +16,7 @@ const article = () => ({
     },
     liked_by_me: false,
     likes_count: 10,
+    archived_by_me: false,
 });
 const responseFactory = (current_page, per_page, last_page) => ({
     current_page,
@@ -160,6 +161,42 @@ describe("いいね関連", () => {
         await wrapper.vm.clearLike();
         wrapper.vm.$data.list.forEach(article => {
             expect(article.liked_by_me).toBe(false);
+        });
+    });
+});
+
+describe("アーカイブ関連", () => {
+    let spyOnChangeArchive = null;
+
+    beforeEach(() => {
+        spyOnChangeArchive = jest.spyOn(TaggedArticleList.methods, "onChangeArchive");
+        Test.setSpys({ spyOnChangeArchive });
+        wrapper = Test.shallowWrapperFactory();
+    });
+
+    it("changeArchiveイベントが発火されたらonChangeArchive()が実行される", () => {
+        expect(spyOnChangeArchive).not.toHaveBeenCalled();
+        wrapper.find("cardlist-stub").vm.$emit("changeArchive", { id: randomStr(20), isArchived: true });
+        expect(spyOnChangeArchive).toHaveBeenCalled();
+    });
+
+    it.each([
+        ["archived_by_meがtrue", true],
+        ["archived_by_meがfalse", false],
+    ])("onChangeArchive()により%sとなる", (_, isArchived) => {
+        const changedId = 1;
+        if (!isArchived) wrapper.vm.$data.list[changedId].archived_by_me = true;
+
+        const id = response.data[changedId];
+        wrapper.vm.onChangeArchive({ id, isArchived });
+        const expected = { ...response };
+        expected.data[changedId].archived_by_me = isArchived;
+        wrapper.vm.$data.list.forEach((data, index) => {
+            if (index === changedId) {
+                expect(data).toEqual(expected.data[changedId]);
+            } else {
+                expect(data).toEqual(response.data[index]);
+            }
         });
     });
 });
