@@ -45,13 +45,15 @@ describe("post.js actions", () => {
             ["getArticleList", "記事リストが取得できるか", articleList, OK],
             ["putLike", "いいねを付加できるか", postId, OK],
             ["deleteLike", "いいねを削除できるか", postId, OK],
+            ["putArchive", "アーカイブ登録をできるか", postId, OK],
+            ["deleteArchive", "アーカイブを解除できるか", postId, OK],
         ])("%sにより正しく%s", async (action, _, data, status) => {
             let [get, post, put, _delete] = [null, null, null, null];
             if (action === "postItem" || action === "postPhoto") {
                 post = () => ({ data, status });
-            } else if (action === "putLike") {
+            } else if (action === "putLike" || action === "putArchive") {
                 put = () => ({ data, status });
-            } else if (action === "deleteLike" || action === "deleteItem") {
+            } else if (action === "deleteLike" || action === "deleteItem" || action === "deleteArchive") {
                 _delete = () => ({ data, status });
             } else {
                 get = () => ({ data, status });
@@ -59,7 +61,13 @@ describe("post.js actions", () => {
 
             Test.mockAxios(get, post, put, _delete);
 
-            if (action === "postItem" || action === "putLike" || action === "deleteLike") {
+            if (
+                action === "postItem" ||
+                action === "putLike" ||
+                action === "deleteLike" ||
+                action === "putArchive" ||
+                action === "deleteArchive"
+            ) {
                 await Test.testApiResponse(`post/${action}`, data.post_id);
             } else if (action === "deleteItem") {
                 await Test.testApiResponse(`post/${action}`, data.id);
@@ -99,6 +107,8 @@ describe("post.js actions", () => {
             ["getArticleList"],
             ["putLike"],
             ["deleteLike"],
+            ["putArchive"],
+            ["deleteArchive"],
         ])("%sアクションでリクエストに失敗", action => {
             it("apiIsSuccessに正しく値が保存されるか", async done => {
                 await Test.testApiResult(`post/${action}`, false);
