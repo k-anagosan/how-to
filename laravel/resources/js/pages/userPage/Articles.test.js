@@ -6,7 +6,8 @@ const Test = new TestUtils();
 const spyFetchPageData = jest.spyOn(Articles.methods, "fetchPageData");
 const spySetData = jest.spyOn(Articles.methods, "setData");
 const spyOnChangeLike = jest.spyOn(Articles.methods, "onChangeLike");
-Test.setSpys({ spyFetchPageData, spySetData, spyOnChangeLike });
+const spyOnChangeArchive = jest.spyOn(Articles.methods, "onChangeArchive");
+Test.setSpys({ spyFetchPageData, spySetData, spyOnChangeLike, spyOnChangeArchive });
 
 const author = randomStr();
 const article = () => ({
@@ -18,6 +19,7 @@ const article = () => ({
     },
     liked_by_me: false,
     likes_count: 10,
+    archived_by_me: false,
 });
 const responseFactory = (current_page, per_page, last_page) => ({
     current_page,
@@ -46,6 +48,7 @@ beforeEach(async () => {
                 state.articles = articles;
             },
             setLikes: jest.fn(),
+            setArchives: jest.fn(),
         },
         actions: {
             getArticles: jest.fn().mockImplementation(context => {
@@ -69,6 +72,7 @@ beforeEach(async () => {
     Test.setSpys({
         getArticles: userpage.actions.getArticles,
         setLikes: userpage.mutations.setLikes,
+        setArchives: userpage.mutations.setArchives,
         spyDispatch,
         spyRouterPush,
     });
@@ -194,46 +198,91 @@ describe("メソッド関連", () => {
         expect(spyRouterPush).not.toHaveBeenCalled();
     });
 
-    it("changeLikeイベントが発火されたらonChangeLike()が実行される", () => {
-        expect(spyOnChangeLike).not.toHaveBeenCalled();
-        const e = { id: response.data[0].id, isLiked: !response.data[0].liked_by_me };
-        wrapper
-            .find("cardlist-stub")
-            .vm.$emit("changeLike", { id: response.data[0].id, isLiked: !response.data[0].liked_by_me });
-        expect(spyOnChangeLike.mock.calls[0]).toEqual([e]);
-    });
-
-    it.each([[false], [true]])("onChangeLike()がisLiked: %sで実行されたらpageDataが反映される", isLiked => {
-        response.data[0].liked_by_me = !isLiked;
-        const e = { id: response.data[0].id, isLiked };
-        wrapper.vm.$data.pageData.forEach((article, index) => {
-            expect(article.likes_count).toBe(10);
-            expect(article.liked_by_me).toBe(index === 0 ? !isLiked : false);
+    describe("いいね関連", () => {
+        it("changeLikeイベントが発火されたらonChangeLike()が実行される", () => {
+            expect(spyOnChangeLike).not.toHaveBeenCalled();
+            const e = { id: response.data[0].id, isLiked: !response.data[0].liked_by_me };
+            wrapper
+                .find("cardlist-stub")
+                .vm.$emit("changeLike", { id: response.data[0].id, isLiked: !response.data[0].liked_by_me });
+            expect(spyOnChangeLike.mock.calls[0]).toEqual([e]);
         });
-        wrapper.vm.onChangeLike(e);
-        wrapper.vm.$data.pageData.forEach((article, index) => {
-            const likes_count = isLiked ? 11 : 9;
-            expect(article.likes_count).toBe(index === 0 ? likes_count : 10);
-            expect(article.liked_by_me).toBe(index === 0 ? isLiked : false);
+
+        it.each([[false], [true]])("onChangeLike()がisLiked: %sで実行されたらpageDataが反映される", isLiked => {
+            response.data[0].liked_by_me = !isLiked;
+            const e = { id: response.data[0].id, isLiked };
+            wrapper.vm.$data.pageData.forEach((article, index) => {
+                expect(article.likes_count).toBe(10);
+                expect(article.liked_by_me).toBe(index === 0 ? !isLiked : false);
+            });
+            wrapper.vm.onChangeLike(e);
+            wrapper.vm.$data.pageData.forEach((article, index) => {
+                const likes_count = isLiked ? 11 : 9;
+                expect(article.likes_count).toBe(index === 0 ? likes_count : 10);
+                expect(article.liked_by_me).toBe(index === 0 ? isLiked : false);
+            });
+        });
+
+        it.each([
+            ["自身のユーザーページの/articles", "実行される", true],
+            ["他のユーザーページの/articles", "実行されない", false],
+        ])("onChangeLike()が%sで実行されたら、setLikesミューテーションが%s", (_, __, isOwned) => {
+            if (!isOwned) {
+                auth.state.user.name = randomStr();
+                Test.setVuex({ auth, userpage });
+                wrapper = Test.shallowWrapperFactory();
+            }
+            expect(spyOnChangeLike).not.toHaveBeenCalled();
+            wrapper.vm.onChangeLike({ id: wrapper.vm.$data.pageData[0].id, isLiked: true });
+            if (isOwned) {
+                expect(userpage.mutations.setLikes).toHaveBeenCalled();
+            } else {
+                expect(userpage.mutations.setLikes).not.toHaveBeenCalled();
+            }
         });
     });
+    describe("アーカイブ関連", () => {
+        it("changeArchiveイベントが発火されたらonChangeArchive()が実行される", () => {
+            expect(spyOnChangeArchive).not.toHaveBeenCalled();
+            const e = { id: response.data[0].id, isArchived: !response.data[0].archived_by_me };
+            wrapper
+                .find("cardlist-stub")
+                .vm.$emit("changeArchive", { id: response.data[0].id, isArchived: !response.data[0].archived_by_me });
+            expect(spyOnChangeArchive.mock.calls[0]).toEqual([e]);
+        });
 
-    it.each([
-        ["自身のユーザーページの/articles", "実行される", true],
-        ["他のユーザーページの/articles", "実行されない", false],
-    ])("onChangeLike()が%sで実行されたら、setLikesミューテーションが%s", (_, __, isOwned) => {
-        if (!isOwned) {
-            auth.state.user.name = randomStr();
-            Test.setVuex({ auth, userpage });
-            wrapper = Test.shallowWrapperFactory();
-        }
-        expect(spyOnChangeLike).not.toHaveBeenCalled();
-        wrapper.vm.onChangeLike({ id: wrapper.vm.$data.pageData[0].id, isLiked: true });
-        if (isOwned) {
-            expect(userpage.mutations.setLikes).toHaveBeenCalled();
-        } else {
-            expect(userpage.mutations.setLikes).not.toHaveBeenCalled();
-        }
+        it.each([[false], [true]])(
+            "onChangeArchive()がisArchived: %sで実行されたらpageDataが反映される",
+            isArchived => {
+                response.data[0].archived_by_me = !isArchived;
+                const e = { id: response.data[0].id, isArchived };
+                wrapper.vm.$data.pageData.forEach((article, index) => {
+                    expect(article.archived_by_me).toBe(index === 0 ? !isArchived : false);
+                });
+                wrapper.vm.onChangeArchive(e);
+                wrapper.vm.$data.pageData.forEach((article, index) => {
+                    expect(article.archived_by_me).toBe(index === 0 ? isArchived : false);
+                });
+            }
+        );
+
+        it.each([
+            ["自身のユーザーページの/articles", "実行される", true],
+            ["他のユーザーページの/articles", "実行されない", false],
+        ])("onChangeArchive()が%sで実行されたら、setArchivesミューテーションが%s", (_, __, isOwned) => {
+            if (!isOwned) {
+                auth.state.user.name = randomStr();
+                Test.setVuex({ auth, userpage });
+                wrapper = Test.shallowWrapperFactory();
+            }
+            expect(spyOnChangeArchive).not.toHaveBeenCalled();
+            wrapper.vm.onChangeArchive({ id: wrapper.vm.$data.pageData[0].id, isArchived: true });
+            if (isOwned) {
+                expect(userpage.mutations.setArchives).toHaveBeenCalled();
+            } else {
+                expect(userpage.mutations.setArchives).not.toHaveBeenCalled();
+            }
+        });
     });
 });
 

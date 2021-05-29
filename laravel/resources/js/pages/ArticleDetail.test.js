@@ -5,8 +5,9 @@ import { randomStr } from "@/utils";
 const Test = new TestUtils();
 const spyFetchArticle = jest.spyOn(ArticleDetail.methods, "fetchArticle");
 const spyOnChangeLike = jest.spyOn(ArticleDetail.methods, "onChangeLike");
+const spyOnChangeArchive = jest.spyOn(ArticleDetail.methods, "onChangeArchive");
 const spyDeleteArticle = jest.spyOn(ArticleDetail.methods, "deleteArticle");
-Test.setSpys({ spyFetchArticle, spyOnChangeLike, spyDeleteArticle });
+Test.setSpys({ spyFetchArticle, spyOnChangeLike, spyOnChangeArchive, spyDeleteArticle });
 
 let wrapper = null;
 let response = null;
@@ -21,6 +22,7 @@ beforeEach(() => {
         author: { name: authorName },
         likes_count: 10,
         liked_by_me: false,
+        archived_by_me: false,
     };
     post = {
         namespaced: true,
@@ -28,6 +30,8 @@ beforeEach(() => {
             getArticle: jest.fn().mockImplementation(() => ({ ...response })),
             putLike: jest.fn().mockImplementation(() => randomStr()),
             deleteLike: jest.fn().mockImplementation(() => randomStr()),
+            putArchive: jest.fn().mockImplementation(() => randomStr()),
+            deleteArchive: jest.fn().mockImplementation(() => randomStr()),
         },
     };
     auth = {
@@ -41,6 +45,8 @@ beforeEach(() => {
         getArticle: post.actions.getArticle,
         putLike: post.actions.putLike,
         deleteLike: post.actions.deleteLike,
+        putArchive: post.actions.putArchive,
+        deleteArchive: post.actions.deleteArchive,
         username: auth.getters.username,
     });
     Test.setVueRouter();
@@ -75,6 +81,7 @@ describe("表示、入力関連", () => {
         ["Icon", "author", "icon", "icon-stub"],
         ["IconList", "tags", "icons", "iconlist-stub"],
         ["LikeButton", "liked_by_me", "isLiked", "likebutton-stub"],
+        ["ArchiveButton", "archived_by_me", "isArchived", "archivebutton-stub"],
     ])("記事データを取得したら%sへarticle.%sを渡せる", (_, data, props, stubs) => {
         expect(wrapper.find(stubs).props()[props]).toEqual(response[data]);
     });
@@ -227,6 +234,54 @@ describe("いいね関連", () => {
         wrapper.vm.unlike();
         expect(wrapper.vm.$data.article.likes_count).toBe(9);
         expect(wrapper.vm.$data.article.liked_by_me).toBe(false);
+    });
+});
+
+describe("アーカイブ関連", () => {
+    it("archiveイベントが発火されたらonChangeArchive()が実行される", async () => {
+        await wrapper.findAll("archivebutton-stub").wrappers.forEach(wrapper => {
+            expect(spyOnChangeArchive).not.toHaveBeenCalled();
+            wrapper.vm.$emit("archive", { isArchived: true });
+            expect(spyOnChangeArchive).toHaveBeenCalled();
+            Test.clearSpysCalledTimes();
+        });
+    });
+
+    describe.each([[true], [false]])("isArchivedが%sの時のonChangeArchive()関連", isArchived => {
+        it(`isArchivedが${isArchived}ならarchived_by_meが${isArchived}になる`, async () => {
+            wrapper.vm.$data.article.archived_by_me = !isArchived;
+
+            await wrapper.vm.onChangeArchive({ isArchived });
+            let archivedByMe = null;
+
+            archivedByMe = isArchived;
+
+            expect(wrapper.vm.$data.article.archived_by_me).toBe(archivedByMe);
+        });
+
+        it("APIに失敗したら、archived_by_meが元に戻る", async () => {
+            if (isArchived) {
+                post.actions.putArchive = jest.fn().mockImplementation(() => null);
+                expect(post.actions.putArchive).not.toHaveBeenCalled();
+            } else {
+                post.actions.deleteArchive = jest.fn().mockImplementation(() => null);
+                expect(post.actions.deleteArchive).not.toHaveBeenCalled();
+            }
+
+            Test.setVuex({ post, auth });
+            wrapper = Test.shallowWrapperFactory();
+            await wrapper.vm.fetchArticle().then(() => {
+                wrapper.vm.$data.article.archived_by_me = !isArchived;
+            });
+            await wrapper.vm.onChangeArchive({ isArchived });
+
+            if (isArchived) {
+                expect(post.actions.putArchive).toHaveBeenCalled();
+            } else {
+                expect(post.actions.deleteArchive).toHaveBeenCalled();
+            }
+            expect(wrapper.vm.$data.article.archived_by_me).toBe(!isArchived);
+        });
     });
 });
 

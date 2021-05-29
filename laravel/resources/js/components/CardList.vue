@@ -8,6 +8,7 @@
         :owned-by-me="ownedByMe"
         :article="article"
         @changeLike="onChangeLike"
+        @changeArchive="onChangeArchive"
       />
     </ul>
   </div>
@@ -38,6 +39,9 @@ export default {
   methods: {
     onChangeLike({ id, isLiked }) {
       this.$emit("changeLike", { id, isLiked });
+    },
+    onChangeArchive({ id, isArchived }) {
+      this.$emit("changeArchive", { id, isArchived });
     },
   },
 };

@@ -2,7 +2,7 @@
   <div>
     <Spinner v-if="loading" class="pagetop-offset" />
     <div v-if="!loading" id="cardlist" class="pagetop-offset">
-      <CardList class="xl:mx-40 mx-4" :list="list" @changeLike="onChangeLike">
+      <CardList class="xl:mx-40 mx-4" :list="list" @changeLike="onChangeLike" @changeArchive="onChangeArchive">
         <h1 class="text-4xl mb-4">{{ tag }}</h1>
       </CardList>
       <Pagination v-if="pagination" class="xl:mx-40 mx-4" :pagination="pagination" :to="`/tag/${tag}`" />
@@ -75,6 +75,14 @@ export default {
             article.likes_count -= 1;
             article.liked_by_me = false;
           }
+        }
+        return article;
+      });
+    },
+    onChangeArchive({ id, isArchived }) {
+      this.list = this.list.map(article => {
+        if (article.id === id) {
+          article.archived_by_me = isArchived;
         }
         return article;
       });

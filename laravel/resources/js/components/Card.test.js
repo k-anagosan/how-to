@@ -5,9 +5,10 @@ import { randomStr } from "@/utils";
 
 const Test = new TestUtils();
 const spyOnChangeLike = jest.spyOn(Card.methods, "onChangeLike");
+const spyOnChangeArchive = jest.spyOn(Card.methods, "onChangeArchive");
 const spyPush = jest.spyOn(Card.methods, "push");
 const spyDeleteCard = jest.spyOn(Card.methods, "deleteCard");
-Test.setSpys({ spyOnChangeLike, spyPush, spyDeleteCard });
+Test.setSpys({ spyOnChangeLike, spyOnChangeArchive, spyPush, spyDeleteCard });
 
 const article = {
     id: randomStr(20),
@@ -16,6 +17,7 @@ const article = {
     author: { name: randomStr(10) },
     likes_count: 10,
     liked_by_me: false,
+    archived_by_me: false,
 };
 
 let options = null;
@@ -34,6 +36,8 @@ beforeEach(() => {
         actions: {
             putLike: jest.fn().mockImplementation((context, data) => data),
             deleteLike: jest.fn().mockImplementation((context, data) => data),
+            putArchive: jest.fn().mockImplementation((context, data) => data),
+            deleteArchive: jest.fn().mockImplementation((context, data) => data),
         },
     };
     userpage = {
@@ -42,7 +46,13 @@ beforeEach(() => {
             setArticles: jest.fn().mockImplementation((state, data) => data),
         },
     };
-    Test.setSpys({ spyOnChangeLike, putLike: post.actions.putLike, deleteLike: post.actions.deleteLike });
+    Test.setSpys({
+        spyOnChangeLike,
+        putLike: post.actions.putLike,
+        deleteLike: post.actions.deleteLike,
+        putArchive: post.actions.putArchive,
+        deleteArchive: post.actions.deleteArchive,
+    });
     Test.setVuex({ post, userpage });
 
     wrapper = Test.shallowWrapperFactory();
@@ -58,6 +68,7 @@ describe("表示関連", () => {
     it.each([
         ["author", "Icon", "icon-stub", "icon"],
         ["liked_by_me", "LikeButton", "likebutton-stub", "isLiked"],
+        ["archived_by_me", "ArchiveButton", "archivebutton-stub", "isArchived"],
     ])("article.%sを%sに渡せる", (data, _, stub, props) => {
         if (stub === "icon-stub") {
             wrapper.findAll(stub).wrappers.forEach(wrapper => {
@@ -176,6 +187,81 @@ describe("いいね処理関連", () => {
                 [{ id: article.id, isLiked }],
             ]);
         });
+    });
+});
+
+describe("アーカイブ処理関連", () => {
+    beforeEach(() => {
+        wrapper = Test.shallowWrapperFactory();
+    });
+
+    afterEach(() => {
+        Test.clearSpysCalledTimes();
+    });
+
+    it("archiveイベントが発火されたらonChangeArchive()が実行される", () => {
+        expect(spyOnChangeArchive).not.toHaveBeenCalled();
+        wrapper.find("archivebutton-stub").vm.$emit("archive", { isArchived: true });
+        expect(spyOnChangeArchive).toHaveBeenCalled();
+    });
+
+    describe.each([
+        [{ isArchived: true }, true, "putArchive"],
+        [{ isArchived: false }, false, "deleteArchive"],
+    ])("onChangeArchive()関連", (e, isArchived, action) => {
+        it(`onChangeArchive()がイベントオブジェクト{isArchived: ${isArchived}}で呼び出されたら${action}が実行される`, async () => {
+            expect(post.actions.putArchive).not.toHaveBeenCalled();
+            expect(post.actions.deleteArchive).not.toHaveBeenCalled();
+            await wrapper.vm.onChangeArchive(e);
+            if (e.isArchived) {
+                expect(post.actions.putArchive).toHaveBeenCalled();
+                expect(post.actions.deleteArchive).not.toHaveBeenCalled();
+            } else {
+                expect(post.actions.putArchive).not.toHaveBeenCalled();
+                expect(post.actions.deleteArchive).toHaveBeenCalled();
+            }
+        });
+        it(`onChangeArchive()がイベントオブジェクト{isArchived: ${isArchived}}で呼び出されたらchangeArchiveイベントが発火される`, async () => {
+            expect(post.actions.putArchive).not.toHaveBeenCalled();
+            expect(post.actions.deleteArchive).not.toHaveBeenCalled();
+            await wrapper.vm.onChangeArchive(e);
+            expect(wrapper.emitted().changeArchive).toEqual([[{ id: article.id, isArchived }]]);
+        });
+    });
+
+    describe("アーカイブ処理失敗時", () => {
+        beforeEach(() => {
+            post = {
+                namespaced: true,
+                actions: {
+                    putArchive: jest.fn().mockImplementation(() => null),
+                    deleteArchive: jest.fn().mockImplementation(() => null),
+                },
+            };
+            Test.setSpys({
+                spyOnChangeArchive,
+                putArchive: post.actions.putArchive,
+                deleteArchive: post.actions.deleteArchive,
+            });
+            Test.setVuex({ post });
+            wrapper = Test.shallowWrapperFactory();
+        });
+
+        it.each([
+            ["putArchive", false, { isArchived: true }],
+            ["deleteArchive", true, { isArchived: false }],
+        ])(
+            "%sアクションの結果がnullなら{isArchived: %s}で再度changeArchiveイベントを発火する",
+            async (_, isArchived, e) => {
+                expect(post.actions.putArchive).not.toHaveBeenCalled();
+                expect(post.actions.deleteArchive).not.toHaveBeenCalled();
+                await wrapper.vm.onChangeArchive(e);
+                expect(wrapper.emitted().changeArchive).toEqual([
+                    [{ id: article.id, isArchived: !isArchived }],
+                    [{ id: article.id, isArchived }],
+                ]);
+            }
+        );
     });
 });
 

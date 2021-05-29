@@ -3,11 +3,12 @@
     <div class="card cursor-pointer" @click="push">
       <figure class="relative article-card-image">
         <img alt="" />
-        <div
-          class="absolute right-2 bottom-2 z-50 flex justify-between items-center rounded-2xl bg-gray-50 bg-opacity-80"
-        >
-          <span class="pr-2 pl-3 likes-count">{{ article.likes_count }}</span>
-          <LikeButton :is-liked="article.liked_by_me" @like="onChangeLike" />
+        <div class="absolute right-2 bottom-2 z-50 flex justify-between items-center">
+          <ArchiveButton :is-archived="article.archived_by_me" @archive="onChangeArchive" />
+          <div class="flex items-center rounded-2xl bg-gray-50 bg-opacity-80 ml-1">
+            <span class="pr-2 pl-3 likes-count">{{ article.likes_count }}</span>
+            <LikeButton :is-liked="article.liked_by_me" @like="onChangeLike" />
+          </div>
         </div>
       </figure>
       <div class="flex flex-col bg-white p-6 min-card-height">
@@ -43,6 +44,7 @@
 <script>
 import Icon from "../components/Icon";
 import LikeButton from "../components/LikeButton";
+import ArchiveButton from "../components/ArchiveButton";
 import EditMenu from "../components/EditMenu";
 
 export default {
@@ -50,6 +52,7 @@ export default {
     Icon,
     LikeButton,
     EditMenu,
+    ArchiveButton,
   },
   props: {
     article: {
@@ -64,14 +67,17 @@ export default {
   },
   methods: {
     async onChangeLike(e) {
-      if (e.isLiked) {
-        this.$emit("changeLike", { id: this.article.id, isLiked: true });
-        if (!(await this.$store.dispatch("post/putLike", this.article.id)))
-          this.$emit("changeLike", { id: this.article.id, isLiked: false });
-      } else {
-        this.$emit("changeLike", { id: this.article.id, isLiked: false });
-        if (!(await this.$store.dispatch("post/deleteLike", this.article.id)))
-          this.$emit("changeLike", { id: this.article.id, isLiked: true });
+      const action = e.isLiked ? "post/putLike" : "post/deleteLike";
+      this.$emit("changeLike", { id: this.article.id, isLiked: e.isLiked });
+      if (!(await this.$store.dispatch(action, this.article.id))) {
+        this.$emit("changeLike", { id: this.article.id, isLiked: !e.isLiked });
+      }
+    },
+    async onChangeArchive(e) {
+      const action = e.isArchived ? "post/putArchive" : "post/deleteArchive";
+      this.$emit("changeArchive", { id: this.article.id, isArchived: e.isArchived });
+      if (!(await this.$store.dispatch(action, this.article.id))) {
+        this.$emit("changeArchive", { id: this.article.id, isArchived: !e.isArchived });
       }
     },
     push(e) {
