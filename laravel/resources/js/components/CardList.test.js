@@ -4,7 +4,8 @@ import { randomStr } from "../utils";
 
 const Test = new TestUtils();
 const spyOnChangeLike = jest.spyOn(CardList.methods, "onChangeLike");
-Test.setSpys({ spyOnChangeLike });
+const spyOnChangeArchive = jest.spyOn(CardList.methods, "onChangeArchive");
+Test.setSpys({ spyOnChangeLike, spyOnChangeArchive });
 
 const article = () => ({
     id: randomStr(20),
@@ -16,6 +17,7 @@ const article = () => ({
     },
     liked_by_me: false,
     likes_count: 10,
+    archived_by_me: false,
 });
 const articleList = [...Array(18)].map(article);
 
@@ -61,5 +63,20 @@ describe("いいね関連", () => {
         expect(wrapper.emitted()).toEqual({});
         await wrapper.vm.onChangeLike(event);
         expect(wrapper.emitted().changeLike).toEqual([[event]]);
+    });
+});
+
+describe("アーカイブ関連", () => {
+    it("changeArchiveイベントが発火されたらonChangeArchive()が実行される", () => {
+        expect(spyOnChangeArchive).not.toHaveBeenCalled();
+        wrapper.find("card-stub").vm.$emit("changeArchive", { id: randomStr(20), isArchived: true });
+        expect(spyOnChangeArchive).toHaveBeenCalled();
+    });
+
+    it("onChangeArchive()によりchangeArchiveイベントがで発火される", async () => {
+        const event = { id: randomStr(20), isArchived: true };
+        expect(wrapper.emitted()).toEqual({});
+        await wrapper.vm.onChangeArchive(event);
+        expect(wrapper.emitted().changeArchive).toEqual([[event]]);
     });
 });
