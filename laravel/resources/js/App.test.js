@@ -11,8 +11,9 @@ import ArticleDetail from "@/pages/ArticleDetail.vue";
 import UserPage from "@/pages/UserPage.vue";
 import InternalServerError from "@/pages/errors/InternalServerError.vue";
 import NotFound from "@/pages/errors/NotFound.vue";
+import PageExpired from "@/pages/errors/PageExpired.vue";
 
-import { randomStr, INTERNAL_SERVER_ERROR, NOT_FOUND } from "./utils";
+import { randomStr, UNAUTHENTICATED, INTERNAL_SERVER_ERROR, NOT_FOUND, UNAUHTORIZED_CLIENT } from "./utils";
 
 jest.mock("@/pages/ArticleList.vue", () => ({
     name: "ArticleList",
@@ -46,6 +47,10 @@ jest.mock("@/pages/errors/NotFound.vue", () => ({
     name: "NotFound",
     render: h => h("h1", "NotFound"),
 }));
+jest.mock("@/pages/errors/PageExpired.vue", () => ({
+    name: "PageExpired",
+    render: h => h("h1", "PageExpired"),
+}));
 
 const Test = new TestUtils();
 Test.setMountOption(App, {
@@ -56,7 +61,9 @@ Test.setMountOption(App, {
 });
 
 let wrapper = null;
+let spyGetCurrentUser = null;
 beforeEach(() => {
+    spyGetCurrentUser = jest.spyOn(App.methods, "getCurrentUser").mockImplementation(() => {});
     Test.setVuexInstance(store);
     Test.setVueRouterInstance(router);
     wrapper = Test.wrapperFactory();
@@ -64,6 +71,7 @@ beforeEach(() => {
 
 afterEach(() => {
     wrapper.vm.$store.commit("auth/setUser", null);
+    spyGetCurrentUser.mock.calls = [];
     wrapper.vm.$router.push("/").catch(() => {});
     wrapper.destroy();
     wrapper = null;
@@ -82,6 +90,12 @@ describe("アクセス結果", () => {
         if (path === "/edit") wrapper.vm.$store.commit("auth/setUser", true);
         await Test.testRoutingWithComponent("/", path, Component);
     });
+
+    it("パスが変わるごとにgetCurrentUser()が実行される", async () => {
+        expect(spyGetCurrentUser).not.toHaveBeenCalled();
+        await wrapper.vm.$router.push(`/${randomStr()}`);
+        expect(spyGetCurrentUser).toHaveBeenCalled();
+    });
 });
 
 describe("リダイレクト", () => {
@@ -94,7 +108,9 @@ describe("リダイレクト", () => {
     });
 
     it.each([
+        ["401が確認されたら/loginにリダイレクト", UNAUTHENTICATED, "/login", Login],
         ["404が確認されたら/not-foundにリダイレクト", NOT_FOUND, "/not-found", NotFound],
+        ["419が確認されたら/page-expiredにリダイレクト", UNAUHTORIZED_CLIENT, "/page-expired", PageExpired],
         ["500が確認されたら/500にリダイレクト", INTERNAL_SERVER_ERROR, "/500", InternalServerError],
     ])("%s", async (_, status, path, Component) => {
         await wrapper.vm.$store.commit("error/setErrorCode", status);

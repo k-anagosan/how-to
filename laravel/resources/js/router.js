@@ -11,6 +11,7 @@ import ArticleDetail from "./pages/ArticleDetail.vue";
 import UserPage from "./pages/UserPage.vue";
 import Logout from "./pages/Logout.vue";
 import InternalServerError from "./pages/errors/InternalServerError.vue";
+import PageExpired from "./pages/errors/PageExpired.vue";
 import NotFound from "./pages/errors/NotFound.vue";
 import Articles from "./pages/userPage/Articles.vue";
 import Archives from "./pages/userPage/Archives.vue";
@@ -73,17 +74,6 @@ const routes = [
         props: true,
     },
     {
-        path: "/500",
-        component: InternalServerError,
-        beforeEnter(to, from, next) {
-            if (store.state.error.errorCode === INTERNAL_SERVER_ERROR) {
-                next();
-            } else {
-                next("/");
-            }
-        },
-    },
-    {
         path: "/user/:name",
         component: UserPage,
         props: route => {
@@ -122,6 +112,21 @@ const routes = [
     {
         path: "/redirect",
         component: Logout,
+    },
+    {
+        path: "/page-expired",
+        component: PageExpired,
+    },
+    {
+        path: "/500",
+        component: InternalServerError,
+        beforeEnter(to, from, next) {
+            if (store.state.error.errorCode === INTERNAL_SERVER_ERROR) {
+                next();
+            } else {
+                next("/");
+            }
+        },
     },
     {
         path: "*",

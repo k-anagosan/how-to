@@ -17,7 +17,7 @@
 <script>
 import Header from "./components/Header.vue";
 import Footer from "./components/Footer.vue";
-import { INTERNAL_SERVER_ERROR, NOT_FOUND, UNAUTHENTICATED } from "./utils";
+import { INTERNAL_SERVER_ERROR, NOT_FOUND, UNAUTHENTICATED, UNAUHTORIZED_CLIENT } from "./utils";
 
 export default {
   components: {
@@ -37,6 +37,9 @@ export default {
         } else if (errorCode === UNAUTHENTICATED) {
           this.$store.commit("auth/setUser", null);
           this.$router.push("/login");
+        } else if (errorCode === UNAUHTORIZED_CLIENT) {
+          this.$store.commit("auth/setUser", null);
+          this.$router.push("/page-expired");
         } else if (errorCode === NOT_FOUND) {
           if (this.$route.path !== "/not-found") this.$router.replace("/not-found");
         }
@@ -45,6 +48,12 @@ export default {
     },
     $route() {
       this.$store.commit("error/setErrorCode", null);
+      this.getCurrentUser();
+    },
+  },
+  methods: {
+    async getCurrentUser() {
+      await this.$store.dispatch("auth/getCurrentUser");
     },
   },
 };
