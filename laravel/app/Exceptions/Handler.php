@@ -54,7 +54,7 @@ class Handler extends ExceptionHandler
 
     protected function prepareException(Exception $e)
     {
-        parent::prepareException($e);
+        $e = parent::prepareException($e);
 
         if ($e instanceof \App\Exceptions\FollowInvalidException) {
             $validator = Validator::make([], []);
