@@ -45,6 +45,12 @@ export default {
     },
     $route() {
       this.$store.commit("error/setErrorCode", null);
+      this.getCurrentUser();
+    },
+  },
+  methods: {
+    async getCurrentUser() {
+      await this.$store.dispatch("auth/getCurrentUser");
     },
   },
 };
