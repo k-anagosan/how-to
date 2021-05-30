@@ -84,9 +84,9 @@ describe("表示関連", () => {
         expect(wrapper.vm.$data.pageData).toEqual(response.data);
     });
 
-    it("pageData.length === 0がtrueならまだフォローしているユーザーがいないメッセージを表示する", async () => {
+    it("pageData.length === 0がtrueならまだ他のユーザーにフォローされていない旨のメッセージを表示する", async () => {
         await wrapper.setData({ pageData: [] });
-        expect(wrapper.find("h1").text()).toBe("まだ他のユーザーをフォローしていません");
+        expect(wrapper.find("h1").text()).toBe("まだ他のユーザーによってフォローされていません");
     });
 
     it("pageData.length > 0がtrueならフォローしているユーザーを表示する", () => {

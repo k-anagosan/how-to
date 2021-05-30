@@ -29,7 +29,7 @@
         />
       </div>
       <div v-if="pageData === null || pageData.length === 0" class="sm:mx-0 mx-4">
-        <h1>まだ他のユーザーをフォローしていません</h1>
+        <h1>まだ他のユーザーによってフォローされていません</h1>
       </div>
     </div>
   </div>
