@@ -6,6 +6,7 @@
 /storage/*.key
 /vendor
 /.pnpm-store
+/coverage
 .env
 .env.backup
 .phpunit.result.cache
