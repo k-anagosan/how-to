@@ -139,6 +139,25 @@ class EloquentPostRepository implements PostRepository
         return $posts;
     }
 
+    public function retrieveArchivedArticles(UserAccountId $userId)
+    {
+        $posts = null;
+
+        try {
+            $posts = Post::with(['author', 'tags', 'likes', 'archives'])
+                ->whereHas('archives', function ($query) use ($userId): void {
+                    $query->where('user_id', $userId->toInt());
+                })
+                ->orderBy(Post::CREATED_AT, 'desc')
+                ->paginate(12)
+                ->toArray();
+        } catch (\Exception $e) {
+            throw $e;
+        }
+
+        return $posts;
+    }
+
     public function addTags(PostId $postId, PostTags $tags): void
     {
         DB::beginTransaction();
