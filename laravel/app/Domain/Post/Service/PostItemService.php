@@ -106,6 +106,15 @@ class PostItemService
         return $this->postRepository->retrieveLikedArticles($userId);
     }
 
+    /**
+     * ユーザーがアーカイブした記事一覧データを取得する.
+     * @param UserAccountId $userId
+     */
+    public function getArchivedArticleList(UserAccountId $userId): array
+    {
+        return $this->postRepository->retrieveArchivedArticles($userId);
+    }
+
     public function exists($postId): bool
     {
         return $this->postRepository->exists($postId);
