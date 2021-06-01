@@ -62,6 +62,13 @@ interface PostRepositoryInterface
      */
     public function retrieveLikedArticles(UserAccountId $userId);
 
+    /**
+     * ユーザーがアーカイブした記事一覧を取得.
+     * @param UserAccountId $userId
+     * @return array
+     */
+    public function retrieveArchivedArticles(UserAccountId $userId);
+
     /*
     * 引数の情報をTagストアに保存.
     *

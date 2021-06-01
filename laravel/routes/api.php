@@ -20,6 +20,7 @@ Route::get('/user', fn () => Auth::check() ? Auth::user() : [])->name('user');
 Route::name('user.')->prefix('user')->group(function (): void {
     Route::get('{name}', App\Http\Actions\GetUserPageDataAction::class)->name('data');
     Route::get('{name}/articles', App\Http\Actions\GetUserArticleListAction::class)->name('show');
+    Route::get('{name}/archives', App\Http\Actions\GetArchivedArticleListAction::class)->name('archives');
     Route::get('{name}/likes', App\Http\Actions\GetLikedArticleListAction::class)->name('likes');
     Route::get('{name}/followers', App\Http\Actions\GetFollowerListAction::class)->name('followers');
 
