@@ -100,6 +100,34 @@ class DeleteArticleApiTest extends TestCase
     /**
      * @test
      */
+    public function should_アーカイブされた記事を削除できる(): void
+    {
+        $users = factory(User::class, 5)->create();
+        $this->post->archives()->attach($users->map(fn ($user) => $user->id)->toArray());
+        $users->map(function ($user): void {
+            $this->assertDatabaseHas('archives', [
+                'post_id' => $this->post->id,
+                'user_id' => $user->id,
+            ]);
+        });
+
+        $response = $this->actingAs($this->user)->deleteJson(route('post.delete', ['id' => $this->post->id]));
+
+        $response->assertStatus(200)->assertExactJson(['id' => $this->post->id]);
+        $this->assertDatabaseMissing($this->post->getTable(), [
+            'id' => $this->post->id,
+        ]);
+        $users->map(function ($user): void {
+            $this->assertDatabaseMissing('archives', [
+                'post_id' => $this->post->id,
+                'user_id' => $user->id,
+            ]);
+        });
+    }
+
+    /**
+     * @test
+     */
     public function should_権限のないユーザーが削除を行うと403エラーが返される(): void
     {
         $user = factory(User::class)->create();
