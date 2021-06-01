@@ -48,6 +48,7 @@ class EloquentPostRepository implements PostRepository
         try {
             $this->deleteTags($postId);
             $this->clearLike($postId);
+            $this->clearArchive($postId);
             $postOrm->delete();
             DB::commit();
         } catch (\Exception $e) {
@@ -307,6 +308,35 @@ class EloquentPostRepository implements PostRepository
         try {
             if ($userIds) {
                 $post->likes()->detach($userIds);
+            }
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+
+        return $postId;
+    }
+
+    public function clearArchive(PostId $postId)
+    {
+        $post = Post::with(['archives'])->find($postId->toString());
+
+        if (!$post) {
+            return;
+        }
+
+        $userIds = $post->archives
+            ->map(fn ($user) => $user->id)
+            ->toArray();
+
+        \Log::info($userIds);
+
+        DB::beginTransaction();
+
+        try {
+            if ($userIds) {
+                $post->archives()->detach($userIds);
             }
             DB::commit();
         } catch (\Exception $e) {
