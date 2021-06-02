@@ -133,6 +133,13 @@ interface PostRepositoryInterface
     public function clearLike(PostId $postId);
 
     /**
+     * 記事に付加されているアーカイブをArchivesストアからすべて削除する.
+     * @param PostId $postId
+     * @return null|PostId
+     */
+    public function clearArchive(PostId $postId);
+
+    /**
      * 指定した記事IDが存在するか真偽値で返す.
      * @param PostId $postId
      * @return bool
