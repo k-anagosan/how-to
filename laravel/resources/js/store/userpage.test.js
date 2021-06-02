@@ -46,6 +46,13 @@ describe("userpage.js actions", () => {
         it.each([
             ["getUserPageData", "ユーザーページの左カラム表示に必要な情報が取得できるか", pageData, OK, ""],
             ["getArticles", "ユーザーページのArticles表示に必要な情報を取得できるか", articleList, OK, "articles"],
+            [
+                "getArchivedArticles",
+                "ユーザーページのArchives表示に必要な情報を取得できるか",
+                articleList,
+                OK,
+                "archives",
+            ],
             ["getLikedArticles", "ユーザーページのLikes表示に必要な情報を取得できるか", articleList, OK, "likes"],
             [
                 "getFollowerList",
@@ -87,19 +94,22 @@ describe("userpage.js actions", () => {
             Test.clearSpysCalledTimes();
         });
 
-        describe.each([["getUserPageData"], ["getArticles"], ["getLikedArticles"], ["getFollowerList"]])(
-            "%sアクションでリクエストに失敗",
-            action => {
-                it("apiIsSuccessに正しく値が保存されるか", async done => {
-                    await Test.testApiResult(`userpage/${action}`, false);
-                    done();
-                });
+        describe.each([
+            ["getUserPageData"],
+            ["getArticles"],
+            ["getArchivedArticles"],
+            ["getLikedArticles"],
+            ["getFollowerList"],
+        ])("%sアクションでリクエストに失敗", action => {
+            it("apiIsSuccessに正しく値が保存されるか", async done => {
+                await Test.testApiResult(`userpage/${action}`, false);
+                done();
+            });
 
-                it("errorストアのsetErrorCodeが呼び出されるか", async done => {
-                    await setErrorCodeTest(action);
-                    done();
-                });
-            }
-        );
+            it("errorストアのsetErrorCodeが呼び出されるか", async done => {
+                await setErrorCodeTest(action);
+                done();
+            });
+        });
     });
 });

@@ -55,6 +55,20 @@ const actions = {
         context.commit("error/setErrorCode", response.status, { root: true });
         context.commit("setApiIsSuccess", false);
     },
+    async getArchivedArticles(context, data) {
+        context.commit("setApiIsSuccess", null);
+
+        const response = await window.axios.get(`/api/user/${data.name}/archives?page=${data.page}`);
+
+        if (response.status === OK) {
+            context.commit("setApiIsSuccess", true);
+            context.commit("setArchives", response.data);
+            return;
+        }
+
+        context.commit("error/setErrorCode", response.status, { root: true });
+        context.commit("setApiIsSuccess", false);
+    },
     async getLikedArticles(context, data) {
         context.commit("setApiIsSuccess", null);
 
