@@ -9,7 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-class GetArchivedArticleList extends TestCase
+class GetArchivedArticleListApiTest extends TestCase
 {
     use RefreshDatabase;
 
