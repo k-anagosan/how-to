@@ -26,6 +26,18 @@ interface PostRepositoryInterface
     public function save(PostId $postId, UserAccountId $userId, PostTitle $title, PostContent $content): PostId;
 
     /**
+     * 引数の情報をもとに記事情報を更新.
+     *
+     * @param PostId        $postId
+     * @param UserAccountId $userId
+     * @param PostTitle     $title
+     * @param PostContent   $content
+     *
+     * @return PostId
+     */
+    public function update(PostId $postId, UserAccountId $userId, PostTitle $title, PostContent $content): PostId;
+
+    /**
      * 引数IDのレコードをPostストアから削除.
      *
      * @param PostId $postId

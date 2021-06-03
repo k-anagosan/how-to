@@ -49,6 +49,41 @@ class PostItemService
     }
 
     /**
+     * 与えられたPostItemEntityをもとに記事の編集を行う.
+     * @param PostItemEntity $updatedItem
+     * @throws AccessDeniedHttpException
+     * @return PostId
+     */
+    public function updateItem(PostItemEntity $updatedItem): PostId
+    {
+        if (!$this->postRepository->isOwned($updatedItem->getId(), $updatedItem->getUserId())) {
+            throw new AccessDeniedHttpException();
+        }
+
+        $editId = null;
+
+        DB::beginTransaction();
+
+        try {
+            $editId = $this->postRepository->update(
+                $updatedItem->getId(),
+                $updatedItem->getUserId(),
+                $updatedItem->getTitle(),
+                $updatedItem->getContent()
+            );
+
+            $this->postRepository->deleteTags($updatedItem->getId());
+            $this->postRepository->addTags($updatedItem->getId(), $updatedItem->getTags());
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+
+        return $editId;
+    }
+
+    /**
      * 記事IDをもとに保存されている記事を削除する.
      * @param PostItemEntity $deleteItem
      * @throws AccessDeniedHttpException|\Execption
@@ -115,7 +150,11 @@ class PostItemService
         return $this->postRepository->retrieveArchivedArticles($userId);
     }
 
-    public function exists($postId): bool
+    /**
+     * 記事が存在するか真偽値で返す.
+     * @param PostId $postId
+     */
+    public function exists(PostId $postId): bool
     {
         return $this->postRepository->exists($postId);
     }
