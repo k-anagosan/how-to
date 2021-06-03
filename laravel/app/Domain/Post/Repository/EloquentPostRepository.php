@@ -39,6 +39,26 @@ class EloquentPostRepository implements PostRepository
         return $postId;
     }
 
+    public function update(PostId $postId, UserAccountId $userId, PostTitle $title, PostContent $content): PostId
+    {
+        DB::beginTransaction();
+
+        try {
+            $postOrm = Post::find($postId->toString());
+
+            $postOrm->user_id = $userId->toInt();
+            $postOrm->title = $title->toString();
+            $postOrm->content = $content->toString();
+            $postOrm->save();
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+
+        return $postId;
+    }
+
     public function delete(PostId $postId): void
     {
         $postOrm = Post::with(['likes'])->find($postId->toString());
