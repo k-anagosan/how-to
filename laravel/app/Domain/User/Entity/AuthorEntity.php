@@ -50,6 +50,24 @@ class AuthorEntity
     }
 
     /**
+     * 編集予定のPostItemEntityインスタンスを生成する.
+     *
+     * @param PostId      $id
+     * @param PostTitle   $title
+     * @param PostContent $content
+     * @param PostTags    $tags
+     * @return PostItemEntity
+     */
+    public function editItem(
+        PostId $id,
+        PostTitle $title,
+        PostContent $content,
+        PostTags $tags
+    ): PostItemEntity {
+        return PostItemEntity::createByAuthor($this->userId, $id, $title, $content, $tags);
+    }
+
+    /**
      * 削除予定のPostItemEntityインスタンスを生成する.
      * @param PostId $postId
      * @return PostItemEntity
