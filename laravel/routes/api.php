@@ -32,6 +32,7 @@ Route::post('/post', App\Http\Actions\PostAction::class)->name('post.create');
 
 Route::name('post.')->prefix('post')->group(function (): void {
     Route::get('{id}', App\Http\Actions\GetArticleAction::class)->name('show');
+    Route::patch('{id}', App\Http\Actions\EditArticleAction::class)->name('update');
     Route::delete('{id}', App\Http\Actions\DeleteArticleAction::class)->name('delete');
 
     Route::put('{id}/like', App\Http\Actions\LikeAction::class)->name('like');
