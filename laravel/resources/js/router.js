@@ -16,6 +16,7 @@ import NotFound from "./pages/errors/NotFound.vue";
 import Articles from "./pages/userPage/Articles.vue";
 import Archives from "./pages/userPage/Archives.vue";
 import Followers from "./pages/userPage/Followers.vue";
+import Setting from "./pages/userPage/Setting.vue";
 import Likes from "./pages/userPage/Likes.vue";
 
 import { INTERNAL_SERVER_ERROR } from "./utils";
@@ -106,6 +107,17 @@ const routes = [
             {
                 path: "likes",
                 component: Likes,
+            },
+            {
+                path: "setting",
+                component: Setting,
+                beforeEnter(to, from, next) {
+                    if (store.state.auth.user && store.state.auth.user.name === to.params.name) {
+                        next();
+                    } else {
+                        next(`/user/${to.params.name}`);
+                    }
+                },
             },
         ],
     },
