@@ -28,12 +28,19 @@
 import Spinner from "../../components/Spinner.vue";
 import Pagination from "../../components/Pagination.vue";
 import CardList from "../../components/CardList.vue";
-import { mapState } from "vuex";
+import { mapState, mapGetters } from "vuex";
 export default {
   components: {
     Spinner,
     Pagination,
     CardList,
+  },
+  beforeRouteLeave(to, from, next) {
+    if (this.username === this.loginUsername && this.isChanged) {
+      this.$store.commit("userpage/setArticles", null, { root: true });
+      this.$store.commit("userpage/setLikes", null, { root: true });
+    }
+    next();
   },
   props: {
     username: {
@@ -50,11 +57,15 @@ export default {
       loading: false,
       pagination: null,
       pageData: null,
+      isChanged: false,
     };
   },
   computed: {
     ...mapState({
       articles: state => state.userpage.likes,
+    }),
+    ...mapGetters({
+      loginUsername: "auth/username",
     }),
   },
   watch: {
@@ -68,6 +79,14 @@ export default {
         this.loading = false;
       },
       immediate: true,
+    },
+    articles: {
+      async handler() {
+        if (!this.articles) {
+          await this.fetchPageData(this.page);
+        }
+        this.setData();
+      },
     },
   },
   methods: {
@@ -94,6 +113,7 @@ export default {
         }
         return article;
       });
+      this.isChanged = true;
     },
     onChangeArchive({ id, isArchived }) {
       this.pageData = this.pageData.map(article => {
@@ -102,6 +122,9 @@ export default {
         }
         return article;
       });
+      if (this.username === this.loginUsername) {
+        this.$store.commit("userpage/setArchives", null, { root: true });
+      }
     },
   },
 };
