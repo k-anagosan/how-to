@@ -50,6 +50,14 @@
                 ><ion-icon name="person-outline" class="mr-2"></ion-icon>Followers</RouterLink
               >
             </li>
+            <li v-if="loginUser && loginUser.name === name" class="setting text-xl">
+              <RouterLink
+                :to="`/user/${name}/setting`"
+                class="flex items-center px-4 py-2 text-gray-500"
+                :class="{ active: $route.path.match(/^\/user\/\w+\/setting$/) }"
+                ><ion-icon name="build-outline" class="mr-2"></ion-icon>Setting</RouterLink
+              >
+            </li>
           </ul>
         </div>
       </aside>

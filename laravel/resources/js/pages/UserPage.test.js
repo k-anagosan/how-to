@@ -6,6 +6,7 @@ import Articles from "@/pages/userPage/Articles.vue";
 import Archives from "@/pages/userPage/Archives.vue";
 import Followers from "@/pages/userPage/Followers.vue";
 import Likes from "@/pages/userPage/Likes.vue";
+import Setting from "@/pages/userPage/Setting.vue";
 
 jest.mock("@/pages/userPage/Articles.vue", () => ({
     name: "Articles",
@@ -22,6 +23,10 @@ jest.mock("@/pages/userPage/Followers.vue", () => ({
 jest.mock("@/pages/userPage/Likes.vue", () => ({
     name: "Likes",
     render: h => h("h1", "Likes"),
+}));
+jest.mock("@/pages/userPage/Setting.vue", () => ({
+    name: "Setting",
+    render: h => h("h1", "Setting"),
 }));
 
 const Test = new TestUtils();
@@ -267,6 +272,10 @@ describe("Vue Router関連", () => {
                 path: "/user/:name/likes",
                 component: Likes,
             },
+            {
+                path: "/user/:name/setting",
+                component: Setting,
+            },
         ]);
         wrapper = Test.wrapperFactory();
         spyPush = jest.spyOn(wrapper.vm.$router, "push");
@@ -285,6 +294,7 @@ describe("Vue Router関連", () => {
         [".archives", "/user/:name/archives"],
         [".likes", "/user/:name/likes"],
         [".followers", "/user/:name/followers"],
+        [".setting", "/user/:name/setting"],
     ])("%sのRouterLinkをクリックしたら%sにアクセスされる", async (className, path) => {
         const preparedPath = path.replace(/:name/, author);
         expect(wrapper.vm.$route.path).not.toBe(preparedPath);
@@ -297,14 +307,15 @@ describe("Vue Router関連", () => {
         ["/user/xxx/archives", "Archives", "/archives", Archives],
         ["/user/xxx/likes", "Likes", "/likes", Likes],
         ["/user/xxx/followers", "Followers", "/followers", Followers],
+        ["/user/xxx/setting", "Setting", "/setting", Setting],
     ])("/user/xxx アクセス結果", (fullPath, ComponentName, path, Component) => {
         it(`${fullPath}にアクセスしたら${ComponentName}が表示される`, async () => {
-            if (path === "/archives") wrapper.vm.$store.commit("auth/setUser", author);
+            if (path === "/archives" || path === "/setting") wrapper.vm.$store.commit("auth/setUser", author);
             await Test.testRoutingWithComponent("/", `/user/${author}${path}`, Component);
         });
 
         it(`${fullPath}にアクセスしたらリンクにactiveクラスが付加される`, async () => {
-            if (path === "/archives") wrapper.vm.$store.commit("auth/setUser", { name: author });
+            if (path === "/archives" || path === "/setting") wrapper.vm.$store.commit("auth/setUser", { name: author });
             await wrapper.vm.$router.push(`/user/${author}${path}`);
             expect(wrapper.find(`.${ComponentName.toLowerCase()} .active`).exists()).toBe(true);
         });
