@@ -3,9 +3,11 @@
 namespace App\Domain\User\Service;
 
 use App\Domain\User\Entity\LoginUserEntity;
+use App\Domain\User\Entity\UserDataEntity;
 use App\Domain\User\Repository\UserRepositoryInterface as UserRepository;
 use App\Domain\ValueObject\UserAccountId;
 use App\Domain\ValueObject\Username;
+use Illuminate\Support\Facades\DB;
 
 class UserService
 {
@@ -17,7 +19,7 @@ class UserService
     }
 
     /**
-     * いいね操作を行ったユーザーのIDをもとにLoginUserEntityインスタンスを作成。
+     * ログインユーザーのIDをもとにLoginUserEntityインスタンスを作成。
      *
      * @return LoginUserEntity
      */
@@ -79,5 +81,31 @@ class UserService
     public function getFollowers(UserAccountId $userId)
     {
         return $this->userRepository->getFollowers($userId);
+    }
+
+    /**
+     * 引数のユーザー情報をUsersストアのユーザーIDのカラムに上書きする.
+     */
+    public function updateUserData(UserDataEntity $updatedUserData): UserAccountId
+    {
+        $userId = null;
+
+        DB::beginTransaction();
+
+        try {
+            $userId = $this->userRepository->update(
+                $updatedUserData->getId(),
+                $updatedUserData->getUsername(),
+                $updatedUserData->getEmail(),
+                $updatedUserData->getPassword(),
+            );
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+
+        return $userId;
     }
 }
