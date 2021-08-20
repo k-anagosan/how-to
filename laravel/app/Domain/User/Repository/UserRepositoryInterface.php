@@ -2,6 +2,8 @@
 
 namespace App\Domain\User\Repository;
 
+use App\Domain\ValueObject\Email;
+use App\Domain\ValueObject\Password;
 use App\Domain\ValueObject\UserAccountId;
 use App\Domain\ValueObject\Username;
 
@@ -71,4 +73,16 @@ interface UserRepositoryInterface
      * @return array
      */
     public function getFollowers(UserAccountId $userId);
+
+    /**
+     * 引数の情報をもとにユーザー情報を更新する.
+     * 
+     * @param UserAccountId $userId
+     * @param Username $username
+     * @param Email $email
+     * @param password $password
+     * 
+     * @return UserAccountId 
+     */
+    public function update(UserAccountId $userId, Username $username, Email $email, Password $password);
 }
