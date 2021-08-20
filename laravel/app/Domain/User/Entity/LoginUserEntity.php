@@ -5,8 +5,11 @@ namespace App\Domain\User\Entity;
 use App\Domain\Archive\Entity\ArchiveEntity;
 use App\Domain\Follow\Entity\FollowEntity;
 use App\Domain\Like\Entity\LikeEntity;
+use App\Domain\ValueObject\Email;
+use App\Domain\ValueObject\Password;
 use App\Domain\ValueObject\PostId;
 use App\Domain\ValueObject\UserAccountId;
+use App\Domain\ValueObject\Username;
 
 class LoginUserEntity
 {
@@ -61,5 +64,16 @@ class LoginUserEntity
     public function archivePost(PostId $postId): ArchiveEntity
     {
         return ArchiveEntity::createByLoginUser($postId, $this->userId);
+    }
+
+    /**
+     * 永続化の対象となるUserDataEntityを生成する.
+     */
+    public function editUserData(
+        Username $username,
+        Email $email,
+        Password $password
+    ) {
+        return UserDataEntity::createByLoginUser($this->userId, $username, $email, $password);
     }
 }
