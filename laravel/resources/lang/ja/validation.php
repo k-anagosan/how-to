@@ -136,6 +136,9 @@ return [
         'attribute-name' => [
             'rule-name' => 'custom-message',
         ],
+        'name' => [
+            'unique' => 'そのユーザー名は既に使われています',
+        ],
         'email' => [
             'unique' => 'そのメールアドレスは既に使われています',
             'email' => 'メールアドレスの書式のみ有効です',
