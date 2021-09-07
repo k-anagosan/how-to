@@ -3,6 +3,8 @@
 namespace App\Domain\User\Repository;
 
 use App\Domain\User\Repository\UserRepositoryInterface as UserRepository;
+use App\Domain\ValueObject\Email;
+use App\Domain\ValueObject\Password;
 use App\Domain\ValueObject\UserAccountId;
 use App\Domain\ValueObject\Username;
 use App\Models\User;
@@ -111,4 +113,28 @@ class EloquentUserRepository implements UserRepository
 
         return $followers->toArray();
     }
+
+    public function update(UserAccountId $userId, Username $username, Email $email, Password $password)
+    {
+        DB::beginTransaction();
+
+        try {
+            $userData = User::find($userId->toInt());
+            
+            $userData->name = $username->toString();
+            $userData->email = $email->toString();
+            $userData->password = $password->toString();
+            $userData->save();
+            DB::commit();
+
+
+            $userData = User::find($userId->toInt());
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        }
+
+        return $userId;
+    }
+    
 }

@@ -18,6 +18,8 @@ Route::post('/logout', 'App\Http\Controllers\Auth\LoginController@logout')->name
 Route::get('/user', fn () => Auth::check() ? Auth::user() : [])->name('user');
 
 Route::name('user.')->prefix('user')->group(function (): void {
+    Route::patch('{name}', App\Http\Actions\UpdateUserDataAction::class)->name('update');
+    
     Route::get('{name}', App\Http\Actions\GetUserPageDataAction::class)->name('data');
     Route::get('{name}/articles', App\Http\Actions\GetUserArticleListAction::class)->name('show');
     Route::get('{name}/archives', App\Http\Actions\GetArchivedArticleListAction::class)->name('archives');
